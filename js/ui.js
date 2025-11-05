@@ -2215,9 +2215,60 @@ function handleColorDomainReset() {
     persistCurrentModeColorSettings();
 }
 
+function initSidebarCollapseControl() {
+    const appBody = document.querySelector('.app-body');
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    if (!appBody || !sidebar || !toggleBtn) return;
+
+    const storageKey = 'metatree.sidebarCollapsed';
+
+    const readPersistedState = () => {
+        try {
+            return localStorage.getItem(storageKey) === 'true';
+        } catch (_) {
+            return false;
+        }
+    };
+
+    const persistState = (collapsed) => {
+        try {
+            localStorage.setItem(storageKey, collapsed ? 'true' : 'false');
+        } catch (_) {}
+    };
+
+    const applyState = (collapsed) => {
+        appBody.classList.toggle('sidebar-collapsed', collapsed);
+        sidebar.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+        toggleBtn.setAttribute('aria-label', label);
+        toggleBtn.setAttribute('title', label);
+
+        if (typeof redrawCurrentViz === 'function' && treeData) {
+            // wait for layout to settle before redrawing panels at new width
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    try { redrawCurrentViz(); } catch (_) {}
+                });
+            });
+        }
+    };
+
+    let collapsed = readPersistedState();
+    applyState(collapsed);
+
+    toggleBtn.addEventListener('click', () => {
+        collapsed = !collapsed;
+        applyState(collapsed);
+        persistState(collapsed);
+    });
+}
+
 // ========== 页面加载时初始化 ==========
 document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
+    initSidebarCollapseControl();
     
     // 初始化 taxon 筛选功能
     initTaxonFilters();

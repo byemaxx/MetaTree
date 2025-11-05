@@ -142,6 +142,56 @@ body {
     /* overscroll-behavior intentionally omitted to allow natural page scroll */
 }
 
+.sidebar-toggle {
+    align-self: flex-start;
+    margin: var(--spacing-xl) var(--spacing-lg) 0 var(--spacing-lg);
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--bg-white);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.sidebar-toggle:hover {
+    background: var(--bg-light);
+    color: var(--text-primary);
+}
+
+.sidebar-toggle:focus-visible {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+.sidebar-toggle .toggle-icon {
+    display: inline-block;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.3s ease;
+}
+
+.app-body.sidebar-collapsed .sidebar {
+    display: none;
+}
+
+.app-body.sidebar-collapsed .sidebar-toggle {
+    margin-left: 0;
+}
+
+.app-body.sidebar-collapsed .sidebar-toggle .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.app-body.sidebar-collapsed .main-content {
+    padding-left: var(--spacing-lg);
+}
+
 /* A visible, non-interactive gutter to emphasize the boundary between panels */
 /* removed gutter overlay to avoid overlapping the scroll hit area */
 
@@ -1081,6 +1131,8 @@ button:disabled {
     .app-body { flex-direction: column; padding: var(--spacing-lg); gap: var(--spacing-lg); }
     .sidebar { flex: none; min-width: unset; max-width: none; border-right: none; border-bottom: 1px solid var(--border-light); padding-right: 0; overflow-x: auto; }
     .main-content { padding-right: 0; position: static; height: auto; overflow: visible; }
+    .sidebar-toggle { align-self: flex-end; margin: var(--spacing-md) 0 0 auto; }
+    .app-body.sidebar-collapsed .main-content { padding-left: 0; }
     body {
         padding: var(--spacing-md);
     }

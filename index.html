@@ -20,7 +20,7 @@
         </div>
 
         <div class="app-body">
-            <aside class="sidebar">
+            <aside class="sidebar" id="sidebar">
                 <!-- 数据加载区（左侧边栏） -->
                 <div class="control-panel card-panel">
                     <div class="panel-title">Data & Metadata</div>
@@ -672,6 +672,10 @@
                     </div>
                 </div>
             </aside>
+
+            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar" aria-label="Collapse sidebar" title="Collapse sidebar">
+                <span class="toggle-icon" aria-hidden="true">&lsaquo;</span>
+            </button>
 
             <main class="main-content">
                 <div class="viz-container" id="viz-container">

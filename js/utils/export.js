@@ -2,47 +2,159 @@
 // Expose to window for compatibility
 
 (function(){
+  // Helper: download a blob with a filename, revoking object URL after click
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Give browser a tick to start download before revoking
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   function exportSVGForContainer(containerId, filenamePrefix) {
     const svgElement = document.querySelector(`#${containerId} svg`);
     if (!svgElement) return;
+
+    // Clone the SVG so we can safely inject styles
+    const clone = svgElement.cloneNode(true);
+    // Ensure xmlns attributes are present
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    if (!clone.getAttribute('xmlns:xlink')) clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+    // Inline document styles to keep appearance when exported
+    try {
+      const styleText = collectStyleText();
+      if (styleText) {
+        const styleEl = document.createElement('style');
+        styleEl.textContent = styleText;
+        // Insert as first child so rules apply
+        clone.insertBefore(styleEl, clone.firstChild);
+      }
+    } catch (e) {
+      // non-fatal
+    }
+
     const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(svgElement);
-    const blob = new Blob([svgString], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filenamePrefix}_${Date.now()}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const svgString = serializer.serializeToString(clone);
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const filename = `${filenamePrefix || 'export'}_${Date.now()}.svg`;
+    downloadBlob(blob, filename);
   }
 
+  // Export a single SVG inside a container as PNG. Returns a Promise that resolves when complete.
   function exportPNGForContainer(containerId, filenamePrefix) {
-    const svgElement = document.querySelector(`#${containerId} svg`);
-    if (!svgElement) return;
-    const container = document.getElementById(containerId);
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const svgData = new XMLSerializer().serializeToString(svgElement);
-    const img = new Image();
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    img.onload = function() {
-      ctx.fillStyle = 'white';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-      canvas.toBlob(function(b) {
-        const u = URL.createObjectURL(b);
-        const a = document.createElement('a');
-        a.href = u;
-        a.download = `${filenamePrefix}_${Date.now()}.png`;
-        a.click();
-        URL.revokeObjectURL(u);
-      });
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
+    return new Promise((resolve, reject) => {
+      const svgElement = document.querySelector(`#${containerId} svg`);
+      if (!svgElement) return reject(new Error('SVG element not found'));
+      const container = document.getElementById(containerId);
+      if (!container) return reject(new Error('Container not found'));
+
+      // Determine size: prefer viewBox if present, else bounding box, else container size
+      let width = null;
+      let height = null;
+      try {
+        const viewBox = svgElement.getAttribute('viewBox');
+        if (viewBox) {
+          const parts = viewBox.split(/\s+/).map(Number);
+          if (parts.length === 4) {
+            width = Math.round(parts[2]);
+            height = Math.round(parts[3]);
+          }
+        }
+      } catch (e) {}
+      if (!width || !height) {
+        try {
+          const bbox = svgElement.getBBox();
+          if (bbox) {
+            width = Math.round(bbox.width || svgElement.clientWidth || container.clientWidth || 800);
+            height = Math.round(bbox.height || svgElement.clientHeight || container.clientHeight || 600);
+          }
+        } catch (e) {
+          width = Math.max(1, container.clientWidth || 800);
+          height = Math.max(1, container.clientHeight || 600);
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, width);
+      canvas.height = Math.max(1, height);
+      const ctx = canvas.getContext('2d');
+
+      // Inline styles similarly to SVG export
+      const clone = svgElement.cloneNode(true);
+      try {
+        const styleText = collectStyleText();
+        if (styleText) {
+          const styleEl = document.createElement('style');
+          styleEl.textContent = styleText;
+          clone.insertBefore(styleEl, clone.firstChild);
+        }
+      } catch (e) {}
+
+      if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      const svgData = new XMLSerializer().serializeToString(clone);
+      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      // Best-effort to avoid tainting the canvas when possible
+      try { img.crossOrigin = 'anonymous'; } catch (e) {}
+
+      img.onload = function() {
+        try {
+          if (ctx) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+
+          if (canvas.toBlob) {
+            canvas.toBlob(function(b) {
+              if (b) {
+                downloadBlob(b, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                URL.revokeObjectURL(url);
+                resolve();
+              } else {
+                // Fallback to data URL
+                const dataUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `${filenamePrefix || 'export'}_${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                resolve();
+              }
+            });
+          } else {
+            const dataUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `${filenamePrefix || 'export'}_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            resolve();
+          }
+        } catch (err) {
+          URL.revokeObjectURL(url);
+          reject(err);
+        }
+      };
+
+      img.onerror = function(e) {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load SVG for PNG export'));
+      };
+
+      img.src = url;
+    });
   }
 
   function collectStyleText() {
@@ -171,65 +283,67 @@
       return;
     }
     const prefix = resolveVizExportPrefix(filenamePrefix);
-    const blob = new Blob([snapshot.svgString], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${prefix}_${Date.now()}.svg`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const blob = new Blob([snapshot.svgString], { type: 'image/svg+xml;charset=utf-8' });
+    downloadBlob(blob, `${prefix}_${Date.now()}.svg`);
   }
 
+  // Export the whole viz container snapshot to PNG. Returns a Promise.
   function exportVizContainerAsPNG(filenamePrefix) {
-    const snapshot = buildVizContainerSnapshot();
-    if (!snapshot) {
-      console.warn('No viz-container snapshot available for PNG export');
-      return;
-    }
-    const prefix = resolveVizExportPrefix(filenamePrefix);
-    const canvas = document.createElement('canvas');
-    canvas.width = snapshot.width;
-    canvas.height = snapshot.height;
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(snapshot.svgString)}`;
-    img.onload = function() {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-      const triggerDownload = (blob) => {
-        const pngUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = pngUrl;
-        link.download = `${prefix}_${Date.now()}.png`;
-        link.click();
-        URL.revokeObjectURL(pngUrl);
-      };
-      if (canvas.toBlob) {
-        canvas.toBlob((blob) => {
-          if (blob) {
-            triggerDownload(blob);
-          } else {
-            console.warn('canvas.toBlob returned null, using data URL fallback');
-            const dataUrl = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = dataUrl;
-            link.download = `${prefix}_${Date.now()}.png`;
-            link.click();
-          }
-        });
-      } else {
-        const dataUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = `${prefix}_${Date.now()}.png`;
-        link.click();
+    return new Promise((resolve, reject) => {
+      const snapshot = buildVizContainerSnapshot();
+      if (!snapshot) {
+        console.warn('No viz-container snapshot available for PNG export');
+        return reject(new Error('No snapshot'));
       }
-    };
-    img.onerror = function() {
-      console.warn('Failed to render viz-container snapshot for PNG export');
-    };
-    img.src = svgDataUrl;
+      const prefix = resolveVizExportPrefix(filenamePrefix);
+      const canvas = document.createElement('canvas');
+      canvas.width = snapshot.width;
+      canvas.height = snapshot.height;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(snapshot.svgString)}`;
+      try { img.crossOrigin = 'anonymous'; } catch (e) {}
+      img.onload = function() {
+        try {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          if (canvas.toBlob) {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                downloadBlob(blob, `${prefix}_${Date.now()}.png`);
+                resolve();
+              } else {
+                // fallback
+                const dataUrl = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `${prefix}_${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                resolve();
+              }
+            });
+          } else {
+            const dataUrl = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `${prefix}_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            resolve();
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = function() {
+        reject(new Error('Failed to render viz-container snapshot for PNG export'));
+      };
+      img.src = svgDataUrl;
+    });
   }
 
   if (typeof window !== 'undefined') {

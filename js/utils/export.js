@@ -176,52 +176,135 @@
 
   function buildVizContainerSnapshot() {
     if (typeof document === 'undefined') return null;
+
     const vizContainer = document.getElementById('viz-container');
     if (!vizContainer) return null;
 
+    // Ensure all panels & legend are rendered
     try {
-      if (typeof window !== 'undefined' && typeof window.ensurePanelsRenderedForExport === 'function') {
+      if (typeof window !== 'undefined'
+        && typeof window.ensurePanelsRenderedForExport === 'function') {
         window.ensurePanelsRenderedForExport();
       }
     } catch (_) {}
 
+    // ---- 1. Clone current layout of #viz-container ----
     const rect = vizContainer.getBoundingClientRect();
-    const rawWidth = Math.max(rect.width || 0, vizContainer.scrollWidth || 0, vizContainer.offsetWidth || 0);
-    const rawHeight = Math.max(vizContainer.scrollHeight || 0, rect.height || 0, vizContainer.offsetHeight || 0);
+    const baseWidth = Math.max(
+      rect.width || 0,
+      vizContainer.scrollWidth || 0,
+      vizContainer.offsetWidth || 0,
+      1
+    );
 
     const clone = vizContainer.cloneNode(true);
+
+    // Keep id so #viz-container rules still apply inside snapshot
     clone.style.margin = '0';
     clone.style.boxSizing = 'border-box';
     clone.style.overflow = 'visible';
-    clone.style.width = `${Math.max(1, Math.round(rawWidth))}px`;
+    clone.style.width = baseWidth + 'px';
+    clone.style.maxWidth = 'none';
+    clone.style.maxHeight = 'none';
 
-    clone.querySelectorAll('.panel-actions').forEach(el => el.remove());
-    clone.querySelectorAll('.tree-panel-header .btn-back').forEach(el => el.remove());
-    clone.querySelectorAll('.tree-panel-header button').forEach(el => el.remove());
-    clone.querySelectorAll('.modal-actions').forEach(el => el.remove());
+    // Remove purely interactive controls from export
+    clone.querySelectorAll(
+      '.panel-actions,' +
+      '.tree-panel-header .btn-back,' +
+      '.tree-panel-header button,' +
+      '.modal,' +
+      '.modal-backdrop,' +
+      '.modal-actions,' +
+      '[data-export-exclude="1"]'
+    ).forEach(el => el.remove());
 
+    // ---- 2. Off-screen HTML host for measuring ----
     const tempHost = document.createElement('div');
     tempHost.style.position = 'absolute';
-    tempHost.style.left = '-99999px';
-    tempHost.style.top = '-99999px';
-    tempHost.style.pointerEvents = 'none';
+    tempHost.style.left = '-100000px';
+    tempHost.style.top = '0';
     tempHost.style.visibility = 'hidden';
-    tempHost.style.width = clone.style.width;
+    tempHost.style.pointerEvents = 'none';
     document.body.appendChild(tempHost);
-    tempHost.appendChild(clone);
 
-    const layoutRect = clone.getBoundingClientRect();
-    const measuredWidth = Math.max(layoutRect.width || 0, clone.scrollWidth || 0, rawWidth || 0);
-    const measuredHeight = Math.max(layoutRect.height || 0, clone.scrollHeight || 0, rawHeight || 0);
-    const width = Math.max(1, Math.round(measuredWidth));
-    const height = Math.max(1, Math.round(measuredHeight));
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+    wrapper.style.margin = '0';
+    wrapper.style.padding = '0';
+    wrapper.style.boxSizing = 'border-box';
+    wrapper.style.display = 'block';
+    wrapper.style.width = baseWidth + 'px';
+    wrapper.style.maxWidth = 'none';
+    wrapper.style.overflow = 'visible';
 
-    clone.style.width = `${width}px`;
+    // Match background from original container
+    try {
+      const cs = window.getComputedStyle(vizContainer);
+      if (cs && cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+        wrapper.style.background = cs.backgroundColor;
+      } else {
+        wrapper.style.background = '#ffffff';
+      }
+    } catch (_) {
+      wrapper.style.background = '#ffffff';
+    }
 
-    tempHost.removeChild(clone);
+    // ---- 3. Copy CSS variables so runtime settings (panel width/height, etc.) are honored ----
+    function copyCssVars(src, dest) {
+      if (!src || !dest) return;
+      try {
+        const st = window.getComputedStyle(src);
+        for (let i = 0; i < st.length; i++) {
+          const name = st[i];
+          if (name && name.startsWith('--')) {
+            const v = st.getPropertyValue(name);
+            if (v) dest.style.setProperty(name, v);
+          }
+        }
+      } catch (_) {}
+    }
+    copyCssVars(document.documentElement, wrapper);
+    copyCssVars(document.body, wrapper);
+    copyCssVars(vizContainer, wrapper);
+
+    // Inline global styles (css/style.css, css/comparison.css, etc.)
+    const styleEl = document.createElement('style');
+    styleEl.textContent = collectStyleText();
+    wrapper.appendChild(styleEl);
+
+    // Put cloned viz into wrapper and measure in pure HTML environment
+    wrapper.appendChild(clone);
+    tempHost.appendChild(wrapper);
+
+    // Force layout
+    // eslint-disable-next-line no-unused-expressions
+    wrapper.offsetHeight;
+
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const contentWidth = Math.max(
+      wrapper.scrollWidth || 0,
+      wrapperRect.width || 0,
+      baseWidth,
+      1
+    );
+    const contentHeight = Math.max(
+      wrapper.scrollHeight || 0,
+      wrapperRect.height || 0,
+      1
+    );
+
+    const width = Math.max(1, Math.round(contentWidth));
+    const height = Math.max(1, Math.round(contentHeight + 4)); // tiny padding to avoid 1px clipping
+
+    if (!width || !height) {
+      tempHost.remove();
+      return null;
+    }
+
+    // ---- 4. Build SVG with <foreignObject>, reusing the measured wrapper ----
+    // Detach wrapper from tempHost to reuse it inside foreignObject
+    tempHost.removeChild(wrapper);
     tempHost.remove();
-
-    if (!width || !height) return null;
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
@@ -232,30 +315,22 @@
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
     const foreignObject = document.createElementNS(svgNS, 'foreignObject');
-    foreignObject.setAttribute('width', '100%');
-    foreignObject.setAttribute('height', '100%');
     foreignObject.setAttribute('x', '0');
     foreignObject.setAttribute('y', '0');
+    foreignObject.setAttribute('width', width);
+    foreignObject.setAttribute('height', height);
 
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    wrapper.style.width = `${width}px`;
-    wrapper.style.height = `${height}px`;
-    wrapper.style.boxSizing = 'border-box';
-    const background = (typeof window !== 'undefined' && window.getComputedStyle)
-      ? window.getComputedStyle(vizContainer).backgroundColor
-      : null;
-    wrapper.style.background = background && background !== 'rgba(0, 0, 0, 0)' ? background : '#ffffff';
+    // Finalize wrapper size and clipping
+    wrapper.style.width = width + 'px';
+    wrapper.style.height = height + 'px';
+    wrapper.style.overflow = 'hidden';
 
-    const styleEl = document.createElement('style');
-    styleEl.textContent = collectStyleText();
-    wrapper.appendChild(styleEl);
-    wrapper.appendChild(clone);
     foreignObject.appendChild(wrapper);
     svg.appendChild(foreignObject);
 
     const serializer = new XMLSerializer();
     const svgString = serializer.serializeToString(svg);
+
     return { svgString, width, height };
   }
 

@@ -2388,6 +2388,12 @@ function handleLabelRightClick(event, d) {
     event.preventDefault();
     event.stopPropagation();
     
+    try {
+        if (typeof window.hideVizExportMenu === 'function') {
+            window.hideVizExportMenu();
+        }
+    } catch (_) {}
+    
     const labelName = getFullLabelName(d);
     const displayName = getDisplayName(d);
     const nodePath = getNodeAncestorPath(d);
@@ -2737,6 +2743,89 @@ function exportPNG() {
 // Helpers: export a specific container by id (without #) with a filename prefix
 // moved to utils/export.js (window.exportSVGForContainer, window.exportPNGForContainer)
 
+function ensurePanelsRenderedForExport() {
+    try {
+        const fallbackMode = (typeof visualizationMode !== 'undefined') ? visualizationMode : 'single';
+        const mode = (typeof window !== 'undefined' && window.visualizationMode) ? window.visualizationMode : fallbackMode;
+        const vizContainer = document.getElementById('viz-container');
+        if (!vizContainer) return;
+
+        if (mode === 'group' || mode === 'single') {
+            let targets = [];
+            if (mode === 'group') {
+                targets = Array.isArray(selectedGroups) ? selectedGroups.slice() : [];
+            } else {
+                if (typeof getActiveSamples === 'function') {
+                    targets = getActiveSamples() || [];
+                } else {
+                    targets = Array.isArray(selectedSamples) ? selectedSamples.slice() : [];
+                }
+            }
+
+            if (targets.length) {
+                if (!lastGlobalDomain) {
+                    drawAllTrees();
+                }
+
+                targets.forEach(sample => {
+                    if (!sample) return;
+                    const state = sampleRenderState[sample];
+                    if (state && state.rendered && !state.dirty) return;
+                    try {
+                        drawTree(sample, lastGlobalDomain);
+                        if (!sampleRenderState[sample]) {
+                            sampleRenderState[sample] = { rendered: true, dirty: false };
+                        } else {
+                            sampleRenderState[sample].rendered = true;
+                            sampleRenderState[sample].dirty = false;
+                        }
+                    } catch (err) {
+                        console.warn('ensurePanelsRenderedForExport failed for', sample, err);
+                    }
+                });
+            }
+        }
+
+        if (mode === 'comparison') {
+            const hasTreeSvg = vizContainer.querySelector('.tree-svg-container svg');
+            if (!hasTreeSvg && Array.isArray(window.comparisonResults) && window.comparisonResults.length > 0) {
+                try {
+                    const comp = window.currentModalComparison || window.comparisonResults[0];
+                    if (comp) drawComparisonTree(comp.treatment_1, comp.treatment_2, comp.stats);
+                } catch (err) {
+                    console.warn('ensurePanelsRenderedForExport: redraw comparison failed', err);
+                }
+            }
+        }
+
+        if (mode === 'matrix') {
+            const pendingLoaders = Array.from(document.querySelectorAll('.matrix-cell .cell-loading'));
+            if (pendingLoaders.length && Array.isArray(window.comparisonResults)) {
+                pendingLoaders.forEach(loader => {
+                    const cell = loader.closest('.matrix-cell');
+                    if (!cell || !cell.id) return;
+                    const metaRaw = cell.dataset.comparison;
+                    if (!metaRaw) return;
+                    try {
+                        const meta = JSON.parse(metaRaw);
+                        const comp = window.comparisonResults.find(c =>
+                            (c.treatment_1 === meta.treatment_1 && c.treatment_2 === meta.treatment_2) ||
+                            (c.treatment_1 === meta.treatment_2 && c.treatment_2 === meta.treatment_1)
+                        );
+                        if (comp && typeof window.drawMiniComparisonTree === 'function') {
+                            window.drawMiniComparisonTree(cell.id, comp.stats);
+                        }
+                    } catch (err) {
+                        console.warn('ensurePanelsRenderedForExport: matrix cell render failed', err);
+                    }
+                });
+            }
+        }
+    } catch (err) {
+        console.warn('ensurePanelsRenderedForExport encountered an error', err);
+    }
+}
+
 // Restore the most recently collapsed node (global across modes)
 function restoreLastCollapsed() {
     try {
@@ -2797,6 +2886,7 @@ if (typeof window !== 'undefined') {
     window.clearNodeColorOverride = clearNodeColorOverride;
     window.clearAllNodeColorOverrides = clearAllNodeColorOverrides;
     window.clearNodeOverridesByLabel = clearNodeOverridesByLabel;
+    window.ensurePanelsRenderedForExport = ensurePanelsRenderedForExport;
 }
 
 

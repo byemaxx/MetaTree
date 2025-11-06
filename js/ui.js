@@ -1659,7 +1659,9 @@ function handleVisualizationModeChange() {
         // 更新分组显示和组选择器
         updateGroupDefinitionsDisplay();
     }
-}function handleDefineGroupsClick() {
+}
+
+function handleDefineGroupsClick() {
     const modal = document.getElementById('group-modal');
     modal.style.display = 'block';
     
@@ -1669,6 +1671,104 @@ function handleVisualizationModeChange() {
     // 更新已有分组列表
     updateExistingGroupsList();
 }
+
+function handleVizExportRequest(format) {
+    const fallbackMode = (typeof visualizationMode !== 'undefined') ? visualizationMode : 'single';
+    const mode = (typeof window !== 'undefined' && window.visualizationMode) ? window.visualizationMode : fallbackMode;
+    const vizContainer = document.getElementById('viz-container');
+
+    if (mode !== 'single' && mode !== 'group' && mode !== 'matrix') {
+        alert('Export is currently available in Individual samples, Group samples, or Comparison matrix views.');
+        return;
+    }
+
+    if (!vizContainer || vizContainer.children.length === 0) {
+        alert('Nothing to export yet. Please render a visualization first.');
+        return;
+    }
+
+    if (mode === 'group') {
+        const groups = Array.isArray(selectedGroups) ? selectedGroups.filter(Boolean) : [];
+        if (!groups.length) {
+            alert('Please select at least one group to export.');
+            return;
+        }
+    }
+
+    if (mode === 'single') {
+        const samples = typeof getActiveSamples === 'function'
+            ? (getActiveSamples() || [])
+            : (Array.isArray(selectedSamples) ? selectedSamples : []);
+        if (!samples.length) {
+            alert('Please select at least one sample to export.');
+            return;
+        }
+    }
+
+    try {
+        if (typeof window !== 'undefined' && typeof window.ensurePanelsRenderedForExport === 'function') {
+            window.ensurePanelsRenderedForExport();
+        }
+    } catch (_) {}
+
+    if (format === 'svg') {
+        if (typeof window !== 'undefined' && typeof window.exportVizContainerAsSVG === 'function') {
+            window.exportVizContainerAsSVG();
+        } else {
+            console.warn('exportVizContainerAsSVG is not available');
+        }
+    } else if (format === 'png') {
+        if (typeof window !== 'undefined' && typeof window.exportVizContainerAsPNG === 'function') {
+            window.exportVizContainerAsPNG();
+        } else {
+            console.warn('exportVizContainerAsPNG is not available');
+        }
+    }
+}
+
+function hideVizExportMenu() {
+    const menu = document.getElementById('viz-export-menu');
+    if (!menu) return;
+    menu.style.display = 'none';
+    menu.style.visibility = 'hidden';
+    delete menu.dataset.active;
+}
+
+function showVizExportMenu(clientX, clientY) {
+    const menu = document.getElementById('viz-export-menu');
+    if (!menu) return;
+    hideVizExportMenu();
+    if (typeof hideLabelColorMenu === 'function') {
+        try { hideLabelColorMenu(); } catch (_) {}
+    }
+    menu.style.display = 'block';
+    menu.style.visibility = 'hidden';
+
+    const menuRect = menu.getBoundingClientRect();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+    let left = clientX;
+    let top = clientY;
+
+    const maxLeft = Math.max(8, viewportWidth - menuRect.width - 8);
+    const maxTop = Math.max(8, viewportHeight - menuRect.height - 8);
+    left = Math.min(left, maxLeft);
+    top = Math.min(top, maxTop);
+    left = Math.max(8, left);
+    top = Math.max(8, top);
+
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    menu.style.visibility = 'visible';
+    menu.dataset.active = 'true';
+}
+
+try {
+    if (typeof window !== 'undefined') {
+        window.hideVizExportMenu = hideVizExportMenu;
+    }
+} catch (_) {}
 
 function updateSampleChecklistInModal() {
     const checklist = document.getElementById('sample-checklist');
@@ -2314,7 +2414,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+    const exportSvgMenuBtn = document.getElementById('viz-export-svg');
+    if (exportSvgMenuBtn) {
+        exportSvgMenuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideVizExportMenu();
+            handleVizExportRequest('svg');
+        });
+    }
+    const exportPngMenuBtn = document.getElementById('viz-export-png');
+    if (exportPngMenuBtn) {
+        exportPngMenuBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            hideVizExportMenu();
+            handleVizExportRequest('png');
+        });
+    }
     // 阈值输入框监听
     const pvalueThreshold = document.getElementById('pvalue-threshold');
     const qvalueThreshold = document.getElementById('qvalue-threshold');
@@ -2349,6 +2464,21 @@ document.addEventListener('DOMContentLoaded', function() {
             updateGroupDefinitionsDisplay();
         }
     });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            try { hideVizExportMenu(); } catch (_) {}
+            if (typeof hideLabelColorMenu === 'function') {
+                try { hideLabelColorMenu(); } catch (_) {}
+            }
+        }
+    });
+    window.addEventListener('resize', function() {
+        hideVizExportMenu();
+    });
+    window.addEventListener('scroll', function() {
+        hideVizExportMenu();
+    }, true);
     
     // Matrix 组选择按钮现在由 updateGroupDefinitionsDisplay 动态绑定
     
@@ -3528,11 +3658,18 @@ function initUniformLabelColors() {
     
     // 点击其他地方关闭菜单
     document.addEventListener('click', function(event) {
-        const menu = document.getElementById('label-color-menu');
-        if (menu && menu.style.display === 'block') {
-            const isClickInsideMenu = menu.contains(event.target);
+        const labelMenu = document.getElementById('label-color-menu');
+        if (labelMenu && labelMenu.style.display === 'block') {
+            const isClickInsideMenu = labelMenu.contains(event.target);
             if (!isClickInsideMenu) {
                 hideLabelColorMenu();
+            }
+        }
+        const exportMenu = document.getElementById('viz-export-menu');
+        if (exportMenu && exportMenu.style.display === 'block') {
+            const isInsideExport = exportMenu.contains(event.target);
+            if (!isInsideExport) {
+                hideVizExportMenu();
             }
         }
     });
@@ -3544,32 +3681,60 @@ function initUniformLabelColors() {
             e.preventDefault();
         });
     }
+    const exportMenuEl = document.getElementById('viz-export-menu');
+    if (exportMenuEl) {
+        exportMenuEl.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+    }
     
     // 屏蔽 viz-container 的浏览器右键菜单
     const vizContainer = document.getElementById('viz-container');
     if (vizContainer) {
         vizContainer.addEventListener('contextmenu', function(e) {
-            // 只有当不是标签右键时才屏蔽
-            if (!e.target.classList.contains('node-label')) {
-                e.preventDefault();
-                return false;
+            const target = e.target;
+            if (target && target.classList && target.classList.contains('node-label')) {
+                hideVizExportMenu();
+                return;
             }
+            const fallbackMode = (typeof visualizationMode !== 'undefined') ? visualizationMode : 'single';
+            const mode = (typeof window !== 'undefined' && window.visualizationMode) ? window.visualizationMode : fallbackMode;
+            if (mode !== 'single' && mode !== 'group' && mode !== 'matrix') {
+                hideVizExportMenu();
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            const clientX = typeof e.clientX === 'number' ? e.clientX : (typeof e.pageX === 'number' ? e.pageX : 0);
+            const clientY = typeof e.clientY === 'number' ? e.clientY : (typeof e.pageY === 'number' ? e.pageY : 0);
+            showVizExportMenu(clientX, clientY);
         });
     }
     
     // 同时屏蔽所有 SVG 元素的右键菜单(除了标签)
     document.addEventListener('contextmenu', function(e) {
         const target = e.target;
-        // 如果是 SVG 相关元素但不是 node-label,屏蔽右键
+        if (!target) return;
+        if (target.closest && (target.closest('#viz-export-menu') || target.closest('#label-color-menu'))) {
+            return;
+        }
+        if (target.classList && target.classList.contains('node-label')) {
+            return;
+        }
+        if (target.closest && target.closest('#viz-container')) {
+            e.preventDefault();
+            return false;
+        }
         if ((target.tagName === 'svg' || 
              target.tagName === 'circle' || 
              target.tagName === 'path' || 
              target.tagName === 'line' ||
-             target.closest('svg')) && 
-            !target.classList.contains('node-label')) {
+             (target.closest && target.closest('svg'))) && 
+            !(target.classList && target.classList.contains('node-label'))) {
             e.preventDefault();
             return false;
         }
     });
 }
-

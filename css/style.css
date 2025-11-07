@@ -128,8 +128,10 @@ body {
 }
 
 .sidebar {
-    flex: 0 0 380px; /* widen default to reduce overflow */
-    min-width: 340px;
+    /* 使用固定 width + flex:0 0 auto 以允许用户通过拖拽改变宽度
+    flex: 0 0 auto;
+    width: 320px; /* 默认更窄一些 */
+    min-width: 240px;
     max-width: 460px;
     display: flex;
     flex-direction: column;
@@ -138,12 +140,23 @@ body {
     box-shadow: 1px 0 0 rgba(0,0,0,0.03); /* subtle depth for the divider */
     background: linear-gradient(180deg, #fafbfd 0%, #f8f9fb 100%);
     padding-right: var(--spacing-xl);
-    overflow-y: visible;  /* let sidebar height grow with content */
+    /* 允许内部出现滚动，同时使 resize 生效（resize 对 overflow: visible 无效） */
+    overflow-y: auto;
     overflow-x: hidden; /* no horizontal bleed by default */
     position: relative;
     z-index: 2; /* ensure above main if any overlap occurs */
     resize: horizontal; /* allow users to widen the sidebar if needed */
-    /* overscroll-behavior intentionally omitted to allow natural page scroll */
+    /* 在侧边栏局部覆盖字体变量，使侧边栏整体字体比全局小一号（每个字号都减 1px） */
+    --font-xs: 10px;
+    --font-sm: 11px;
+    --font-base: 12px;
+    --font-md: 13px;
+    --font-lg: 14px;
+    --font-xl: 15px;
+    --font-2xl: 17px;
+    --font-3xl: 19px;
+    --font-4xl: 23px;
+    --font-5xl: 27px;
 }
 
 .sidebar-toggle {

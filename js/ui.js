@@ -8,6 +8,10 @@ let colorSchemeCategory = 'sequential';
 // 将所选类别同步到全局，便于渲染端读取
 try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch(_) {}
 
+// 当叶节点数量超过此阈值时，默认不勾选叶层标签以避免性能问题
+const DEFAULT_LEAF_LABEL_THRESHOLD = 1000;
+try { if (typeof window !== 'undefined') window.DEFAULT_LEAF_LABEL_THRESHOLD = DEFAULT_LEAF_LABEL_THRESHOLD; } catch(_) {}
+
 // 每种模式的颜色与域设置（single/group 共用，comparison/matrix 共用）
 const MODE_COLOR_KEY_MAP = {
     single: 'individual',
@@ -1279,20 +1283,28 @@ function handleLabelThresholdChange(e) {
 }
 
 // 动态生成“标签层级（多选，从叶）”选项
-window.updateLabelLevelsOptions = function(maxLeafHeight, hasFunctionLeaf, dynamicNamesFromLeaf) {
+window.updateLabelLevelsOptions = function(maxLeafHeight, hasFunctionLeaf, dynamicNamesFromLeaf, leafCount) {
     const container = document.getElementById('label-levels');
     if (!container) return;
 
-    // 如果层级数量无变化且已有选项，则不重复渲染
+    // 如果层级数量、功能叶标志和叶子计数都无变化且已有选项，则不重复渲染
+    // 这样可以保证当 leafCount 发生变化（例如通过过滤）时，仍会重新计算并更新性能提示
+    const prevMax = container.dataset.maxHeight ? parseInt(container.dataset.maxHeight) : undefined;
+    const prevHasFunc = (container.dataset.hasFunctionLeaf || '');
+    const prevLeafCount = container.dataset.leafCount ? parseInt(container.dataset.leafCount) : undefined;
     if (
-        container.dataset.maxHeight && parseInt(container.dataset.maxHeight) === maxLeafHeight &&
-        String(!!hasFunctionLeaf) === (container.dataset.hasFunctionLeaf || '')
+        typeof prevMax !== 'undefined' && prevMax === maxLeafHeight &&
+        String(!!hasFunctionLeaf) === prevHasFunc &&
+        // 若外部未提供 leafCount，则保持旧行为（忽略 leafCount）；否则要求 leafCount 相同才跳过
+        (typeof leafCount !== 'number' || (typeof prevLeafCount !== 'undefined' && prevLeafCount === leafCount))
     ) {
         return;
     }
     container.innerHTML = '';
     container.dataset.maxHeight = String(maxLeafHeight);
     container.dataset.hasFunctionLeaf = String(!!hasFunctionLeaf);
+    // 记录 leaf count（可用于外部诊断/提示）
+    if (typeof leafCount === 'number') container.dataset.leafCount = String(leafCount);
 
     // Rank names from leaf outward
     const fallbackNames = hasFunctionLeaf
@@ -1304,14 +1316,47 @@ window.updateLabelLevelsOptions = function(maxLeafHeight, hasFunctionLeaf, dynam
         : fallbackNames;
 
     // 默认勾选“最外两层”（从叶：0和1）；若层级较少，做边界处理
+    // 性能保护：当叶子节点数量过多（>1000）时，默认不勾选任何标签以避免初始渲染卡顿
     const defaultSelected = [];
-    if (maxLeafHeight >= 0) defaultSelected.push(0);
-    // if (maxLeafHeight >= 1) defaultSelected.push(1);
+    if (typeof leafCount === 'number' && leafCount > DEFAULT_LEAF_LABEL_THRESHOLD) {
+        // 不勾选任何级别，用户可手动启用需要的层级
+        // leave defaultSelected empty
+    } else {
+        if (maxLeafHeight >= 0) defaultSelected.push(0);
+        // if (maxLeafHeight >= 1) defaultSelected.push(1);
+    }
     labelLevelsSelected = defaultSelected.slice();
     // 根据默认选中项决定初始 showLabels（空数组 => 不显示）
     if (Array.isArray(labelLevelsSelected)) {
         showLabels = labelLevelsSelected.length > 0;
     }
+
+    // 添加/更新性能提示（在标签层级控件上方）
+    try {
+        const hintId = 'label-performance-hint';
+        let hintEl = document.getElementById(hintId);
+        if (!hintEl && container.parentElement) {
+            hintEl = document.createElement('div');
+            hintEl.id = hintId;
+            hintEl.style.fontSize = '12px';
+            hintEl.style.color = '#b00';
+            hintEl.style.margin = '6px 0';
+            hintEl.style.display = 'none';
+            container.parentElement.insertBefore(hintEl, container);
+        }
+        if (hintEl) {
+            // 显式控制显示/隐藏，避免只清空文本但元素仍在 DOM 中占位
+            if (typeof leafCount === 'number' && leafCount > DEFAULT_LEAF_LABEL_THRESHOLD) {
+                hintEl.textContent = `Detected ${leafCount.toLocaleString()} leaf nodes — labels are disabled by default for performance. You can enable selective levels manually.`;
+                hintEl.style.display = 'block';
+                hintEl.setAttribute('aria-hidden', 'false');
+            } else {
+                hintEl.textContent = '';
+                hintEl.style.display = 'none';
+                hintEl.setAttribute('aria-hidden', 'true');
+            }
+        }
+    } catch (_) { /* ignore hint failures */ }
 
     for (let k = 0; k <= maxLeafHeight; k++) {
         const id = `label-level-${k}`;
@@ -1490,21 +1535,52 @@ function resetLabelsNodesToDefaults() {
             edgeOpacity = 1.0;
         }
 
-        // 5) 标签层级（从叶）恢复默认：仅勾选距离 0（叶）
+        // 5) 标签层级（从叶）恢复默认：考虑当前叶子节点数，若节点数过多则不勾选叶标签以避免性能问题
         const levelsWrap = document.getElementById('label-levels');
         if (levelsWrap) {
             // 取消所有选中
             levelsWrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            // 勾选 0 层（若存在）
-            const leafCb = levelsWrap.querySelector('input[type="checkbox"][value="0"]');
+
+            // 尝试获取当前 leafCount（优先使用 window.__leafCount，其次使用 container.dataset）
+            let leafCount = undefined;
+            try { leafCount = (typeof window !== 'undefined' && typeof window.__leafCount === 'number') ? window.__leafCount : undefined; } catch(_) { leafCount = undefined; }
+            try {
+                if (typeof leafCount !== 'number' && levelsWrap.dataset && levelsWrap.dataset.leafCount) {
+                    const parsed = parseInt(levelsWrap.dataset.leafCount);
+                    if (!isNaN(parsed)) leafCount = parsed;
+                }
+            } catch (_) { /* ignore */ }
+
+            
             const checked = [];
-            if (leafCb) {
-                leafCb.checked = true;
-                checked.push(0);
+            // 仅当 leafCount 未定义或不超过阈值时才默认勾选叶标签
+            if (typeof leafCount !== 'number' || leafCount <= DEFAULT_LEAF_LABEL_THRESHOLD) {
+                const leafCb = levelsWrap.querySelector('input[type="checkbox"][value="0"]');
+                if (leafCb) {
+                    leafCb.checked = true;
+                    checked.push(0);
+                }
             }
+
             // 同步到全局与显示标志
             labelLevelsSelected = checked;
             showLabels = Array.isArray(labelLevelsSelected) ? labelLevelsSelected.length > 0 : true;
+
+            // 另外刷新性能提示显示状态以保证与当前 leafCount 同步
+            try {
+                const hintEl = document.getElementById('label-performance-hint');
+                if (hintEl) {
+                    if (typeof leafCount === 'number' && leafCount > DEFAULT_LEAF_LABEL_THRESHOLD) {
+                        hintEl.style.display = 'block';
+                        hintEl.setAttribute('aria-hidden', 'false');
+                        hintEl.textContent = `Detected ${leafCount.toLocaleString()} leaf nodes — labels are disabled by default for performance. You can enable selective levels manually.`;
+                    } else {
+                        hintEl.style.display = 'none';
+                        hintEl.setAttribute('aria-hidden', 'true');
+                        hintEl.textContent = '';
+                    }
+                }
+            } catch (_) { /* ignore hint update errors */ }
         }
 
         // 统一重绘
@@ -3202,6 +3278,14 @@ function updateTaxonFilterList() {
                 treeData = buildHierarchy(rawData);
                 initVisualization();
                 drawAllTrees();
+                // 更新统计信息（节点计数）和 label 性能提示
+                try {
+                    if (typeof updateStats === 'function' && typeof d3 !== 'undefined') {
+                        const hierarchy = d3.hierarchy(treeData);
+                        const sampleForStats = (typeof selectedSamples !== 'undefined' && selectedSamples && selectedSamples.length > 0) ? selectedSamples[0] : null;
+                        updateStats(hierarchy, sampleForStats);
+                    }
+                } catch(_) {}
             }
         });
     });
@@ -3221,6 +3305,13 @@ function handleClearFilterList() {
             treeData = buildHierarchy(rawData);
             initVisualization();
             drawAllTrees();
+            try {
+                if (typeof updateStats === 'function' && typeof d3 !== 'undefined') {
+                    const hierarchy = d3.hierarchy(treeData);
+                    const sampleForStats = (typeof selectedSamples !== 'undefined' && selectedSamples && selectedSamples.length > 0) ? selectedSamples[0] : null;
+                    updateStats(hierarchy, sampleForStats);
+                }
+            } catch(_) {}
         }
     }
 }
@@ -3237,6 +3328,13 @@ function handleTaxonFilterModeChange() {
         treeData = buildHierarchy(rawData);
         initVisualization();
         drawAllTrees();
+        try {
+            if (typeof updateStats === 'function' && typeof d3 !== 'undefined') {
+                const hierarchy = d3.hierarchy(treeData);
+                const sampleForStats = (typeof selectedSamples !== 'undefined' && selectedSamples && selectedSamples.length > 0) ? selectedSamples[0] : null;
+                updateStats(hierarchy, sampleForStats);
+            }
+        } catch(_) {}
     }
 }
 

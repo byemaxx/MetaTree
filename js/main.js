@@ -1499,12 +1499,16 @@ function drawAllTrees() {
     } catch { /* ignore and fallback below */ }
 
     if (typeof window !== 'undefined' && typeof window.updateLabelLevelsOptions === 'function') {
-        // 仅当高度或功能叶状态变化时更新UI
+        // 仅当高度、功能叶状态或叶子节点计数变化时更新UI
         const prevHasFunc = typeof window.__hasFunctionLeaf === 'boolean' ? window.__hasFunctionLeaf : undefined;
-        if (currentMaxLeafHeight !== maxLeafHeight || prevHasFunc !== hasFunctionLeaf) {
+        const leafCount = (hierarchy && typeof hierarchy.leaves === 'function') ? (hierarchy.leaves().length || 0) : 0;
+        const prevLeafCount = (typeof window.__leafCount === 'number') ? window.__leafCount : undefined;
+        if (currentMaxLeafHeight !== maxLeafHeight || prevHasFunc !== hasFunctionLeaf || prevLeafCount !== leafCount) {
             currentMaxLeafHeight = maxLeafHeight;
             window.__hasFunctionLeaf = hasFunctionLeaf;
-            window.updateLabelLevelsOptions(maxLeafHeight, hasFunctionLeaf, namesFromLeafDynamic);
+            window.__leafCount = leafCount;
+            // 传递 leafCount 以便 UI 根据叶子数量调整标签默认显示（性能优化）
+            window.updateLabelLevelsOptions(maxLeafHeight, hasFunctionLeaf, namesFromLeafDynamic, leafCount);
         }
     }
     

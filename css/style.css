@@ -79,6 +79,10 @@
     /* 过渡动画 */
     --transition-fast: all 0.2s ease;
     --transition-base: all 0.3s ease;
+
+    /* Layout defaults */
+    --matrix-cell-min-width: 200px;
+    --matrix-cell-min-height: 200px;
 }
 
 * {

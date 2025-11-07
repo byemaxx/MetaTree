@@ -45,7 +45,7 @@
 
     // 包裹面板与顶部栏（仅普通/内联模式使用）
     const panel = document.createElement('div');
-    panel.className = 'tree-panel';
+    panel.className = 'tree-panel comparison-panel';
 
     if (!useModal) {
       const header = document.createElement('div');
@@ -117,10 +117,6 @@
     const svgContainer = document.createElement('div');
     svgContainer.className = 'tree-svg-container';
     svgContainer.id = useModal ? 'svg-container-comparison-modal' : 'svg-container-comparison';
-    // 提升比较视图可用高度，便于完整显示径向布局
-    if (!useModal) {
-      try { svgContainer.style.setProperty('--comparison-panel-svg-height', '700px'); } catch(_) {}
-    }
     panel.appendChild(svgContainer);
     vizContainer.appendChild(panel);
 
@@ -509,7 +505,6 @@
 
     const treatments = [...new Set(comparisons.flatMap(c => [c.treatment_1, c.treatment_2]))];
     const n = treatments.length;
-
     const matrixContainer = document.createElement('div');
     matrixContainer.className = 'comparison-matrix-container';
     matrixContainer.id = 'comparison-matrix';
@@ -521,8 +516,15 @@
 
     const matrixGrid = document.createElement('div');
     matrixGrid.className = 'comparison-matrix-grid';
-    matrixGrid.style.gridTemplateColumns = `150px repeat(${n - 1}, 1fr)`;
-    matrixGrid.style.gridTemplateRows = `40px repeat(${n - 1}, 1fr)`;
+    matrixGrid.id = 'comparison-matrix-grid';
+    const colCount = Math.max(n - 1, 0);
+    const rowCount = Math.max(n - 1, 0);
+    matrixGrid.style.gridTemplateColumns = colCount > 0
+      ? `150px repeat(${colCount}, minmax(var(--matrix-cell-min-width, 150px), 1fr))`
+      : '150px';
+    matrixGrid.style.gridTemplateRows = rowCount > 0
+      ? `40px repeat(${rowCount}, minmax(var(--matrix-cell-min-height, 150px), 1fr))`
+      : '40px';
 
     const cornerCell = createEmptyCell();
     cornerCell.style.pointerEvents = 'none';
@@ -572,6 +574,9 @@
     }
 
     vizContainer.appendChild(matrixContainer);
+    if (typeof window.requestLayoutPanelContextSync === 'function') {
+      try { window.requestLayoutPanelContextSync(); } catch (_) {}
+    }
   }
 
   function createMatrixCell(row, col, comparison) {
@@ -711,12 +716,13 @@
 
     // Remember current focused item so redraws in matrix mode keep this view
     window.currentInlineComparison = comparison;
+    if (typeof window.requestLayoutPanelContextSync === 'function') {
+      try { window.requestLayoutPanelContextSync(); } catch (_) {}
+    }
 
     // Create a dedicated body container so subsequent draw does not remove the back bar
-  const body = document.createElement('div');
-  body.id = 'inline-comparison-body';
-  /* 缩小内联比较视图的最小高度以减少默认占用 */
-  body.style.minHeight = '180px';
+    const body = document.createElement('div');
+    body.id = 'inline-comparison-body';
     vizContainer.appendChild(body);
 
     // Draw the full comparison tree into the dedicated body container with header and back

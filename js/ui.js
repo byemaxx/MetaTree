@@ -156,6 +156,141 @@ function resetManualDomainForAllModes() {
     setManualDomainForMode('comparison', null);
 }
 
+const LAYOUT_PANEL_CONTEXTS = {
+    SAMPLES: 'samples',
+    COMPARISON: 'comparison',
+    MATRIX: 'matrix'
+};
+const VALID_LAYOUT_OPTIONS = new Set(['radial', 'tree', 'packing']);
+const LAYOUT_PANEL_DEFAULTS = {
+    [LAYOUT_PANEL_CONTEXTS.SAMPLES]: { layout: 'radial', panelWidth: 500, panelHeight: 500 },
+    [LAYOUT_PANEL_CONTEXTS.COMPARISON]: { layout: 'radial', panelWidth: 500, panelHeight: 700 },
+    [LAYOUT_PANEL_CONTEXTS.MATRIX]: { layout: 'radial', panelWidth: 500, panelHeight: 500 }
+};
+let layoutPanelSettingsStore = cloneLayoutPanelDefaults();
+let activeLayoutPanelContext = null;
+
+function cloneLayoutPanelDefaults() {
+    const copy = {};
+    Object.keys(LAYOUT_PANEL_DEFAULTS).forEach((key) => {
+        copy[key] = { ...LAYOUT_PANEL_DEFAULTS[key] };
+    });
+    return copy;
+}
+
+function clampLayoutValue(val, min = 200, max = 2000) {
+    const num = typeof val === 'string' ? parseFloat(val) : val;
+    if (!isFinite(num)) return min;
+    return Math.min(max, Math.max(min, num));
+}
+
+function normalizeLayoutPanelEntry(entry, context) {
+    const defaults = LAYOUT_PANEL_DEFAULTS[context] || LAYOUT_PANEL_DEFAULTS[LAYOUT_PANEL_CONTEXTS.SAMPLES];
+    const normalized = {
+        layout: defaults.layout,
+        panelWidth: defaults.panelWidth,
+        panelHeight: defaults.panelHeight
+    };
+    if (entry && typeof entry === 'object') {
+        if (entry.layout && VALID_LAYOUT_OPTIONS.has(entry.layout)) normalized.layout = entry.layout;
+        if (entry.panelWidth != null) normalized.panelWidth = clampLayoutValue(entry.panelWidth);
+        if (entry.panelHeight != null) normalized.panelHeight = clampLayoutValue(entry.panelHeight);
+    }
+    return normalized;
+}
+
+function getLayoutPanelSettingsForContext(context) {
+    const ctx = context || LAYOUT_PANEL_CONTEXTS.SAMPLES;
+    if (!layoutPanelSettingsStore[ctx]) {
+        layoutPanelSettingsStore[ctx] = { ...LAYOUT_PANEL_DEFAULTS[ctx] };
+    }
+    return layoutPanelSettingsStore[ctx];
+}
+
+function setLayoutPanelSettingsForContext(context, partial) {
+    const ctx = context || LAYOUT_PANEL_CONTEXTS.SAMPLES;
+    const existing = getLayoutPanelSettingsForContext(ctx);
+    const updated = normalizeLayoutPanelEntry({ ...existing, ...partial }, ctx);
+    layoutPanelSettingsStore[ctx] = updated;
+    if (ctx === activeLayoutPanelContext) {
+        applyLayoutPanelSettingsToDom(updated, ctx);
+        syncLayoutPanelInputsToSettings(updated);
+    }
+    return updated;
+}
+
+function getActiveLayoutPanelContext(modeOverride) {
+    const mode = (modeOverride)
+        || ((typeof window !== 'undefined' && window.visualizationMode) ? window.visualizationMode
+            : (typeof visualizationMode !== 'undefined' ? visualizationMode : 'single'));
+    if (mode === 'comparison') return LAYOUT_PANEL_CONTEXTS.COMPARISON;
+    if (mode === 'matrix') {
+        const inlineActive = typeof window !== 'undefined' && window.currentInlineComparison;
+        return inlineActive ? LAYOUT_PANEL_CONTEXTS.COMPARISON : LAYOUT_PANEL_CONTEXTS.MATRIX;
+    }
+    return LAYOUT_PANEL_CONTEXTS.SAMPLES;
+}
+
+function setActiveLayoutPanelContext(context, options = {}) {
+    const nextContext = context || getActiveLayoutPanelContext();
+    const changed = activeLayoutPanelContext !== nextContext || options.force;
+    activeLayoutPanelContext = nextContext;
+    const settings = getLayoutPanelSettingsForContext(nextContext);
+    if (changed || options.syncUi !== false) {
+        syncLayoutPanelInputsToSettings(settings);
+    }
+    if (changed || options.applyDom !== false) {
+        applyLayoutPanelSettingsToDom(settings, nextContext);
+    }
+    return settings;
+}
+
+function syncLayoutPanelInputsToSettings(settings) {
+    if (!settings) return;
+    const layoutSelect = document.getElementById('layout-select');
+    if (layoutSelect && settings.layout && layoutSelect.value !== settings.layout) {
+        layoutSelect.value = settings.layout;
+        currentLayout = settings.layout;
+        try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) {}
+    }
+    const panelSlider = document.getElementById('panel-width-slider');
+    const panelValue = document.getElementById('panel-width-value');
+    if (panelSlider && typeof settings.panelWidth === 'number') {
+        panelSlider.value = String(settings.panelWidth);
+        if (panelValue) panelValue.textContent = `${settings.panelWidth}px`;
+    }
+    const heightSlider = document.getElementById('panel-height-slider');
+    const heightValue = document.getElementById('panel-height-value');
+    if (heightSlider && typeof settings.panelHeight === 'number') {
+        heightSlider.value = String(settings.panelHeight);
+        if (heightValue) heightValue.textContent = `${settings.panelHeight}px`;
+    }
+}
+
+function applyLayoutPanelSettingsToDom(settings, context) {
+    if (!settings) return;
+    const ctx = context || activeLayoutPanelContext || LAYOUT_PANEL_CONTEXTS.SAMPLES;
+    if (ctx === LAYOUT_PANEL_CONTEXTS.MATRIX) {
+        document.documentElement.style.setProperty('--matrix-cell-min-width', `${settings.panelWidth}px`);
+        document.documentElement.style.setProperty('--matrix-cell-min-height', `${settings.panelHeight}px`);
+        const matrixGrid = document.getElementById('comparison-matrix-grid');
+        if (matrixGrid) {
+            matrixGrid.style.setProperty('--matrix-cell-min-width', `${settings.panelWidth}px`);
+            matrixGrid.style.setProperty('--matrix-cell-min-height', `${settings.panelHeight}px`);
+        }
+    } else {
+        document.documentElement.style.setProperty('--panel-min-width', `${settings.panelWidth}px`);
+        document.documentElement.style.setProperty('--panel-svg-height', `${settings.panelHeight}px`);
+        document.documentElement.style.setProperty('--comparison-panel-svg-height', `${settings.panelHeight}px`);
+    }
+}
+
+function handleRendererLayoutContextChange() {
+    setActiveLayoutPanelContext(getActiveLayoutPanelContext(), { force: true });
+}
+
+try { if (typeof window !== 'undefined') window.getLayoutPanelSettingsForContext = getLayoutPanelSettingsForContext; } catch (_) {}
+try { if (typeof window !== 'undefined') window.requestLayoutPanelContextSync = handleRendererLayoutContextChange; } catch (_) {}
 function cloneColorSettings(colors) {
     if (!colors) return null;
     return {
@@ -609,55 +744,40 @@ function initEventListeners() {
     if (btnSelectNone) btnSelectNone.addEventListener('click', selectNoneSamples);
     if (btnInvert) btnInvert.addEventListener('click', invertSampleSelection);
 
-    // Panel width slider: adjust CSS variable --panel-min-width to control how many panels fit per row
+    // Panel width slider: adjust CSS variables per active layout context
     const panelSlider = document.getElementById('panel-width-slider');
     const panelValue = document.getElementById('panel-width-value');
     if (panelSlider) {
-        // initialize from input value
-    const v = panelSlider.value || '500';
-        document.documentElement.style.setProperty('--panel-min-width', v + 'px');
-        if (panelValue) panelValue.textContent = v + 'px';
-
-        // Panel lock checkbox (when checked, keep width/height in sync)
         const panelLock = document.getElementById('panel-lock-size');
+        const syncWidthPreview = (val, opts = {}) => {
+            const widthPx = clampLayoutValue(val);
+            panelSlider.value = String(widthPx);
+            if (panelValue) panelValue.textContent = `${widthPx}px`;
+            const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+            const current = { ...getLayoutPanelSettingsForContext(ctx), panelWidth: widthPx };
+            if (opts.syncLock && panelLock && panelLock.checked) {
+                const other = document.getElementById('panel-height-slider');
+                const otherValue = document.getElementById('panel-height-value');
+                current.panelHeight = widthPx;
+                if (other) other.value = String(widthPx);
+                if (otherValue) otherValue.textContent = `${widthPx}px`;
+            }
+            applyLayoutPanelSettingsToDom(current, ctx);
+        };
 
-        // update layout live while sliding (no heavy redraw)
         panelSlider.addEventListener('input', (e) => {
-            const val = e.target.value;
-            document.documentElement.style.setProperty('--panel-min-width', val + 'px');
-            if (panelValue) panelValue.textContent = val + 'px';
-
-            // if locked, sync the height slider immediately
-            try {
-                if (panelLock && panelLock.checked) {
-                    const other = document.getElementById('panel-height-slider');
-                    const otherValue = document.getElementById('panel-height-value');
-                    if (other) {
-                        other.value = val;
-                        document.documentElement.style.setProperty('--panel-svg-height', val + 'px');
-                    }
-                    if (otherValue) otherValue.textContent = val + 'px';
-                }
-            } catch (err) { /* ignore */ }
+            syncWidthPreview(e.target.value, { syncLock: true });
         });
 
-        // trigger expensive redraw only once when sliding ends (change event)
-        panelSlider.addEventListener('change', (e) => {
-            try {
-                // if locked, ensure the height slider value matches at change end
-                if (panelLock && panelLock.checked) {
-                    const other = document.getElementById('panel-height-slider');
-                    const otherValue = document.getElementById('panel-height-value');
-                    if (other) other.value = panelSlider.value;
-                    if (otherValue) otherValue.textContent = panelSlider.value + 'px';
-                }
-
-                if (selectedSamples && selectedSamples.length > 0) {
-                    initVisualization();
-                    drawAllTrees();
-                }
-            } catch (err) {
-                console.warn('Error redrawing after panel resize', err);
+        panelSlider.addEventListener('change', () => {
+            const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+            const updates = { panelWidth: clampLayoutValue(panelSlider.value) };
+            if (panelLock && panelLock.checked) {
+                updates.panelHeight = updates.panelWidth;
+            }
+            setLayoutPanelSettingsForContext(ctx, updates);
+            if (typeof redrawCurrentViz === 'function') {
+                try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after panel width change', err); }
             }
         });
     }
@@ -666,60 +786,36 @@ function initEventListeners() {
     const panelHeightSlider = document.getElementById('panel-height-slider');
     const panelHeightValue = document.getElementById('panel-height-value');
     if (panelHeightSlider) {
-    const hv = panelHeightSlider.value || '500';
-        document.documentElement.style.setProperty('--panel-svg-height', hv + 'px');
-        if (panelHeightValue) panelHeightValue.textContent = hv + 'px';
-
         const panelLock = document.getElementById('panel-lock-size');
-
-        // If locking is enabled by default, synchronize initial values (width -> height)
-        try {
-            const panelWidthEl = document.getElementById('panel-width-slider');
-            if (panelLock && panelLock.checked && panelWidthEl) {
-                // make height match width
-                panelHeightSlider.value = panelWidthEl.value;
-                document.documentElement.style.setProperty('--panel-svg-height', panelWidthEl.value + 'px');
-                if (panelHeightValue) panelHeightValue.textContent = panelWidthEl.value + 'px';
+        const syncHeightPreview = (val, opts = {}) => {
+            const heightPx = clampLayoutValue(val);
+            panelHeightSlider.value = String(heightPx);
+            if (panelHeightValue) panelHeightValue.textContent = `${heightPx}px`;
+            const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+            const current = { ...getLayoutPanelSettingsForContext(ctx), panelHeight: heightPx };
+            if (opts.syncLock && panelLock && panelLock.checked) {
+                const other = document.getElementById('panel-width-slider');
+                const otherValue = document.getElementById('panel-width-value');
+                current.panelWidth = heightPx;
+                if (other) other.value = String(heightPx);
+                if (otherValue) otherValue.textContent = `${heightPx}px`;
             }
-        } catch (err) { /* ignore */ }
+            applyLayoutPanelSettingsToDom(current, ctx);
+        };
 
-        // live update height while sliding
         panelHeightSlider.addEventListener('input', (e) => {
-            const val = e.target.value;
-            document.documentElement.style.setProperty('--panel-svg-height', val + 'px');
-            if (panelHeightValue) panelHeightValue.textContent = val + 'px';
-
-            // if locked, sync the width slider immediately
-            try {
-                if (panelLock && panelLock.checked) {
-                    const other = document.getElementById('panel-width-slider');
-                    const otherValue = document.getElementById('panel-width-value');
-                    if (other) {
-                        other.value = val;
-                        document.documentElement.style.setProperty('--panel-min-width', val + 'px');
-                    }
-                    if (otherValue) otherValue.textContent = val + 'px';
-                }
-            } catch (err) { /* ignore */ }
+            syncHeightPreview(e.target.value, { syncLock: true });
         });
 
-        // heavy redraw when sliding ends
-        panelHeightSlider.addEventListener('change', (e) => {
-            try {
-                // if locked, ensure the width slider value matches at change end
-                if (panelLock && panelLock.checked) {
-                    const other = document.getElementById('panel-width-slider');
-                    const otherValue = document.getElementById('panel-width-value');
-                    if (other) other.value = panelHeightSlider.value;
-                    if (otherValue) otherValue.textContent = panelHeightSlider.value + 'px';
-                }
-
-                if (selectedSamples && selectedSamples.length > 0) {
-                    initVisualization();
-                    drawAllTrees();
-                }
-            } catch (err) {
-                console.warn('Error redrawing after panel height change', err);
+        panelHeightSlider.addEventListener('change', () => {
+            const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+            const updates = { panelHeight: clampLayoutValue(panelHeightSlider.value) };
+            if (panelLock && panelLock.checked) {
+                updates.panelWidth = updates.panelHeight;
+            }
+            setLayoutPanelSettingsForContext(ctx, updates);
+            if (typeof redrawCurrentViz === 'function') {
+                try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after panel height change', err); }
             }
         });
     }
@@ -735,13 +831,18 @@ function initEventListeners() {
                     const hv = document.getElementById('panel-height-value');
                     if (w && h) {
                         h.value = w.value;
-                        document.documentElement.style.setProperty('--panel-svg-height', w.value + 'px');
-                        if (hv) hv.textContent = w.value + 'px';
+                        const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+                        setLayoutPanelSettingsForContext(ctx, {
+                            panelWidth: clampLayoutValue(w.value),
+                            panelHeight: clampLayoutValue(w.value)
+                        });
+                        if (hv) hv.textContent = `${w.value}px`;
                     }
                 }
             } catch (err) { console.warn('Error syncing sliders on lock change', err); }
         });
     }
+    setActiveLayoutPanelContext(getActiveLayoutPanelContext(), { force: true });
     // 元数据筛选折叠
     const metaToggle = document.getElementById('meta-filters-toggle');
     if (metaToggle) {
@@ -1103,10 +1204,13 @@ function invertSampleSelection() {
 }
 
 function handleLayoutChange(e) {
-    currentLayout = e.target.value;
-    if (selectedSamples.length > 0) {
-        initVisualization();
-        drawAllTrees();
+    const nextLayout = e.target.value;
+    currentLayout = VALID_LAYOUT_OPTIONS.has(nextLayout) ? nextLayout : 'radial';
+    try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) {}
+    const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+    setLayoutPanelSettingsForContext(ctx, { layout: currentLayout });
+    if (typeof redrawCurrentViz === 'function') {
+        try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after layout change', err); }
     }
 }
 
@@ -1702,6 +1806,7 @@ function handleVisualizationModeChange() {
     visualizationMode = document.getElementById('viz-mode').value;
     try { if (typeof window !== 'undefined') window.visualizationMode = visualizationMode; } catch(_) {}
     applyModeColorSettings(visualizationMode);
+    setActiveLayoutPanelContext(getActiveLayoutPanelContext(), { force: true });
 
     // 显示/隐藏相关控制
     const comparisonControls = document.getElementById('comparison-controls');

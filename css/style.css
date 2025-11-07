@@ -128,9 +128,7 @@ body {
 }
 
 .sidebar {
-    /* 使用固定 width + flex:0 0 auto 以允许用户通过拖拽改变宽度
-    flex: 0 0 auto;
-    width: 320px; /* 默认更窄一些 */
+    width: 300px;
     min-width: 240px;
     max-width: 460px;
     display: flex;
@@ -567,7 +565,7 @@ body {
 
 .control-group label {
     font-weight: 500;
-    color: var(--text-primary);
+    /* color: var(--text-primary); */
     font-size: var(--font-md);
 }
 
@@ -623,7 +621,7 @@ input[type="text"] {
 }
 
 input[type="number"] {
-    width: 70px;
+    width: 60px;
 }
 
 input[type="number"]:focus,

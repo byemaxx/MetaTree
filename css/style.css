@@ -715,7 +715,7 @@ button:disabled {
     padding: var(--spacing-3xl);
     background: var(--bg-white);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--panel-min-width, 600px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--panel-min-width, 500px), 1fr));
     gap: var(--spacing-xl);
 }
 

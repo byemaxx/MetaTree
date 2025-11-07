@@ -614,7 +614,7 @@ function initEventListeners() {
     const panelValue = document.getElementById('panel-width-value');
     if (panelSlider) {
         // initialize from input value
-        const v = panelSlider.value || '600';
+    const v = panelSlider.value || '500';
         document.documentElement.style.setProperty('--panel-min-width', v + 'px');
         if (panelValue) panelValue.textContent = v + 'px';
 
@@ -666,7 +666,7 @@ function initEventListeners() {
     const panelHeightSlider = document.getElementById('panel-height-slider');
     const panelHeightValue = document.getElementById('panel-height-value');
     if (panelHeightSlider) {
-        const hv = panelHeightSlider.value || '600';
+    const hv = panelHeightSlider.value || '500';
         document.documentElement.style.setProperty('--panel-svg-height', hv + 'px');
         if (panelHeightValue) panelHeightValue.textContent = hv + 'px';
 

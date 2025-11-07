@@ -2003,16 +2003,24 @@ function drawTree(sample, globalDomain) {
 
     } else if (currentLayout === 'packing') {
         // 圆打包布局（Circle Packing）
-        const diameter = Math.min(width, height) - 80;
+        const diameter = Math.max(20, Math.min(width, height) - 80);
         const offsetX = (width - diameter) / 2;
         const offsetY = (height - diameter) / 2;
 
-        // 为 pack 计算数值（使用已变换的丰度以符合当前视觉域）
+        // 为 pack 计算数值（使用已变换的丰度以符合当前视觉域，并确保非负）
         const childAccessor = d => (d.__collapsed ? null : d.children);
-        let rootPack = d3.hierarchy(treeData, childAccessor);
+        let rootPack = d3.hierarchy(sourceTree, childAccessor);
         // 与其它布局一致：剥离前导单子节点链
         rootPack = stripToFirstBranch(rootPack)
-            .sum(d => transformAbundance((d.abundances && d.abundances[sample]) ? d.abundances[sample] : 0))
+            .sum(d => {
+                const abundance = (d.abundances && d.abundances[sample]) ? d.abundances[sample] : 0;
+                const t = transformAbundance(abundance);
+                const magnitude = Math.abs(t);
+                if (magnitude > 0) return magnitude;
+                // 为零丰度的叶子提供极小值，避免 pack 将其压缩为同心圆
+                const isLeaf = !d.children || d.children.length === 0;
+                return isLeaf ? 1e-6 : 0;
+            })
             .sort((a, b) => (b.value || 0) - (a.value || 0));
 
         const pack = d3.pack()

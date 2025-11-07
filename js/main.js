@@ -2003,16 +2003,43 @@ function drawTree(sample, globalDomain) {
 
     } else if (currentLayout === 'packing') {
         // 圆打包布局（Circle Packing）
-        const diameter = Math.min(width, height) - 80;
+        const diameter = Math.max(20, Math.min(width, height) - 80);
         const offsetX = (width - diameter) / 2;
         const offsetY = (height - diameter) / 2;
 
-        // 为 pack 计算数值（使用已变换的丰度以符合当前视觉域）
+        // 为 pack 计算数值（使用已变换的丰度以符合当前视觉域，并确保非负）
         const childAccessor = d => (d.__collapsed ? null : d.children);
-        let rootPack = d3.hierarchy(treeData, childAccessor);
-        // 与其它布局一致：剥离前导单子节点链
-        rootPack = stripToFirstBranch(rootPack)
-            .sum(d => transformAbundance((d.abundances && d.abundances[sample]) ? d.abundances[sample] : 0))
+        let rootPack = d3.hierarchy(sourceTree, childAccessor);
+        rootPack = stripToFirstBranch(rootPack);
+
+        const annotateLeafCounts = (node) => {
+            if (!node.children || node.children.length === 0) {
+                node._leafCount = 1;
+                return 1;
+            }
+            let total = 0;
+            for (const child of node.children) {
+                total += annotateLeafCounts(child);
+            }
+            node._leafCount = total;
+            return total;
+        };
+        annotateLeafCounts(rootPack);
+
+        const PACK_MIN_WEIGHT = 0.5;
+        const PACK_WEIGHT_PER_LEAF = 0.5;
+
+        rootPack = rootPack
+            .sum(d => {
+                const abundance = (d.data && d.data.abundances && d.data.abundances[sample]) ? d.data.abundances[sample] : 0;
+                const t = transformAbundance(abundance);
+                const magnitude = Math.abs(t);
+                if (magnitude > 0) return magnitude;
+                const leafEquivalent = d._leafCount || 1;
+                // 使用叶子数量的 log1p 作为退化值，确保零丰度子树依然占据面积但不过度膨胀
+                const fallback = PACK_MIN_WEIGHT + PACK_WEIGHT_PER_LEAF * Math.log1p(leafEquivalent);
+                return Math.max(PACK_MIN_WEIGHT, fallback);
+            })
             .sort((a, b) => (b.value || 0) - (a.value || 0));
 
         const pack = d3.pack()
@@ -2023,7 +2050,6 @@ function drawTree(sample, globalDomain) {
         nodes = packed.descendants();
 
         // 绘制节点（无连线） - 不剔除非显著节点，使用灰色呈现
-
         const nodeGroup = g.selectAll('.node')
             .data(nodes)
             .join('g')
@@ -2039,8 +2065,8 @@ function drawTree(sample, globalDomain) {
                 if (!pass) return NONSIG_NODE_COLOR;
                 return t === 0 ? ZERO_NODE_COLOR : colorAt(t);
             })
-            .attr('stroke', 'none')
-            .attr('stroke-width', 0)
+            .attr('stroke', d => (d.children && d.children.length ? '#ffffff' : 'none'))
+            .attr('stroke-width', d => (d.children && d.children.length ? 1 : 0))
             .attr('fill-opacity', () => Math.max(0, Math.min(1, nodeOpacity)));
 
         // 折叠标记（Packing）：为被折叠的节点添加“+”

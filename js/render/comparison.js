@@ -13,6 +13,164 @@
     setStats: () => {}
   };
 
+  const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
+  const PACK_EPSILON = 1e-6;
+
+  function getActiveLayoutMode() {
+    const layout = (typeof currentLayout === 'string') ? currentLayout : 'radial';
+    return VALID_LAYOUTS.has(layout) ? layout : 'radial';
+  }
+
+  function computePackMetric(stats) {
+    if (!stats) return PACK_EPSILON;
+    const mean1 = Math.max(0, stats.mean_1 || 0);
+    const mean2 = Math.max(0, stats.mean_2 || 0);
+    const avg = (mean1 + mean2) / 2;
+    const fold = Math.abs(
+      (typeof stats.comparison_value === 'number' && isFinite(stats.comparison_value))
+        ? stats.comparison_value
+        : (typeof stats.log2_median_ratio === 'number' ? stats.log2_median_ratio : 0)
+    );
+    const value = Math.max(avg, fold);
+    return (isFinite(value) && value > 0) ? value : PACK_EPSILON;
+  }
+
+  function buildComparisonLayout(root, width, height, comparisonStats, opts = {}) {
+    const mode = getActiveLayoutMode();
+    const forMini = !!opts.mini;
+    const layout = {
+      mode,
+      nodes: [],
+      links: [],
+      collapsedNodes: [],
+      applyGroupTransform: (g) => g,
+      positionNode: () => 'translate(0,0)',
+      configureLinks: (sel) => sel,
+      configureLabels: (sel) => sel,
+      configureCollapse: (sel) => sel,
+      getVisualRadius: (_, base) => base,
+      getHoverRadius: (_, base) => base + (forMini ? 1 : 2)
+    };
+
+    if (mode === 'packing') {
+      const padding = forMini ? 12 : 80;
+      const diameter = Math.max(10, Math.min(width, height) - padding);
+      const offsetX = (width - diameter) / 2;
+      const offsetY = (height - diameter) / 2;
+      const packRoot = root.copy();
+
+      const annotateLeafCounts = (node) => {
+        if (!node.children || node.children.length === 0) {
+          node._leafCount = 1;
+          return 1;
+        }
+        let total = 0;
+        for (const child of node.children) {
+          total += annotateLeafCounts(child);
+        }
+        node._leafCount = total;
+        return total;
+      };
+      annotateLeafCounts(packRoot);
+
+      const PACK_MIN_WEIGHT = forMini ? 0.25 : 0.5;
+      const PACK_WEIGHT_PER_LEAF = forMini ? 0.25 : 0.5;
+
+      packRoot
+        .sum(node => {
+          const stats = (comparisonStats && node.data) ? comparisonStats[node.data.name] : null;
+          const metric = computePackMetric(stats);
+          if (metric > PACK_EPSILON) return metric;
+          const leafEquivalent = node._leafCount || 1;
+          // 回退权重使用 log1p(leafCount) 避免零差异子树塌缩成同心圆
+          const fallback = PACK_MIN_WEIGHT + PACK_WEIGHT_PER_LEAF * Math.log1p(leafEquivalent);
+          return Math.max(PACK_MIN_WEIGHT, fallback);
+        })
+        .sort((a, b) => (b.value || 0) - (a.value || 0));
+      const pack = d3.pack()
+        .size([diameter, diameter])
+        .padding(forMini ? 1.5 : 3);
+      const packed = pack(packRoot);
+      layout.nodes = packed.descendants();
+      layout.links = [];
+      layout.collapsedNodes = layout.nodes.filter(d => d.data && d.data.__collapsed);
+      layout.applyGroupTransform = (g) => g.attr('transform', `translate(${offsetX}, ${offsetY})`);
+      layout.positionNode = (d) => `translate(${d.x},${d.y})`;
+      layout.configureLinks = (sel) => { sel.remove(); return sel; };
+      layout.configureLabels = (sel) => sel
+        .attr('x', 0)
+        .attr('text-anchor', 'middle')
+        .attr('transform', null);
+      layout.configureCollapse = (sel) => sel
+        .attr('transform', d => `translate(${d.x},${d.y})`)
+        .attr('text-anchor', 'middle');
+      layout.getVisualRadius = (d, base) => Math.max(forMini ? 0.5 : 1, d.r || base || 0);
+      layout.getHoverRadius = (d, base) => layout.getVisualRadius(d, base) + (forMini ? 1 : 2);
+      return layout;
+    }
+
+    if (mode === 'tree') {
+      const margin = forMini
+        ? { top: 10, right: 40, bottom: 10, left: 40 }
+        : { top: 40, right: 160, bottom: 40, left: 160 };
+      const layoutWidth = Math.max(10, width - margin.left - margin.right);
+      const layoutHeight = Math.max(10, height - margin.top - margin.bottom);
+      const tree = d3.tree().size([layoutHeight, layoutWidth]);
+      tree(root);
+      layout.nodes = root.descendants();
+      layout.links = root.links();
+      layout.collapsedNodes = layout.nodes.filter(d => d.data && d.data.__collapsed);
+      layout.applyGroupTransform = (g) => g.attr('transform', `translate(${margin.left}, ${margin.top})`);
+      const linkGen = d3.linkHorizontal().x(d => d.y).y(d => d.x);
+      layout.configureLinks = (sel) => sel.attr('d', linkGen);
+      layout.positionNode = (d) => `translate(${d.y},${d.x})`;
+      layout.configureLabels = (sel) => sel
+        .attr('x', d => d.children ? -10 : 10)
+        .attr('text-anchor', d => d.children ? 'end' : 'start')
+        .attr('transform', null);
+      layout.configureCollapse = (sel) => sel
+        .attr('transform', d => `translate(${d.y},${d.x})`)
+        .attr('text-anchor', 'middle');
+      layout.getVisualRadius = (_, base) => base;
+      layout.getHoverRadius = (_, base) => base + (forMini ? 1 : 2);
+      return layout;
+    }
+
+    // 默认径向布局
+    const radialPadding = forMini ? 10 : 40;
+    const radius = Math.max(10, Math.min(width, height) / 2 - radialPadding);
+    const radialTree = d3.tree()
+      .size([2 * Math.PI, radius])
+      .separation((a, b) => (a.parent === b.parent ? 1 : 2) / ((a.depth || 1)));
+    radialTree(root);
+    layout.nodes = root.descendants();
+    layout.links = root.links();
+    layout.collapsedNodes = layout.nodes.filter(d => d.data && d.data.__collapsed);
+    layout.applyGroupTransform = (g) => g.attr('transform', `translate(${width / 2}, ${height / 2})`);
+    const linkRadial = d3.linkRadial().angle(d => d.x).radius(d => d.y);
+    layout.configureLinks = (sel) => sel.attr('d', linkRadial);
+    layout.positionNode = (d) => {
+      const angle = d.x;
+      const r = d.y;
+      const x = r * Math.cos(angle - Math.PI / 2);
+      const y = r * Math.sin(angle - Math.PI / 2);
+      return `translate(${x},${y})`;
+    };
+    layout.configureLabels = (sel) => sel
+      .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
+      .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
+      .attr('transform', d => {
+        const angle = d.x * 180 / Math.PI - 90;
+        return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
+      });
+    layout.configureCollapse = (sel) => sel
+      .attr('transform', d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
+      .attr('text-anchor', 'middle');
+    layout.getVisualRadius = (_, base) => base;
+    layout.getHoverRadius = (_, base) => base + (forMini ? 1.5 : 2);
+    return layout;
+  }
+
   function resolveComparisonRendererStore(override) {
     if (override && typeof override.getSvg === 'function') {
       return override;
@@ -133,7 +291,6 @@
     if (!container) return;
     const width = container.clientWidth;
     const height = container.clientHeight;
-    const radius = Math.min(width, height) / 2 - 40;
 
     const svg = d3.select(container)
       .append('svg')
@@ -150,8 +307,7 @@
       .attr('fill', '#ffffff');
 
     const rootG = svg.append('g');
-    const g = rootG.append('g')
-      .attr('transform', `translate(${width / 2}, ${height / 2})`);
+    const g = rootG.append('g');
 
     const zoom = d3.zoom()
       .scaleExtent([0.1, 10])
@@ -167,15 +323,12 @@
     // 层级数据
     let root = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);
     try {
-      if (root && root.children && root.children.length === 1) {
+      if (typeof stripToFirstBranch === 'function') {
+        root = stripToFirstBranch(root);
+      } else if (root && root.children && root.children.length === 1) {
         root = root.children[0];
       }
     } catch (_) {}
-
-    const tree = d3.tree()
-      .size([2 * Math.PI, radius])
-      .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
-    tree(root);
 
     // ========== 统一标签颜色（comparison 模式）==========
     if (typeof uniformLabelColors !== 'undefined' && uniformLabelColors && root && comparisonStats) {
@@ -281,26 +434,34 @@
     const maxAgg = d3.max(root.descendants(), n => n._agg || 0) || 1;
     const strokeScale = d3.scaleSqrt().domain([0, maxAgg]).range([0.8, 5]).clamp(true);
 
-    // 连线
-    g.selectAll('.link')
-      .data(root.links())
-      .join('path')
-      .attr('class', 'link')
-      .attr('d', d3.linkRadial().angle(d => d.x).radius(d => d.y))
-      .style('fill', 'none')
-      .style('stroke', d => {
-        const stats = comparisonStats[d.target.data.name];
-        if (!stats) return ZERO_LINK_COLOR;
-        if (showOnlySignificant && !isSignificantByThresholds(stats)) return NONSIG_LINK_COLOR;
-        const value = stats.comparison_value || 0;
-        return colorAtVal(value);
-      })
-      .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
-      .style('stroke-width', d => {
-        const agg = d && d.target ? (d.target._agg || 0) : 0;
-        const base = strokeScale(agg) * edgeWidthMultiplier * COMPARISON_EDGE_SCALE_BOOST;
-        return Math.max(0.5 * edgeWidthMultiplier, base);
-      });
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false });
+    try { layoutConfig.applyGroupTransform(g); } catch (_) {}
+
+    let linkSelection = null;
+    if (layoutConfig.mode === 'packing') {
+      g.selectAll('.link').remove();
+    } else {
+      linkSelection = g.selectAll('.link')
+        .data(layoutConfig.links)
+        .join('path')
+        .attr('class', 'link');
+      try { layoutConfig.configureLinks(linkSelection); } catch (_) {}
+      linkSelection
+        .style('fill', 'none')
+        .style('stroke', d => {
+          const stats = comparisonStats[d.target.data.name];
+          if (!stats) return ZERO_LINK_COLOR;
+          if (showOnlySignificant && !isSignificantByThresholds(stats)) return NONSIG_LINK_COLOR;
+          const value = stats.comparison_value || 0;
+          return colorAtVal(value);
+        })
+        .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
+        .style('stroke-width', d => {
+          const agg = d && d.target ? (d.target._agg || 0) : 0;
+          const base = strokeScale(agg) * edgeWidthMultiplier * COMPARISON_EDGE_SCALE_BOOST;
+          return Math.max(0.5 * edgeWidthMultiplier, base);
+        });
+    }
 
     // 节点大小（平均丰度）
     const avgAbundances = root.descendants().map(d => {
@@ -324,27 +485,30 @@
       const radius = nodeSizeScale(avg) * COMPARISON_NODE_SCALE_BOOST;
       return isFinite(radius) && radius > 0 ? radius : minNodeSize * nodeSizeMultiplier * 0.5;
     };
-    const hoverRingPadding = 2;
+    const computeVisualRadius = (d) => {
+      const base = computeNodeRadius(d);
+      const fn = (typeof layoutConfig.getVisualRadius === 'function')
+        ? layoutConfig.getVisualRadius
+        : ((_, b) => b);
+      return fn(d, base);
+    };
     const computeHoverRadius = (d) => {
       const base = computeNodeRadius(d);
-      return base > 0 ? base + hoverRingPadding : hoverRingPadding;
+      const fn = (typeof layoutConfig.getHoverRadius === 'function')
+        ? layoutConfig.getHoverRadius
+        : ((_, b) => b + 2);
+      return fn(d, base);
     };
 
     // 节点（与 individual 模式一致：每个节点一个 <g>，笛卡尔坐标）
     const nodeGroup = g.selectAll('.node')
-      .data(root.descendants())
+      .data(layoutConfig.nodes)
       .join('g')
       .attr('class', 'node')
-      .attr('transform', d => {
-        const angle = d.x;
-        const r = d.y;
-        const x = r * Math.cos(angle - Math.PI / 2);
-        const y = r * Math.sin(angle - Math.PI / 2);
-        return `translate(${x},${y})`;
-      });
+      .attr('transform', d => layoutConfig.positionNode(d));
 
     nodeGroup.append('circle')
-      .attr('r', d => computeNodeRadius(d))
+      .attr('r', d => computeVisualRadius(d))
       .style('fill', d => {
         const stats = comparisonStats[d.data.name];
         if (!stats) return ZERO_NODE_COLOR;
@@ -369,19 +533,18 @@
       .style('pointer-events', 'none');
 
     // 折叠标记
-    const collapsedNodes = root.descendants().filter(d => d.data && d.data.__collapsed);
-    g.selectAll('.collapse-marker')
+    const collapsedNodes = layoutConfig.collapsedNodes;
+    const collapseSel = g.selectAll('.collapse-marker')
       .data(collapsedNodes)
       .join('text')
       .attr('class', 'collapse-marker')
-      .attr('transform', d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
-      .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
       .text('+')
       .style('font-size', '9px')
       .style('font-weight', '700')
       .attr('fill', '#2c3e50')
       .style('pointer-events', 'none');
+    try { layoutConfig.configureCollapse(collapseSel); } catch (_) {}
 
     // 标签（与 individual 模式一致：固定 ±6px 偏移，基于角度旋转）
     if (showLabels) {
@@ -402,7 +565,7 @@
       }
       const selectedSet = Array.isArray(labelLevelsSelected) && labelLevelsSelected.length>0 ? new Set(labelLevelsSelected) : null;
 
-      nodeGroup
+      const labels = nodeGroup
         .filter(d => {
           const st = comparisonStats[d.data.name];
           if (!st) return false;
@@ -414,13 +577,9 @@
         })
         .append('text')
         .attr('class','node-label')
-        .attr('dy','0.31em')
-        .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
-        .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
-        .attr('transform', d => {
-          const angle = d.x * 180 / Math.PI - 90;
-          return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
-        })
+        .attr('dy', layoutConfig.mode === 'packing' ? '0.35em' : '0.31em');
+      try { layoutConfig.configureLabels(labels); } catch (_) {}
+      labels
         .text(d => (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || ''))
         .style('font-size', `${labelFontSize}px`)
         .attr('fill', d => {
@@ -747,7 +906,6 @@
 
     const width = container.clientWidth;
     const height = container.clientHeight;
-    const radius = Math.min(width, height) / 2 - 10;
 
     const svg = d3.select(`#${containerId}`)
       .append('svg')
@@ -755,19 +913,20 @@
       .attr('height', height)
       .attr('class', 'mini-tree-svg');
 
-    const g = svg.append('g')
-      .attr('transform', `translate(${width / 2}, ${height / 2})`);
+    const g = svg.append('g');
 
     let root = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);
     // 仅剥离根一层（如有）
     try {
-      if (root && root.children && root.children.length === 1) {
+      if (typeof stripToFirstBranch === 'function') {
+        root = stripToFirstBranch(root);
+      } else if (root && root.children && root.children.length === 1) {
         root = root.children[0];
       }
     } catch (_) {}
 
-    const tree = d3.tree().size([2 * Math.PI, radius]).separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
-    tree(root);
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true });
+    try { layoutConfig.applyGroupTransform(g); } catch (_) {}
 
     const catMini = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
     let colorAtValMini;
@@ -796,36 +955,52 @@
       };
     }
 
-    g.selectAll('.link')
-      .data(root.links())
-      .join('path')
-      .attr('class', 'link')
-      .attr('d', d3.linkRadial().angle(d => d.x).radius(d => d.y))
-      .style('fill', 'none')
-      .style('stroke', d => {
-        const stats = comparisonStats[d.target.data.name];
-        if (!stats) return ZERO_LINK_COLOR;
-        if (showOnlySignificant && !isSignificantByThresholds(stats)) return ZERO_LINK_COLOR;
-        const value = stats.comparison_value || 0;
-        return colorAtValMini(value);
-      })
-      .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
-      .style('stroke-width', 1 * edgeWidthMultiplier);
+    if (layoutConfig.mode === 'packing') {
+      g.selectAll('.link').remove();
+    } else {
+      const linkMini = g.selectAll('.link')
+        .data(layoutConfig.links)
+        .join('path')
+        .attr('class', 'link');
+      try { layoutConfig.configureLinks(linkMini); } catch (_) {}
+      linkMini
+        .style('fill', 'none')
+        .style('stroke', d => {
+          const stats = comparisonStats[d.target.data.name];
+          if (!stats) return ZERO_LINK_COLOR;
+          if (showOnlySignificant && !isSignificantByThresholds(stats)) return ZERO_LINK_COLOR;
+          const value = stats.comparison_value || 0;
+          return colorAtValMini(value);
+        })
+        .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
+        .style('stroke-width', 1 * edgeWidthMultiplier);
+    }
 
-    g.selectAll('.node')
-      .data(root.descendants())
-      .join('circle')
+    const computeMiniRadius = (d) => {
+      const stats = comparisonStats[d.data.name];
+      if (!stats) return 1;
+      const mean1 = stats.mean_1 || 0;
+      const mean2 = stats.mean_2 || 0;
+      const avgAbundance = (mean1 + mean2) / 2;
+      if (!isFinite(avgAbundance) || avgAbundance < 0) return 1;
+      return Math.max(1, Math.min(3, Math.sqrt(avgAbundance) * 0.5));
+    };
+    const computeMiniVisualRadius = (d) => {
+      const base = computeMiniRadius(d);
+      const fn = (typeof layoutConfig.getVisualRadius === 'function')
+        ? layoutConfig.getVisualRadius
+        : ((_, b) => b);
+      return fn(d, base);
+    };
+
+    const nodeSel = g.selectAll('.node')
+      .data(layoutConfig.nodes)
+      .join('g')
       .attr('class', 'node')
-      .attr('transform', d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
-      .attr('r', d => {
-        const stats = comparisonStats[d.data.name];
-        if (!stats) return 1;
-        const mean1 = stats.mean_1 || 0;
-        const mean2 = stats.mean_2 || 0;
-        const avgAbundance = (mean1 + mean2) / 2;
-        if (!isFinite(avgAbundance) || avgAbundance < 0) return 1;
-        return Math.max(1, Math.min(3, Math.sqrt(avgAbundance) * 0.5));
-      })
+      .attr('transform', d => layoutConfig.positionNode(d));
+
+    nodeSel.append('circle')
+      .attr('r', d => computeMiniVisualRadius(d))
       .style('fill', d => {
         const stats = comparisonStats[d.data.name];
         if (!stats) return ZERO_NODE_COLOR;
@@ -837,23 +1012,22 @@
         const value = stats.comparison_value || 0;
         return colorAtValMini(value);
       })
-  .style('fill-opacity', () => Math.max(0, Math.min(1, typeof nodeOpacity !== 'undefined' ? nodeOpacity : 1)))
+      .style('fill-opacity', () => Math.max(0, Math.min(1, typeof nodeOpacity !== 'undefined' ? nodeOpacity : 1)))
       .style('stroke', 'none')
       .style('stroke-width', 0);
 
-    const collapsedMini = root.descendants().filter(d => d.data && d.data.__collapsed);
-    g.selectAll('.collapse-marker')
+    const collapsedMini = layoutConfig.collapsedNodes;
+    const miniCollapse = g.selectAll('.collapse-marker')
       .data(collapsedMini)
       .join('text')
       .attr('class', 'collapse-marker')
-      .attr('transform', d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
-      .attr('text-anchor', 'middle')
       .attr('dy', '0.35em')
       .text('+')
       .style('font-size', '7px')
       .style('font-weight', '700')
       .attr('fill', '#2c3e50')
       .style('pointer-events', 'none');
+    try { layoutConfig.configureCollapse(miniCollapse); } catch (_) {}
   }
 
   function createComparisonLegend(group1Label, group2Label) {

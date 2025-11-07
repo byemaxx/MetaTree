@@ -79,6 +79,55 @@ function normalizeManualDomainValue(value) {
     return num;
 }
 
+function datasetHasNegativesForColor() {
+    if (typeof dataHasNegatives !== 'undefined') {
+        return !!dataHasNegatives;
+    }
+    if (typeof window !== 'undefined' && typeof window.dataHasNegatives !== 'undefined') {
+        return !!window.dataHasNegatives;
+    }
+    return false;
+}
+
+function getLastGlobalDomainForColor() {
+    if (typeof lastGlobalDomain !== 'undefined' && lastGlobalDomain) {
+        return lastGlobalDomain;
+    }
+    if (typeof window !== 'undefined' && window.lastGlobalDomain) {
+        return window.lastGlobalDomain;
+    }
+    return null;
+}
+
+function getSequentialDomainMinForKey(modeKey) {
+    if (modeKey !== 'individual') return null;
+    if (datasetHasNegativesForColor()) return null;
+    const domain = getLastGlobalDomainForColor();
+    if (domain && typeof domain.low === 'number' && isFinite(domain.low)) {
+        return domain.low;
+    }
+    return null;
+}
+
+function clampManualDomainValueForKey(value, modeKey) {
+    if (value == null) return value;
+    const min = getSequentialDomainMinForKey(modeKey);
+    if (min == null || !isFinite(min)) return typeof value === 'string' ? parseFloat(value) : value;
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (typeof num !== 'number' || !isFinite(num)) return num;
+    return num < min ? min : num;
+}
+
+function formatDomainValueForInput(value) {
+    if (typeof value !== 'number' || !isFinite(value)) return '';
+    if (typeof formatDomainInputValue === 'function') {
+        try {
+            return formatDomainInputValue(value);
+        } catch (_) { /* fall through */ }
+    }
+    return String(value);
+}
+
 function syncGlobalManualColorDomain(value) {
     try { window.manualColorDomainValue = value; } catch(_) {}
     if (typeof manualColorDomainValue !== 'undefined') {
@@ -307,13 +356,17 @@ function applyDomainValueToUI(domainValue, modeName) {
     const input = document.getElementById('color-domain-abs');
     const key = getModeColorKey(modeName);
     const isComparisonMode = key === 'comparison';
-    const normalized = setManualDomainForMode(key, domainValue);
+    let valueToApply = domainValue;
+    if (valueToApply != null) {
+        valueToApply = clampManualDomainValueForKey(valueToApply, key);
+    }
+    const normalized = setManualDomainForMode(key, valueToApply);
     if (normalized != null) {
         if (isComparisonMode) {
             try { comparisonColorDomain = [-normalized, 0, normalized]; }
             catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-normalized, 0, normalized]; }
         }
-        if (input) input.value = normalized;
+        if (input) input.value = formatDomainValueForInput(normalized);
     } else {
         if (isComparisonMode) {
             try { comparisonColorDomain = [-5, 0, 5]; }
@@ -2365,10 +2418,15 @@ function handleCloseGroupModal() {
 function handleColorDomainChange() {
     const input = document.getElementById('color-domain-abs');
     if (!input) return;
-    const M = parseFloat(input.value);
-    if (!isFinite(M) || M <= 0) return;
+    const parsed = parseFloat(input.value);
+    if (!isFinite(parsed)) return;
     const modeKey = getModeColorKey();
-    const normalized = setManualDomainForMode(modeKey, M);
+    const clamped = clampManualDomainValueForKey(parsed, modeKey);
+    if (!isFinite(clamped) || clamped <= 0) return;
+    if (clamped !== parsed) {
+        input.value = formatDomainValueForInput(clamped);
+    }
+    const normalized = setManualDomainForMode(modeKey, clamped);
     if (modeKey === 'comparison' && normalized != null) {
         try { comparisonColorDomain = [-normalized, 0, normalized]; }
         catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-normalized, 0, normalized]; }

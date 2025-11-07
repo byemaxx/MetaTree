@@ -1598,7 +1598,15 @@ function drawAllTrees() {
                 if (dataHasNegatives) legendDomain = [-MmanualLeg, 0, MmanualLeg];
                 else legendDomain = [0, MmanualLeg / 2, MmanualLeg];
             } else {
-                legendDomain = dataHasNegatives ? [-MmanualLeg, MmanualLeg] : [0, MmanualLeg];
+                if (dataHasNegatives) {
+                    legendDomain = [-MmanualLeg, MmanualLeg];
+                } else {
+                    const baseLow = (globalDomain && typeof globalDomain.low === 'number' && isFinite(globalDomain.low))
+                        ? globalDomain.low
+                        : 0;
+                    const manualHigh = Math.max(MmanualLeg, baseLow);
+                    legendDomain = [baseLow, manualHigh];
+                }
             }
         } else {
             if (category === 'diverging') {
@@ -1797,7 +1805,9 @@ function drawTree(sample, globalDomain) {
         }
         const effectiveInterpolator = (t) => (colorSchemeReversed ? (interpolator(1 - t)) : interpolator(t));
         const colorDomain = hasManualColor
-            ? (dataHasNegatives ? [-MmanualColor, MmanualColor] : [0, MmanualColor])
+            ? (dataHasNegatives
+                ? [-MmanualColor, MmanualColor]
+                : [colorMinAuto, Math.max(MmanualColor, colorMinAuto)])
             : [colorMinAuto, colorMaxAuto];
         // 若域跨越 0，则使用线性归一，避免幂映射在负区间的异常；否则使用幂映射增强低值分辨率
         const normFactory = (colorDomain[0] < 0) ? d3.scaleLinear : () => d3.scalePow().exponent(colorGamma);
@@ -2207,7 +2217,15 @@ function drawTree(sample, globalDomain) {
             if (cat === 'diverging') {
                 legendDomain = dataHasNegatives ? [-MmanualLeg, 0, MmanualLeg] : [0, MmanualLeg / 2, MmanualLeg];
             } else {
-                legendDomain = dataHasNegatives ? [-MmanualLeg, MmanualLeg] : [0, MmanualLeg];
+                if (dataHasNegatives) {
+                    legendDomain = [-MmanualLeg, MmanualLeg];
+                } else {
+                    const baseLow = (globalDomain && typeof globalDomain.low === 'number' && isFinite(globalDomain.low))
+                        ? globalDomain.low
+                        : 0;
+                    const manualHigh = Math.max(MmanualLeg, baseLow);
+                    legendDomain = [baseLow, manualHigh];
+                }
             }
         } else if (cat === 'diverging') {
             const M = (globalDomain && globalDomain.max != null ? globalDomain.max : maxAbundance);

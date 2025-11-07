@@ -4,14 +4,9 @@
  */
 
 // ========== 全局变量 ==========
-let treeData = null;
-let selectedSamples = [];
-let samples = [];
-let rawData = [];
 let svgs = {};
 let zooms = {};
 let svgGroups = {}; // store <g> per sample for direct transform when needed
-let currentLayout = 'radial';
 let tooltip;
 let abundanceTransform = 'none'; // 丰度转换方式: 'none', 'log', 'log2', 'sqrt', 'area' (默认改为 none)
 let colorScheme = 'Viridis'; // 颜色方案 - 改用高对比度的 Viridis
@@ -22,12 +17,8 @@ let customColorMid = '#ffd27f'; // 可选中间色
 // 默认自定义渐变：3 个停靠点（起点-中点-终点）
 let customColorStops = [customColorStart, customColorMid, customColorEnd];
 // 用于绘图的实际树数据(可能是原始treeData或group模式的修改版)
-let activeTreeData = null;
 // 元数据（meta.tsv）
-let metaData = null;         // { rows: Array<Record<string,string>>, bySample: { [sample]: row }, columns: string[] }
-let metaColumns = [];        // 可用于分组的列名（不含 Sample）
-// 元数据筛选（UI 勾选的过滤条件）: { columnName: Set(values) }
-let metaFilters = {};        
+// 元数据（meta.tsv）
 
 // 可视化参数
 let showLabels = true; // 是否显示标签（默认开启）
@@ -146,12 +137,6 @@ const ZERO_NODE_COLOR = '#d6dce6';  // 节点填充
 const ZERO_LINK_COLOR = '#b7c0cf';  // 连线颜色
 
 // ========== 比较模式变量 ==========
-let visualizationMode = 'single';  // 'single', 'group', 'comparison', 'matrix'
-try { if (typeof window !== 'undefined') window.visualizationMode = visualizationMode; } catch(_) {}
-let comparisonMetric = 'log2_median_ratio';  // 比较指标
-let divergingPalette = 'blueRed';  // 分歧色板
-let showOnlySignificant = false;  // 只显示显著差异
-let comparisonColorDomain = [-5, 0, 5];  // 比较颜色域（默认 -5 到 5）
 
 function getComparisonRendererStoreSafe() {
     if (typeof getComparisonRendererStore === 'function') {

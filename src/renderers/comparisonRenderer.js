@@ -16,9 +16,77 @@
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
   const PACK_EPSILON = 1e-6;
 
-  function getActiveLayoutMode() {
+  function getActiveLayoutMode(override) {
+    if (override && VALID_LAYOUTS.has(override)) {
+      return override;
+    }
+    try {
+      if (typeof MetaTreeStore !== 'undefined') {
+        const storeLayout = MetaTreeStore.get('layout.mode');
+        if (storeLayout && VALID_LAYOUTS.has(storeLayout)) {
+          return storeLayout;
+        }
+      }
+    } catch (_) {}
     const layout = (typeof currentLayout === 'string') ? currentLayout : 'radial';
     return VALID_LAYOUTS.has(layout) ? layout : 'radial';
+  }
+
+  function getDivergingScale(domain, paletteName) {
+    if (typeof MetaTreeServices !== 'undefined'
+        && MetaTreeServices.comparison
+        && typeof MetaTreeServices.comparison.createDivergingColorScale === 'function') {
+      return MetaTreeServices.comparison.createDivergingColorScale(domain, paletteName);
+    }
+    if (typeof window !== 'undefined'
+        && typeof window.createDivergingColorScale === 'function') {
+      return window.createDivergingColorScale(domain, paletteName);
+    }
+    if (typeof createDivergingColorScale === 'function') {
+      return createDivergingColorScale(domain, paletteName);
+    }
+    return d3.scaleDiverging().domain(domain).interpolator(d3.interpolateRdBu);
+  }
+
+  function buildRenderConfig(opts = {}) {
+    const store = (typeof MetaTreeStore !== 'undefined') ? MetaTreeStore : null;
+    const comparisonStore = (typeof MetaTreeComparisonStore !== 'undefined') ? MetaTreeComparisonStore : null;
+    const renderSettings = opts.renderSettings
+      || (comparisonStore && typeof comparisonStore.getRenderSettings === 'function'
+        ? comparisonStore.getRenderSettings()
+        : {})
+      || {};
+
+    const activeTree = opts.treeData
+      || (store ? (store.get('data.activeTree') || store.get('data.tree')) : null)
+      || (typeof activeTreeData !== 'undefined' && activeTreeData ? activeTreeData : null)
+      || (typeof treeData !== 'undefined' ? treeData : null);
+
+    const layoutMode = opts.layoutMode
+      || (store ? store.get('layout.mode') : null)
+      || (typeof currentLayout !== 'undefined' ? currentLayout : 'radial');
+
+    const palette = opts.palette
+      || renderSettings.palette
+      || (typeof divergingPalette !== 'undefined' ? divergingPalette : 'blueRed');
+
+    const colorDomain = opts.colorDomain
+      || renderSettings.colorDomain
+      || (typeof comparisonColorDomain !== 'undefined' ? comparisonColorDomain : [-5, 0, 5]);
+
+    const showSig = (typeof opts.showOnlySignificant === 'boolean')
+      ? opts.showOnlySignificant
+      : (typeof renderSettings.showOnlySignificant === 'boolean'
+        ? renderSettings.showOnlySignificant
+        : (typeof showOnlySignificant !== 'undefined' ? showOnlySignificant : false));
+
+    return {
+      treeData: activeTree,
+      layoutMode: layoutMode,
+      palette,
+      colorDomain,
+      showOnlySignificant: showSig
+    };
   }
 
   function computePackMetric(stats) {
@@ -36,7 +104,7 @@
   }
 
   function buildComparisonLayout(root, width, height, comparisonStats, opts = {}) {
-    const mode = getActiveLayoutMode();
+    const mode = getActiveLayoutMode(opts.layoutMode);
     const forMini = !!opts.mini;
     const layout = {
       mode,
@@ -164,6 +232,17 @@
 
   // 主渲染：比较树（支持普通、内联与模态容器）
   function drawComparisonTree(group1, group2, comparisonStats, opts = {}) {
+    const config = buildRenderConfig(opts);
+    const treeData = config.treeData;
+    if (!treeData) {
+      console.warn('No tree data available for comparison rendering');
+      return;
+    }
+    const layoutMode = config.layoutMode;
+    const comparisonColorDomain = config.colorDomain;
+    const divergingPalette = config.palette;
+    const showOnlySignificant = !!config.showOnlySignificant;
+
     const store = resolveComparisonRendererStore(opts.rendererStore);
     try { store.setStats(comparisonStats); } catch (_) {}
     const useModal = !!opts.isModal;
@@ -368,7 +447,7 @@
     const cat = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
     let colorAtVal;
     if (cat === 'diverging') {
-      const colorScale = createDivergingColorScale(comparisonColorDomain, divergingPalette);
+      const colorScale = getDivergingScale(comparisonColorDomain, divergingPalette);
       colorAtVal = (v) => colorScale(isFinite(v) ? v : 0);
     } else {
       let interpolator;
@@ -408,7 +487,7 @@
     const maxAgg = d3.max(root.descendants(), n => n._agg || 0) || 1;
     const strokeScale = d3.scaleSqrt().domain([0, maxAgg]).range([0.8, 5]).clamp(true);
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false });
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false, layoutMode });
     try { layoutConfig.applyGroupTransform(g); } catch (_) {}
 
     let linkSelection = null;
@@ -702,7 +781,10 @@
 
     // bottom legend (HTML)
     if (typeof createComparisonLegend === 'function') {
-      const legend = createComparisonLegend();
+      const legend = createComparisonLegend(null, null, {
+        colorDomain: comparisonColorDomain,
+        palette: divergingPalette
+      });
       matrixContainer.appendChild(legend);
     }
 
@@ -873,7 +955,7 @@
     );
   }
 
-  function drawMiniComparisonTree(containerId, comparisonStats) {
+  function drawMiniComparisonTree(containerId, comparisonStats, options = {}) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = '';
@@ -889,7 +971,12 @@
 
     const g = svg.append('g');
 
-    let root = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);
+    const miniTreeData = options.treeData
+      || (typeof activeTreeData !== 'undefined' && activeTreeData ? activeTreeData : null)
+      || (typeof treeData !== 'undefined' ? treeData : null);
+    if (!miniTreeData) return;
+
+    let root = d3.hierarchy(miniTreeData, d => d.__collapsed ? null : d.children);
     // 仅剥离根一层（如有）
     try {
       if (typeof stripToFirstBranch === 'function') {
@@ -899,13 +986,19 @@
       }
     } catch (_) {}
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true });
+    const miniLayoutMode = options.layoutMode || getActiveLayoutMode();
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true, layoutMode: miniLayoutMode });
     try { layoutConfig.applyGroupTransform(g); } catch (_) {}
 
     const catMini = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
     let colorAtValMini;
+    const colorDomain = options.colorDomain
+      || (typeof comparisonColorDomain !== 'undefined' ? comparisonColorDomain : [-5, 0, 5]);
+    const paletteName = options.palette
+      || (typeof divergingPalette !== 'undefined' ? divergingPalette : 'blueRed');
+
     if (catMini === 'diverging') {
-      const divergeMini = createDivergingColorScale(comparisonColorDomain, divergingPalette);
+      const divergeMini = getDivergingScale(colorDomain, paletteName);
       colorAtValMini = (v) => divergeMini(isFinite(v) ? v : 0);
     } else {
       let interpolator;
@@ -919,7 +1012,7 @@
         interpolator = info.interpolator || d3.interpolateViridis;
       }
       const tFor = (t) => ((typeof colorSchemeReversed !== 'undefined' && colorSchemeReversed) ? (1 - t) : t);
-      const M = Math.max(Math.abs(comparisonColorDomain[0] || 0), Math.abs(comparisonColorDomain[2] || 1)) || 1;
+      const M = Math.max(Math.abs(colorDomain[0] || 0), Math.abs(colorDomain[2] || 1)) || 1;
       const pow = (typeof colorGamma !== 'undefined') ? colorGamma : 0.8;
       colorAtValMini = (v) => {
         const val = isFinite(v) ? v : 0;
@@ -1004,7 +1097,7 @@
     try { layoutConfig.configureCollapse(miniCollapse); } catch (_) {}
   }
 
-  function createComparisonLegend(group1Label, group2Label) {
+  function createComparisonLegend(group1Label, group2Label, options = {}) {
     const legend = document.createElement('div');
     legend.className = 'comparison-legend';
     const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
@@ -1012,14 +1105,19 @@
 
     const gradId = `legend-gradient-${uniqueSuffix}`;
     const category = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
+    const domain = Array.isArray(options.colorDomain) && options.colorDomain.length >= 3
+      ? options.colorDomain
+      : (typeof comparisonColorDomain !== 'undefined' ? comparisonColorDomain : [-5, 0, 5]);
+    const paletteName = options.palette
+      || (typeof divergingPalette !== 'undefined' ? divergingPalette : 'blueRed');
     if (category === 'diverging') {
       legend.innerHTML = `
         <div class="legend-title">Log2 Fold Change</div>
         <div class="legend-gradient" id="${gradId}"></div>
         <div class="legend-labels">
-          <span>${comparisonColorDomain[0]}</span>
+          <span>${domain[0]}</span>
           <span>0</span>
-          <span>${comparisonColorDomain[2]}</span>
+          <span>${domain[2]}</span>
         </div>
         <div class="legend-description">
           <span style="color: #2166ac;">■</span> Decreased in ${group2Label || 'second group'} &nbsp;&nbsp;
@@ -1027,6 +1125,57 @@
         </div>
       `;
     } else {
+      const M = Math.max(Math.abs(domain[0] || 0), Math.abs(domain[2] || 1)) || 1;
+      legend.innerHTML = `
+        <div class="legend-title">Log2 Fold Change</div>
+        <div class="legend-gradient" id="${gradId}"></div>
+        <div class="legend-labels">
+          <span>${-M}</span>
+          <span>0</span>
+          <span>${M}</span>
+        </div>
+      `;
+    }
+
+    setTimeout(() => {
+      const gradientDiv = document.getElementById(gradId);
+      if (!gradientDiv) return;
+      const categoryNow = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
+      if (categoryNow === 'diverging') {
+        const colorScale = getDivergingScale(domain, paletteName);
+        const steps = 50;
+        let gradient = 'linear-gradient(to right';
+        for (let i = 0; i <= steps; i++) {
+          const value = domain[0] + (domain[2] - domain[0]) * i / steps;
+          gradient += `, ${colorScale(value)} ${i / steps * 100}%`;
+        }
+        gradient += ')';
+        gradientDiv.style.background = gradient;
+      } else {
+        let interpolator;
+        if (typeof colorScheme !== 'undefined' && colorScheme === 'Custom') {
+          const stops = (Array.isArray(customColorStops) && customColorStops.length >= 2)
+            ? customColorStops
+            : [customColorStart, customColorEnd];
+          interpolator = (stops.length === 2) ? d3.interpolate(stops[0], stops[1]) : d3.interpolateRgbBasis(stops);
+        } else {
+          const info = (typeof COLOR_SCHEMES !== 'undefined' && COLOR_SCHEMES[colorScheme]) ? COLOR_SCHEMES[colorScheme] : {};
+          interpolator = info.interpolator || d3.interpolateViridis;
+        }
+        const reversed = (typeof colorSchemeReversed !== 'undefined') ? colorSchemeReversed : false;
+        const tFor = (t) => (reversed ? (1 - t) : t);
+        const steps = 50;
+        let gradient = 'linear-gradient(to right';
+        for (let i = 0; i <= steps; i++) {
+          gradient += `, ${interpolator(tFor(i / steps))} ${i / steps * 100}%`;
+        }
+        gradient += ')';
+        gradientDiv.style.background = gradient;
+      }
+    });
+
+    return legend;
+  }
       const M = Math.max(Math.abs(comparisonColorDomain[0] || 0), Math.abs(comparisonColorDomain[2] || 1)) || 1;
       legend.innerHTML = `
         <div class="legend-title">Log2 Fold Change</div>
@@ -1044,7 +1193,7 @@
       if (gradientDiv) {
         const categoryNow = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
         if (categoryNow === 'diverging') {
-          const colorScale = createDivergingColorScale(comparisonColorDomain, divergingPalette);
+          const colorScale = getDivergingScale(comparisonColorDomain, divergingPalette);
           const steps = 50;
           let gradient = 'linear-gradient(to right';
           for (let i = 0; i <= steps; i++) {
@@ -1085,6 +1234,17 @@
     return legend;
   }
 
+  function renderComparisonView(params) {
+    if (!params) return null;
+    const treeData = params.treeData;
+    const stats = params.stats || params.comparisonStats;
+    const group1 = params.group1 || params.treatment_1 || '';
+    const group2 = params.group2 || params.treatment_2 || '';
+    const options = { ...params, treeData, stats };
+    drawComparisonTree(group1, group2, stats, options);
+    return { group1, group2, stats };
+  }
+
   if (typeof window !== 'undefined') {
     window.drawComparisonTree = drawComparisonTree;
     window.drawComparisonMatrix = drawComparisonMatrix;
@@ -1092,5 +1252,6 @@
     window.drawInlineFocusedComparison = drawInlineFocusedComparison;
     window.drawMiniComparisonTree = drawMiniComparisonTree;
     window.createComparisonLegend = createComparisonLegend;
+    window.renderComparisonView = renderComparisonView;
   }
 })();

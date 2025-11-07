@@ -3,6 +3,20 @@
  * Version: 2.0
  */
 
+const ComparisonService = (typeof MetaTreeServices !== 'undefined' && MetaTreeServices.comparison)
+    ? MetaTreeServices.comparison
+    : null;
+
+function getComparisonGroups() {
+    if (ComparisonService && typeof ComparisonService.getAllGroups === 'function') {
+        return ComparisonService.getAllGroups();
+    }
+    const fallback = (typeof window !== 'undefined' && window.groupDefinitions)
+        ? window.groupDefinitions
+        : (typeof groupDefinitions !== 'undefined' ? groupDefinitions : {});
+    return { ...(fallback || {}) };
+}
+
 // 颜色方案类别标签：'sequential'（连续/顺序）、'diverging'（分歧，适合正负值）
 let colorSchemeCategory = 'sequential';
 // 将所选类别同步到全局，便于渲染端读取
@@ -2042,7 +2056,7 @@ function updateSampleChecklistInModal() {
 
 function updateExistingGroupsList() {
     const listContainer = document.getElementById('existing-groups-list');
-    const groups = getAllGroups();
+    const groups = getComparisonGroups();
     
     if (Object.keys(groups).length === 0) {
         listContainer.innerHTML = '<em style="color: #999;">No groups defined yet</em>';
@@ -2077,7 +2091,9 @@ function updateExistingGroupsList() {
         btn.addEventListener('click', function() {
             const groupName = this.dataset.group;
             if (confirm(`Delete group "${groupName}"?`)) {
-                removeGroup(groupName);
+                if (ComparisonService && typeof ComparisonService.removeGroup === 'function') {
+                    ComparisonService.removeGroup(groupName);
+                }
                 updateExistingGroupsList();
                 updateGroupDefinitionsDisplay();
             }
@@ -2102,7 +2118,8 @@ function handleSaveGroup() {
     }
     
     // 保存分组
-    if (defineGroup(groupName, selectedSamplesList)) {
+    if (ComparisonService && typeof ComparisonService.defineGroup === 'function'
+        && ComparisonService.defineGroup(groupName, selectedSamplesList)) {
         alert(`Group "${groupName}" saved with ${selectedSamplesList.length} samples.`);
         
         // 清空输入
@@ -2126,7 +2143,7 @@ function handleSaveGroup() {
 
 function updateGroupDefinitionsDisplay() {
     const displayDiv = document.getElementById('unified-group-display');
-    const groups = getAllGroups();
+    const groups = getComparisonGroups();
     
     if (Object.keys(groups).length === 0) {
         displayDiv.innerHTML = '<em style="color: rgba(255,255,255,0.7);">No groups defined</em>';
@@ -2226,7 +2243,7 @@ function updateGroupDefinitionsDisplay() {
 }
 
 function updateGroupSelectors() {
-    const groups = getAllGroups();
+    const groups = getComparisonGroups();
     const groupNames = Object.keys(groups);
     
     const select1 = document.getElementById('select-group1');
@@ -2296,7 +2313,7 @@ function updateMatrixGroupCheckboxes(groupNames) {
 }
 
 function handleRunComparison() {
-    const groups = getAllGroups();
+    const groups = getComparisonGroups();
     
     if (Object.keys(groups).length < 2) {
         alert('Please define at least 2 groups before running comparison.');
@@ -2388,13 +2405,19 @@ function handleRunComparison() {
     // 延迟执行以显示加载提示
     setTimeout(() => {
         try {
-            // 运行比较 - 保存到全局 window 对象以便重绘函数访问
-            window.comparisonResults = compareGroups(treeData, groupsFiltered, {
+            if (!ComparisonService || typeof ComparisonService.compareGroups !== 'function') {
+                throw new Error('Comparison service is unavailable');
+            }
+
+            const comparisonOptions = {
                 metric: comparisonMetric,
                 transform: 'none',  // 已在数据中应用
                 minAbundance: 0,
                 runTests: true
-            });
+            };
+
+            const results = ComparisonService.compareGroups(treeData, groupsFiltered, comparisonOptions);
+            window.comparisonResults = Array.isArray(results) ? results : [];
             
             // 验证结果
             if (!window.comparisonResults || window.comparisonResults.length === 0) {
@@ -2448,7 +2471,9 @@ function handleExportComparison() {
         return;
     }
     
-    exportComparisonResults(window.comparisonResults);
+    if (ComparisonService && typeof ComparisonService.exportComparisonResults === 'function') {
+        ComparisonService.exportComparisonResults(window.comparisonResults);
+    }
 }
 
 function handleComparisonMetricChange() {
@@ -2480,7 +2505,7 @@ function handleSignificanceChange() {
     // 勾选显著性过滤时，给出小样本组提示（基于当前筛选后的样本数）
     if (isChecked && (visualizationMode === 'comparison' || visualizationMode === 'matrix')) {
         try {
-            const groups = getAllGroups ? getAllGroups() : {};
+            const groups = getComparisonGroups();
             const passes = (s) => (typeof window.samplePassesMetaFilters === 'function') ? window.samplePassesMetaFilters(s) : true;
             let targetGroupNames = [];
             if (visualizationMode === 'comparison') {
@@ -2659,7 +2684,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (deleteAllGroupsGroupMode) {
         deleteAllGroupsGroupMode.addEventListener('click', function() {
             if (confirm('Delete all groups?')) {
-                clearAllGroups();
+                if (ComparisonService && typeof ComparisonService.clearAllGroups === 'function') {
+                    ComparisonService.clearAllGroups();
+                }
                 updateGroupCheckboxes();
             }
         });
@@ -2709,7 +2736,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const delAllBtn = document.getElementById('delete-all-groups');
     if (delAllBtn) delAllBtn.addEventListener('click', function(){
         if (confirm('Delete all groups?')) {
-            clearAllGroups();
+            if (ComparisonService && typeof ComparisonService.clearAllGroups === 'function') {
+                ComparisonService.clearAllGroups();
+            }
             updateExistingGroupsList();
             updateGroupDefinitionsDisplay();
         }
@@ -2930,7 +2959,9 @@ function populateMetaControls(metaLoaded) {
 function handleMetaGroupColumnChange(col) {
     if (!col) {
         // 如果清空选择，则清空分组
-        if (typeof clearAllGroups === 'function') clearAllGroups();
+        if (ComparisonService && typeof ComparisonService.clearAllGroups === 'function') {
+            ComparisonService.clearAllGroups();
+        }
         updateExistingGroupsList();
         updateGroupDefinitionsDisplay();
         return;
@@ -2941,8 +2972,12 @@ function handleMetaGroupColumnChange(col) {
     }
     
     // 清除现有分组并根据选择的列自动创建新分组
-    if (typeof clearAllGroups === 'function') clearAllGroups();
-    const grouping = autoGroupByMetaColumn(window.metaData, col, 2);
+    if (ComparisonService && typeof ComparisonService.clearAllGroups === 'function') {
+        ComparisonService.clearAllGroups();
+    }
+    const grouping = (ComparisonService && typeof ComparisonService.autoGroupByMetaColumn === 'function')
+        ? ComparisonService.autoGroupByMetaColumn(window.metaData, col, 2)
+        : {};
     if (!grouping || Object.keys(grouping).length === 0) {
         console.warn('No valid groups generated from selected meta column:', col);
         updateExistingGroupsList();
@@ -3163,7 +3198,9 @@ function updateGroupMetaColumnOptions() {
 function handleGroupMetaColumnChange(col) {
     if (!col) {
         // 如果清空选择，则清空分组
-        if (typeof clearAllGroups === 'function') clearAllGroups();
+        if (ComparisonService && typeof ComparisonService.clearAllGroups === 'function') {
+            ComparisonService.clearAllGroups();
+        }
         // 清空旧系统的变量
         if (typeof window !== 'undefined') {
             window.selectedGroups = [];
@@ -3177,8 +3214,12 @@ function handleGroupMetaColumnChange(col) {
     }
     
     // 清除现有分组并根据选择的列自动创建新分组
-    if (typeof clearAllGroups === 'function') clearAllGroups();
-    const grouping = autoGroupByMetaColumn(window.metaData, col, 2);
+    if (ComparisonService && typeof ComparisonService.clearAllGroups === 'function') {
+        ComparisonService.clearAllGroups();
+    }
+    const grouping = (ComparisonService && typeof ComparisonService.autoGroupByMetaColumn === 'function')
+        ? ComparisonService.autoGroupByMetaColumn(window.metaData, col, 2)
+        : {};
     if (!grouping || Object.keys(grouping).length === 0) {
         console.warn('No valid groups generated from selected meta column:', col);
         updateGroupCheckboxes();
@@ -3195,7 +3236,7 @@ function updateGroupCheckboxes() {
     const container = document.getElementById('group-checkboxes');
     if (!container) return;
     
-    const groups = getAllGroups();
+    const groups = getComparisonGroups();
     
     console.log('updateGroupCheckboxes called, groups:', groups);
     

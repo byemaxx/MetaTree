@@ -6,7 +6,7 @@
     <title>MetaTree Hierarchical Taxonomy Visualization</title>
     
     <!-- D3.js 库 (本地版本) -->
-    <script src="js/d3.v7.min.js"></script>
+    <script src="src/vendor/d3.v7.min.js"></script>
     
     <!-- 样式文件 -->
     <link rel="stylesheet" href="css/style.css">
@@ -798,12 +798,16 @@
     </div>
 
     <!-- JavaScript 模块 -->
-    <script src="js/comparison.js"></script>
-    <script src="js/legend.js"></script>
-    <script src="js/utils/export.js"></script>
-    <script src="js/utils/comparisonRendererStore.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/render/comparison.js"></script>
-    <script src="js/ui.js"></script>
+    <script src="src/state/store.js"></script>
+    <script src="src/state/comparisonStore.js"></script>
+    <script src="src/state/legacyBridge.js"></script>
+    <script src="src/services/statistics.js"></script>
+    <script src="src/services/comparisonService.js"></script>
+    <script src="src/state/comparisonRendererStore.js"></script>
+    <script src="src/utils/export.js"></script>
+    <script src="src/renderers/comparisonRenderer.js"></script>
+    <script src="src/ui/legend.js"></script>
+    <script src="src/ui/app.js"></script>
+    <script src="src/ui/controllers.js"></script>
 </body>
 </html>

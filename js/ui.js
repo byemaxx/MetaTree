@@ -163,9 +163,9 @@ const LAYOUT_PANEL_CONTEXTS = {
 };
 const VALID_LAYOUT_OPTIONS = new Set(['radial', 'tree', 'packing']);
 const LAYOUT_PANEL_DEFAULTS = {
-    [LAYOUT_PANEL_CONTEXTS.SAMPLES]: { layout: 'radial', panelWidth: 500, panelHeight: 500 },
-    [LAYOUT_PANEL_CONTEXTS.COMPARISON]: { layout: 'radial', panelWidth: 500, panelHeight: 700 },
-    [LAYOUT_PANEL_CONTEXTS.MATRIX]: { layout: 'radial', panelWidth: 500, panelHeight: 500 }
+    [LAYOUT_PANEL_CONTEXTS.SAMPLES]: { layout: 'radial', panelWidth: 600, panelHeight: 600 },
+    [LAYOUT_PANEL_CONTEXTS.COMPARISON]: { layout: 'radial', panelWidth: 600, panelHeight: 700 },
+    [LAYOUT_PANEL_CONTEXTS.MATRIX]: { layout: 'radial', panelWidth: 600, panelHeight: 600 }
 };
 let layoutPanelSettingsStore = cloneLayoutPanelDefaults();
 let activeLayoutPanelContext = null;

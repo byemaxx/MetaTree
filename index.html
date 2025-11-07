@@ -253,15 +253,6 @@
                     <div id="single-mode-settings">
                         <div class="control-row">
                             <div class="control-group">
-                                <label for="layout-select">Layout:</label>
-                                <select id="layout-select">
-                                    <option value="radial">Radial</option>
-                                    <option value="tree">Tree</option>
-                                    <option value="packing">Circle packing</option>
-                                </select>
-                            </div>
-
-                            <div class="control-group">
                                 <label for="abundance-transform">Transform:</label>
                                 <select id="abundance-transform" title="Choose a data transform. Log is recommended for wide-range values.">
                                     <option value="none" selected>none</option>
@@ -280,25 +271,6 @@
                         </div>
 
                         <div class="control-row">
-                            <div class="control-group">
-                                <label for="panel-width-slider">Panel width:</label>
-                                <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="500" class="w-180 ml-8">
-                                <span id="panel-width-value" class="ml-8">500px</span>
-                            </div>
-
-                            <div class="control-group">
-                                <label for="panel-height-slider">Panel height:</label>
-                                <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="500" class="w-180 ml-8">
-                                <span id="panel-height-value" class="ml-8">500px</span>
-                            </div>
-
-                            <div class="control-group">
-                                <label class="flex ai-center gap-8">
-                                    <input type="checkbox" id="panel-lock-size" checked>
-                                    Lock width & height
-                                </label>
-                            </div>
-
                             <div class="control-group">
                                 <label class="flex ai-center gap-8">
                                     <input type="checkbox" id="sync-zoom" checked>
@@ -465,6 +437,45 @@
                         <div class="control-row">
                             <button id="run-comparison" class="btn-run-comparison">Run comparison</button>
                             <button id="export-comparison" class="btn-export-comparison">Export results</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 布局与面板尺寸控制区（新面板，默认折叠，位于 Colors & Domain 之上） -->
+                <div id="layout-panel" class="control-panel card-panel collapsed">
+                    <div class="panel-title">Layout & Panels
+                        <button id="layout-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="layout-select">Layout:</label>
+                            <select id="layout-select">
+                                <option value="radial">Radial</option>
+                                <option value="tree">Tree</option>
+                                <option value="packing">Circle packing</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="panel-width-slider">Panel width:</label>
+                            <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="500" class="w-180 ml-8">
+                            <span id="panel-width-value" class="ml-8">500px</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="panel-height-slider">Panel height:</label>
+                            <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="500" class="w-180 ml-8">
+                            <span id="panel-height-value" class="ml-8">500px</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="flex ai-center gap-8">
+                                <input type="checkbox" id="panel-lock-size" checked>
+                                Lock width & height
+                            </label>
                         </div>
                     </div>
                 </div>

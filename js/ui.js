@@ -781,6 +781,17 @@ function initEventListeners() {
             colorsToggle.setAttribute('aria-expanded', String(!collapsed));
         });
     }
+    // Layout & Panels panel collapse/expand (new panel moved out of Analysis Mode)
+    const layoutPanel = document.getElementById('layout-panel');
+    const layoutToggle = document.getElementById('layout-toggle');
+    if (layoutToggle && layoutPanel) {
+        layoutToggle.addEventListener('click', function() {
+            const collapsed = layoutPanel.classList.toggle('collapsed');
+            layoutToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
+            layoutToggle.classList.toggle('expanded', !collapsed);
+            layoutToggle.setAttribute('aria-expanded', String(!collapsed));
+        });
+    }
     // Labels reset button
     const labelsResetBtn = document.getElementById('labels-reset');
     if (labelsResetBtn) {

@@ -513,6 +513,215 @@ function applyDomainValueToUI(domainValue, modeName) {
     }
 }
 
+function encodeDelimiterForDisplay(value) {
+    if (typeof value !== 'string' || value.length === 0) return '';
+    return value
+        .replace(/\\/g, '\\\\')
+        .replace(/\t/g, '\\t')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\0/g, '\\0');
+}
+
+function toggleCustomDelimiterInput(input, shouldShow) {
+    if (!input) return;
+    const visible = !!shouldShow;
+    input.classList.toggle('visible', visible);
+    input.setAttribute('aria-hidden', visible ? 'false' : 'true');
+}
+
+function rebuildTreeAfterTaxaDelimiterChange() {
+    if (!Array.isArray(rawData) || rawData.length === 0) return;
+    try {
+        treeData = buildHierarchy(rawData);
+        activeTreeData = null;
+        initVisualization();
+        drawAllTrees();
+        if (selectedSamples && selectedSamples.length > 0) {
+            const hierarchy = d3.hierarchy(treeData);
+            updateStats(hierarchy, selectedSamples[0]);
+        }
+    } catch (error) {
+        console.error('Failed to rebuild tree after taxa delimiter change', error);
+        alert('Failed to rebuild tree with the new taxa separator: ' + (error?.message || error));
+    }
+}
+
+function initDataParameterControls() {
+    const toggle = document.getElementById('data-params-toggle');
+    if (toggle) {
+        toggle.addEventListener('click', function() {
+            const content = document.getElementById('data-params-content');
+            if (!content) return;
+            const visible = window.getComputedStyle(content).display !== 'none';
+            content.style.display = visible ? 'none' : 'block';
+            this.textContent = visible ? 'Expand ▼' : 'Collapse ▲';
+        });
+    }
+
+    const dataSelect = document.getElementById('data-delimiter-select');
+    const dataCustom = document.getElementById('data-delimiter-custom');
+    const taxaSelect = document.getElementById('taxa-delimiter-select');
+    const taxaCustom = document.getElementById('taxa-delimiter-custom');
+
+    const readDataDelimiter = () => {
+        try {
+            return (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
+        } catch (_) {
+            return '\t';
+        }
+    };
+    const readTaxaDelimiter = () => {
+        try {
+            return (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
+        } catch (_) {
+            return '|';
+        }
+    };
+    const applyDataDelimiterValue = (value) => {
+        if (typeof value !== 'string' || value.length === 0) return;
+        if (typeof setDataFileDelimiter === 'function') {
+            setDataFileDelimiter(value);
+        }
+        syncDataControls();
+    };
+    const applyTaxaDelimiterValue = (value) => {
+        if (typeof value !== 'string' || value.length === 0) return;
+        const current = readTaxaDelimiter();
+        if (current === value) {
+            syncTaxaControls();
+            return;
+        }
+        if (typeof setTaxonRankDelimiter === 'function') {
+            setTaxonRankDelimiter(value);
+        }
+        rebuildTreeAfterTaxaDelimiterChange();
+        syncTaxaControls();
+    };
+    const applyDataCustom = () => {
+        if (!dataCustom) return;
+        const value = dataCustom.value;
+        if (typeof value !== 'string' || value.length === 0) return;
+        applyDataDelimiterValue(value);
+    };
+    const applyTaxaCustom = () => {
+        if (!taxaCustom) return;
+        const value = taxaCustom.value;
+        if (typeof value !== 'string' || value.length === 0) return;
+        applyTaxaDelimiterValue(value);
+    };
+    const syncDataControls = () => {
+        if (!dataSelect) return;
+        const current = readDataDelimiter();
+        if (current === '\t') {
+            dataSelect.value = 'tab';
+            toggleCustomDelimiterInput(dataCustom, false);
+        } else if (current === ',') {
+            dataSelect.value = 'comma';
+            toggleCustomDelimiterInput(dataCustom, false);
+        } else {
+            dataSelect.value = 'custom';
+            toggleCustomDelimiterInput(dataCustom, true);
+            if (dataCustom) dataCustom.value = encodeDelimiterForDisplay(current);
+        }
+    };
+    const syncTaxaControls = () => {
+        if (!taxaSelect) return;
+        const current = readTaxaDelimiter();
+        if (current === '|') {
+            taxaSelect.value = 'pipe';
+            toggleCustomDelimiterInput(taxaCustom, false);
+        } else if (current === ',') {
+            taxaSelect.value = 'comma';
+            toggleCustomDelimiterInput(taxaCustom, false);
+        } else if (current === ';') {
+            taxaSelect.value = 'semicolon';
+            toggleCustomDelimiterInput(taxaCustom, false);
+        } else {
+            taxaSelect.value = 'custom';
+            toggleCustomDelimiterInput(taxaCustom, true);
+            if (taxaCustom) taxaCustom.value = encodeDelimiterForDisplay(current);
+        }
+    };
+    const applyDataPreset = (preset) => {
+        switch (preset) {
+            case 'tab':
+                applyDataDelimiterValue('\t');
+                break;
+            case 'comma':
+                applyDataDelimiterValue(',');
+                break;
+            case 'custom':
+                toggleCustomDelimiterInput(dataCustom, true);
+                if (dataCustom && dataCustom.value && dataCustom.value.length > 0) {
+                    applyDataCustom();
+                } else if (dataCustom) {
+                    dataCustom.focus();
+                }
+                break;
+            default:
+                applyDataDelimiterValue(readDataDelimiter());
+                break;
+        }
+    };
+    const applyTaxaPreset = (preset) => {
+        switch (preset) {
+            case 'pipe':
+                applyTaxaDelimiterValue('|');
+                break;
+            case 'comma':
+                applyTaxaDelimiterValue(',');
+                break;
+            case 'semicolon':
+                applyTaxaDelimiterValue(';');
+                break;
+            case 'custom':
+                toggleCustomDelimiterInput(taxaCustom, true);
+                if (taxaCustom && taxaCustom.value && taxaCustom.value.length > 0) {
+                    applyTaxaCustom();
+                } else if (taxaCustom) {
+                    taxaCustom.focus();
+                }
+                break;
+            default:
+                applyTaxaDelimiterValue(readTaxaDelimiter());
+                break;
+        }
+    };
+
+    if (dataSelect) {
+        dataSelect.addEventListener('change', () => {
+            applyDataPreset(dataSelect.value);
+        });
+    }
+    if (dataCustom) {
+        dataCustom.addEventListener('change', applyDataCustom);
+        dataCustom.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyDataCustom();
+            }
+        });
+    }
+    if (taxaSelect) {
+        taxaSelect.addEventListener('change', () => {
+            applyTaxaPreset(taxaSelect.value);
+        });
+    }
+    if (taxaCustom) {
+        taxaCustom.addEventListener('change', applyTaxaCustom);
+        taxaCustom.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                applyTaxaCustom();
+            }
+        });
+    }
+
+    syncDataControls();
+    syncTaxaControls();
+}
+
 // ========== 初始化事件监听器 ==========
 function initEventListeners() {
     // 文件上传
@@ -2619,6 +2828,7 @@ function initSidebarCollapseControl() {
 document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
     initSidebarCollapseControl();
+    initDataParameterControls();
     
     // 初始化 taxon 筛选功能
     initTaxonFilters();
@@ -2751,6 +2961,8 @@ document.addEventListener('DOMContentLoaded', function() {
             'viz-container','stats-panel','total-nodes','leaf-nodes','max-depth',
             // 数据与元数据
             'file-upload','meta-upload','load-example','filename-display','meta-file-display',
+            'data-params-toggle','data-params-content','data-delimiter-select','data-delimiter-custom',
+            'taxa-delimiter-select','taxa-delimiter-custom',
             'meta-filters-toggle','meta-filters-content','meta-filters','meta-filters-clear','meta-filters-hint',
             // 模式与样本
             'viz-mode','samples-toggle-group','toggle-samples','sample-selection-panel','sample-checkboxes',

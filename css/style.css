@@ -501,6 +501,11 @@ body {
     flex-wrap: wrap; /* allow controls to wrap within sidebar width */
 }
 
+.control-group.vertical {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
 /* Prevent sidebar content from bleeding horizontally; enable scroll for wide inner blocks */
 .sidebar .control-row,
 .sidebar .collapsible-content,
@@ -1399,6 +1404,7 @@ button:disabled {
 #custom-color-controls,
 #custom-color-mid,
 #custom-arrow-mid,
+#data-params-content,
 #sample-selection-panel,
 #comparison-controls,
 #group-mode-settings,
@@ -1417,6 +1423,15 @@ button:disabled {
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
     background: var(--gradient-primary-hover);
+}
+
+.custom-delimiter-input {
+    display: none;
+    width: 100%;
+}
+
+.custom-delimiter-input.visible {
+    display: block;
 }
 
 .btn-small:active {

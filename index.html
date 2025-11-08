@@ -42,6 +42,49 @@
                         </div>
                     </div>
 
+                    <div class="control-group collapsible" id="data-params-group">
+                        <div class="collapsible-header">
+                            <span class="collapsible-title">Load parameters</span>
+                            <button id="data-params-toggle" class="toggle-btn">Expand ▼</button>
+                        </div>
+                        <div id="data-params-content" class="collapsible-content">
+                            <div class="control-group vertical">
+                                <label for="data-delimiter-select">Data file delimiter</label>
+                                <select id="data-delimiter-select">
+                                    <option value="tab" selected>Tab (\t)</option>
+                                    <option value="comma">Comma (,)</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    id="data-delimiter-custom"
+                                    class="custom-delimiter-input"
+                                    placeholder="Enter delimiter, e.g., ; or \t"
+                                    aria-label="Custom data file delimiter"
+                                >
+                                <span class="text-muted fs-11">Applied when parsing data and metadata files.</span>
+                            </div>
+
+                            <div class="control-group vertical">
+                                <label for="taxa-delimiter-select">Taxa rank separator</label>
+                                <select id="taxa-delimiter-select">
+                                    <option value="pipe" selected>Pipe (|)</option>
+                                    <option value="comma">Comma (,)</option>
+                                    <option value="semicolon">Semicolon (;)</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    id="taxa-delimiter-custom"
+                                    class="custom-delimiter-input"
+                                    placeholder="Enter separator, e.g., ; or ::"
+                                    aria-label="Custom taxa separator"
+                                >
+                                <span class="text-muted fs-11">Changes take effect immediately for loaded data.</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="control-group collapsible" id="meta-filters-group">
                         <div class="collapsible-header">
                             <span class="collapsible-title">Filter samples by meta</span>

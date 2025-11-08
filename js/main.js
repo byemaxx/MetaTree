@@ -108,6 +108,60 @@ try { if (typeof window !== 'undefined') window.lastGlobalDomain = lastGlobalDom
 let manualColorDomainValue = null;
 try { if (typeof window !== 'undefined') window.manualColorDomainValue = manualColorDomainValue; } catch(_) {}
 
+const DEFAULT_DATA_DELIMITER = '\t';
+const DEFAULT_TAXON_DELIMITER = '|';
+let dataFileDelimiter = DEFAULT_DATA_DELIMITER;
+let taxonRankDelimiter = DEFAULT_TAXON_DELIMITER;
+try {
+    if (typeof window !== 'undefined') {
+        window.dataFileDelimiter = dataFileDelimiter;
+        window.taxonRankDelimiter = taxonRankDelimiter;
+    }
+} catch (_) {}
+
+function decodeDelimiterEscapes(value) {
+    if (value == null) return '';
+    const str = typeof value === 'string' ? value : String(value);
+    return str
+        .replace(/\\t/g, '\t')
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '\r')
+        .replace(/\\0/g, '\0');
+}
+
+function normalizeDelimiterValue(value, fallback) {
+    if (value == null) return fallback;
+    let str = typeof value === 'string' ? value : String(value);
+    if (str.length === 0) return fallback;
+    const decoded = decodeDelimiterEscapes(str);
+    if (decoded.length > 0) return decoded;
+    return str.length > 0 ? str : fallback;
+}
+
+function getDataFileDelimiter() {
+    return (typeof dataFileDelimiter === 'string' && dataFileDelimiter.length > 0)
+        ? dataFileDelimiter
+        : DEFAULT_DATA_DELIMITER;
+}
+
+function setDataFileDelimiter(value) {
+    dataFileDelimiter = normalizeDelimiterValue(value, DEFAULT_DATA_DELIMITER);
+    try { if (typeof window !== 'undefined') window.dataFileDelimiter = dataFileDelimiter; } catch (_) {}
+    return dataFileDelimiter;
+}
+
+function getTaxonRankDelimiter() {
+    return (typeof taxonRankDelimiter === 'string' && taxonRankDelimiter.length > 0)
+        ? taxonRankDelimiter
+        : DEFAULT_TAXON_DELIMITER;
+}
+
+function setTaxonRankDelimiter(value) {
+    taxonRankDelimiter = normalizeDelimiterValue(value, DEFAULT_TAXON_DELIMITER);
+    try { if (typeof window !== 'undefined') window.taxonRankDelimiter = taxonRankDelimiter; } catch (_) {}
+    return taxonRankDelimiter;
+}
+
 function getResponsiveTreePanelSize(container, options = {}) {
     if (!container) return { width: 0, height: 0 };
 
@@ -333,9 +387,13 @@ const COLOR_SCHEMES = {
 COLOR_SCHEMES['Custom'] = { name: 'Custom', interpolator: null };
 
 // ========== 数据解析模块 ==========
-function parseTSV(text) {
-    const lines = text.trim().split('\n');
-    const headers = lines[0].split('\t');
+function parseTSV(text, delimiter) {
+    const separator = (typeof delimiter === 'string' && delimiter.length > 0)
+        ? delimiter
+        : getDataFileDelimiter();
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length === 0) return [];
+    const headers = lines[0].split(separator);
     
     // 提取样本列（除了第一列的 Taxon）
     samples = headers.slice(1);
@@ -343,7 +401,7 @@ function parseTSV(text) {
     const data = [];
     let hasNegative = false;
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split('\t');
+        const values = lines[i].split(separator);
         const taxonPath = values[0];
         const abundances = {};
         
@@ -369,10 +427,13 @@ function parseTSV(text) {
 }
 
 // 解析 combined_long.tsv：期望列包含 Item_ID, condition, log2FoldChange, 可选 padj, pvalue
-function parseCombinedLongTSV(text) {
+function parseCombinedLongTSV(text, delimiter) {
+    const separator = (typeof delimiter === 'string' && delimiter.length > 0)
+        ? delimiter
+        : getDataFileDelimiter();
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2) return [];
-    const header = lines[0].split('\t').map(h => h.trim());
+    const header = lines[0].split(separator).map(h => h.trim());
     const findCol = (name) => {
         const idx = header.findIndex(h => h.toLowerCase() === name.toLowerCase());
         return idx >= 0 ? idx : -1;
@@ -390,7 +451,7 @@ function parseCombinedLongTSV(text) {
     const condSet = new Set();
     let hasNeg = false;
     for (let i = 1; i < lines.length; i++) {
-        const vals = lines[i].split('\t');
+        const vals = lines[i].split(separator);
         if (!vals || vals.length === 0) continue;
         const taxon = (vals[idxItem] ?? '').trim();
         const cond = (vals[idxCond] ?? '').trim();
@@ -425,10 +486,13 @@ function parseCombinedLongTSV(text) {
 }
 
 // 解析元数据（meta.tsv），要求包含列 "Sample"
-function parseMetaTSV(text) {
+function parseMetaTSV(text, delimiter) {
+    const separator = (typeof delimiter === 'string' && delimiter.length > 0)
+        ? delimiter
+        : getDataFileDelimiter();
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2) return null;
-    const headers = lines[0].split('\t').map(h => h.trim());
+    const headers = lines[0].split(separator).map(h => h.trim());
     const sampleIdx = headers.indexOf('Sample');
     if (sampleIdx === -1) {
         console.warn('meta.tsv missing required column "Sample"');
@@ -437,7 +501,7 @@ function parseMetaTSV(text) {
     const rows = [];
     const bySample = {};
     for (let i = 1; i < lines.length; i++) {
-        const vals = lines[i].split('\t');
+        const vals = lines[i].split(separator);
         if (!vals || vals.length === 0) continue;
         const row = {};
         headers.forEach((h, idx) => {
@@ -890,8 +954,9 @@ function buildHierarchy(data) {
         }
 
         // 拆分分类路径（管道分隔），允许不完整路径
+        const rankSeparator = getTaxonRankDelimiter();
         const parts = taxonStr
-            .split('|')
+            .split(rankSeparator)
             .map(p => p.trim())
             .filter(p => p.length > 0);
         let currentNode = root;
@@ -1238,7 +1303,7 @@ function buildTreeWithGroupData() {
                 const matchesByEnd = node.fullName && taxonKey.endsWith(node.fullName);
                 
                 // 策略3: 检查路径是否完全匹配
-                const pathStr = currentPath.join('|');
+                const pathStr = currentPath.join(getTaxonRankDelimiter());
                 const matchesByPath = taxonKey === pathStr || taxonKey.includes(pathStr);
                 
                 if (matchesByParts || matchesByEnd || matchesByPath) {
@@ -2603,7 +2668,7 @@ function getNodeAncestorPath(d) {
         path.unshift(identifier);
         current = current.parent;
     }
-    const joined = path.join('|');
+    const joined = path.join(getTaxonRankDelimiter());
     if (d) d._ancestorPath = joined;
     return joined;
 }

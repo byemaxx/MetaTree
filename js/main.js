@@ -652,6 +652,32 @@ function stripToFirstBranch(h) {
 }
 
 /**
+ * 剥离整条前导单子节点链，直到遇到第一个“真正的分叉”或叶子
+ * 该版本主要用于 circle packing，避免顶层连续的单子节点占据全部可视半径
+ * @param {d3.HierarchyNode} h
+ * @returns {d3.HierarchyNode}
+ */
+function stripUnaryChainToFirstBranch(h) {
+    if (!h) return h;
+    let current = h;
+    let trimmed = false;
+    try {
+        while (current && current.children && current.children.length === 1) {
+            current = current.children[0];
+            trimmed = true;
+        }
+    } catch (_) {
+        return h;
+    }
+    if (!current) return h;
+    if (trimmed && typeof current.copy === 'function') {
+        // copy() 会重新建立 parent/depth/height，避免残留引用
+        return current.copy();
+    }
+    return trimmed ? current : h;
+}
+
+/**
  * 获取节点的简化显示名称
  * @param {Object} d - D3 节点数据
  * @returns {string} 简化后的显示名称
@@ -2139,10 +2165,11 @@ function drawTree(sample, globalDomain) {
         const offsetY = (height - diameter) / 2;
 
         // 为 pack 计算数值（使用已变换的丰度以符合当前视觉域，并确保非负）
-        const childAccessor = d => (d.__collapsed ? null : d.children);
-        let rootPack = d3.hierarchy(sourceTree, childAccessor);
-        // 与其它布局一致：剥离前导单子节点链
-        rootPack = stripToFirstBranch(rootPack)
+        let rootPack = (typeof hierarchy.copy === 'function')
+            ? hierarchy.copy()
+            : d3.hierarchy(sourceTree, childAccessor);
+        // 对 packing 使用完整的单子链剥离，避免同心圆遮蔽实际分支
+        rootPack = stripUnaryChainToFirstBranch(rootPack)
             .sum(d => {
                 const abundance = (d.abundances && d.abundances[sample]) ? d.abundances[sample] : 0;
                 const t = transformAbundance(abundance);

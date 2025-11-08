@@ -272,7 +272,7 @@
     }
 
     function autoGroupByMetaColumn(meta, column, options) {
-        const opts = options || {};
+        const opts = (typeof options === 'number') ? { minPerGroup: options } : (options || {});
         const minPerGroup = typeof opts.minPerGroup === 'number' ? opts.minPerGroup : 2;
         const availableSamples = Array.isArray(opts.availableSamples) ? new Set(opts.availableSamples) : null;
         const passesFilter = typeof opts.passesFilter === 'function' ? opts.passesFilter : (() => true);
@@ -300,6 +300,16 @@
                 delete grouping[k];
             }
         });
+
+        const shouldPersist = opts.persist !== false;
+        if (shouldPersist) {
+            if (Object.keys(grouping).length > 0) {
+                setGroupState(grouping);
+            } else if (opts.clearOnEmpty) {
+                clearAllGroups();
+            }
+        }
+
         return grouping;
     }
 

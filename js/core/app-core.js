@@ -2598,7 +2598,7 @@ function createLegend(svg, width, height, legendDomain) {
 }
 
 // 在 viz-container 底部渲染一个单一共享图例（HTML/CSS）
-// moved to legend.js (window.renderSharedLegend)
+// moved to components/legend-panel.js (window.renderSharedLegend)
 
 /**
  * 处理标签右键点击
@@ -2942,7 +2942,7 @@ function exportPNG() {
 }
 
 // Helpers: export a specific container by id (without #) with a filename prefix
-// moved to utils/export.js (window.exportSVGForContainer, window.exportPNGForContainer)
+// moved to utils/export-tools.js (window.exportSVGForContainer, window.exportPNGForContainer)
 
 function ensurePanelsRenderedForExport() {
     try {

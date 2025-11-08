@@ -756,7 +756,7 @@ function initEventListeners() {
     const rev = document.getElementById('color-reverse');
     if (rev) {
         rev.addEventListener('change', (e) => {
-            // 全局变量在 main.js 中定义
+            // 全局变量在 core/app-core.js 中定义
             colorSchemeReversed = !!e.target.checked;
             // 统一按当前可视化模式重绘，避免强制回到单样本视图
             if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
@@ -1847,7 +1847,7 @@ function resetLabelsNodesToDefaults() {
         if (thr) {
             thr.value = '100';
             document.getElementById('label-threshold-value').textContent = '100%';
-            // 全局变量（在 main.js 中）
+            // 全局变量（在 core/app-core.js 中）
             labelThreshold = 1.0;
         }
 

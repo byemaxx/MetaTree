@@ -1,6 +1,6 @@
 // Two-group comparison rendering module
-// Depends on globals from main.js (state, sizes, colors), legend.js (createComparisonLegendSVG),
-// comparison.js (createDivergingColorScale), and utils/export.js (exportSVGForContainer/exportPNGForContainer)
+// Depends on globals from core/app-core.js (state, sizes, colors), components/legend-panel.js (createComparisonLegendSVG),
+// analysis/group-comparison.js (createDivergingColorScale), and utils/export-tools.js (exportSVGForContainer/exportPNGForContainer)
 
 (function(){
   const EMPTY_COMPARISON_STORE = {

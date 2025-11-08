@@ -128,7 +128,7 @@ body {
 }
 
 .sidebar {
-    width: 300px;
+    width: 340px;
     min-width: 240px;
     max-width: 460px;
     display: flex;
@@ -730,8 +730,9 @@ button:disabled {
     padding: var(--spacing-3xl);
     background: var(--bg-white);
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(var(--panel-min-width, 600px), 1fr));
+     grid-template-columns: repeat(auto-fit, minmax(var(--panel-min-width, 600px), var(--panel-min-width, 600px)));
     gap: var(--spacing-xl);
+    justify-content: center;
 }
 
 .tree-panel {

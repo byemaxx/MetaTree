@@ -179,7 +179,7 @@
 
 /* Increase the SVG drawing area height for two-group comparison panels */
 .comparison-panel .tree-svg-container {
-    height: var(--comparison-panel-svg-height, 700px);
+    height: var(--comparison-panel-svg-height, 800px);
 }
 
 /* ========== 分组定义界面 ========== */

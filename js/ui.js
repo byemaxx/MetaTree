@@ -164,8 +164,8 @@ const LAYOUT_PANEL_CONTEXTS = {
 const VALID_LAYOUT_OPTIONS = new Set(['radial', 'tree', 'packing']);
 const LAYOUT_PANEL_DEFAULTS = {
     [LAYOUT_PANEL_CONTEXTS.SAMPLES]: { layout: 'radial', panelWidth: 600, panelHeight: 600 },
-    [LAYOUT_PANEL_CONTEXTS.COMPARISON]: { layout: 'radial', panelWidth: 600, panelHeight: 700 },
-    [LAYOUT_PANEL_CONTEXTS.MATRIX]: { layout: 'radial', panelWidth: 600, panelHeight: 600 }
+    [LAYOUT_PANEL_CONTEXTS.COMPARISON]: { layout: 'radial', panelWidth: 900, panelHeight: 800 },
+    [LAYOUT_PANEL_CONTEXTS.MATRIX]: { layout: 'radial', panelWidth: 200, panelHeight: 200 }
 };
 let layoutPanelSettingsStore = cloneLayoutPanelDefaults();
 let activeLayoutPanelContext = null;
@@ -2799,7 +2799,7 @@ async function handleLoadExampleClick() {
         filenameDisplay.textContent = 'Loading example data...';
         
     // 加载示例 taxa.tsv
-    const taxaResp = await fetch('data/taxa.tsv', { cache: 'no-store' });
+    const taxaResp = await fetch('test/data/taxa.tsv', { cache: 'no-store' });
         
         if (!taxaResp.ok) {
             throw new Error(`HTTP error! status: ${taxaResp.status} - ${taxaResp.statusText}`);
@@ -2826,7 +2826,7 @@ async function handleLoadExampleClick() {
         updateSampleCheckboxes();
         initVisualization();
         drawAllTrees();
-        filenameDisplay.textContent = 'Example: data/taxa.tsv';
+    filenameDisplay.textContent = 'Example: test/data/taxa.tsv';
 
         // 更新统计信息（以第一个选中样本为准）
         if (selectedSamples.length > 0) {
@@ -2836,7 +2836,7 @@ async function handleLoadExampleClick() {
         
         // 尝试加载示例 meta.tsv（注意与数据文件同目录，文件名小写）
         try {
-            const metaResp = await fetch('data/meta.tsv', { cache: 'no-store' });
+            const metaResp = await fetch('test/data/meta.tsv', { cache: 'no-store' });
             
             if (metaResp.ok) {
                 const metaText = await metaResp.text();
@@ -2849,7 +2849,7 @@ async function handleLoadExampleClick() {
                 populateMetaControls(true);
                     // 更新 meta 文件名显示（与 data 文件的显示风格一致）
                     const metaDisp = document.getElementById('meta-file-display');
-                    if (metaDisp) metaDisp.textContent = 'Example: data/meta.tsv';
+                    if (metaDisp) metaDisp.textContent = 'Example: test/data/meta.tsv';
                 
                 const metaStatus = document.getElementById('meta-status');
                 if (metaStatus) metaStatus.textContent = '(meta loaded)';
@@ -2876,7 +2876,7 @@ async function handleLoadExampleClick() {
             errorMsg += '\n\nPossible causes:\n';
             errorMsg += '1. Make sure the HTTP server is running (python -m http.server 8000)\n';
             errorMsg += '2. Access the page via http://localhost:8000 (not file://)\n';
-            errorMsg += '3. Check that data/taxa.tsv file exists in the project folder';
+            errorMsg += '3. Check that test/data/taxa.tsv file exists in the project folder';
         }
         alert(errorMsg);
     }

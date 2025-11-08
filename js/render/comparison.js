@@ -579,7 +579,11 @@
           const mag = Math.abs(st.comparison_value || 0);
           if (!(levelOk && mag >= threshold)) return false;
           if (layoutConfig.mode === 'packing') {
-            return typeof d.r === 'number' ? d.r >= minPackLabelRadius : false;
+            const isLeafLevel = depthFromLeaf === 0;
+            const minRadius = isLeafLevel
+              ? Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9) * 0.5, 4)
+              : minPackLabelRadius;
+            return typeof d.r === 'number' ? d.r >= minRadius : false;
           }
           return true;
         })

@@ -2257,7 +2257,9 @@ function drawTree(sample, globalDomain) {
                     const depthFromLeaf = d.height;
                     const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
                     const sigOk = !singleSigActive || (d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
-                    const radiusOk = typeof d.r === 'number' ? d.r >= minPackLabelRadius : true;
+                    const isLeafLevel = depthFromLeaf === 0;
+                    const minRadius = isLeafLevel ? Math.max(labelFontSize * 0.5, 4) : minPackLabelRadius;
+                    const radiusOk = typeof d.r === 'number' ? d.r >= minRadius : true;
                     return levelOk && sigOk && radiusOk && Math.abs(t) >= thresholdValue;
                 })
                 .append('text')

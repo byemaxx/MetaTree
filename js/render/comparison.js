@@ -35,6 +35,18 @@
     return (isFinite(value) && value > 0) ? value : PACK_EPSILON;
   }
 
+  const HTML_ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str).replace(/[&<>"]/g, (ch) => HTML_ENTITIES[ch] || ch);
+  }
+
+  function getNodeFullLabel(node) {
+    if (!node || !node.data) return '';
+    const label = node.data.fullName || node.data.name || '';
+    return label;
+  }
+
   function buildComparisonLayout(root, width, height, comparisonStats, opts = {}) {
     const mode = getActiveLayoutMode();
     const forMini = !!opts.mini;
@@ -633,11 +645,15 @@
     // 提示框
     const showTip = (event, d) => {
       const st = comparisonStats[d.data.name] || {};
+      const fullLabel = getNodeFullLabel(d);
+      const displayName = escapeHtml(d.data.name || '');
+      const fullLabelHtml = fullLabel ? escapeHtml(fullLabel) : '';
       const fmt = (x, n=3) => (x!=null && isFinite(x)) ? x.toFixed(n) : '0';
       try {
         tooltip
           .html(`
-            <div class="tooltip-taxon">${d.data.name}</div>
+            <div class="tooltip-taxon">${displayName}</div>
+            ${fullLabelHtml ? `<div class="tooltip-path">${fullLabelHtml}</div>` : ''}
             <div><strong>${group1}</strong> median: ${fmt(st.median_1,2)} | mean: ${fmt(st.mean_1,2)}</div>
             <div><strong>${group2}</strong> median: ${fmt(st.median_2,2)} | mean: ${fmt(st.mean_2,2)}</div>
             <div>Log2 fold change (${group2}/${group1}): <strong>${fmt(st.log2_median_ratio,3)}</strong></div>

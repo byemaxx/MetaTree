@@ -678,6 +678,29 @@ function stripUnaryChainToFirstBranch(h) {
 }
 
 /**
+ * 将打包布局的文本标签提升到节点层的最上方（避免被子节点圆覆盖）
+ * 会将父 <g> 的平移/旋转合并到标签自身的 transform 上
+ * @param {d3.Selection} selection - 需要提升的文本选择
+ */
+function hoistPackingLabels(selection) {
+    if (!selection || typeof selection.each !== 'function') return;
+    selection.each(function() {
+        const el = this;
+        const parent = el && el.parentNode;
+        const grandParent = parent && parent.parentNode;
+        if (!parent || !grandParent) return;
+        const parentTransform = parent.getAttribute && parent.getAttribute('transform') || '';
+        const ownTransform = el.getAttribute && el.getAttribute('transform') || '';
+        const combined = [parentTransform, ownTransform].map(str => str.trim()).filter(Boolean).join(' ');
+        if (combined) el.setAttribute('transform', combined);
+        try {
+            parent.removeChild(el);
+            grandParent.appendChild(el);
+        } catch(_) {}
+    });
+}
+
+/**
  * 获取节点的简化显示名称
  * @param {Object} d - D3 节点数据
  * @returns {string} 简化后的显示名称
@@ -2225,15 +2248,17 @@ function drawTree(sample, globalDomain) {
         if (showLabels) {
             const thresholdValue = calculateLabelThreshold(rootPack, sample);
             const selectedSet = getLabelLevelSet();
+            const minPackLabelRadius = Math.max(labelFontSize, 10);
 
-            g.selectAll('.node')
+            const packLabels = g.selectAll('.node')
                 .filter(d => {
                     const abundance = (d.data && d.data.abundances && d.data.abundances[sample]) ? d.data.abundances[sample] : 0;
                     const t = transformAbundance(abundance);
                     const depthFromLeaf = d.height;
                     const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
                     const sigOk = !singleSigActive || (d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
-                    return levelOk && sigOk && Math.abs(t) >= thresholdValue;
+                    const radiusOk = typeof d.r === 'number' ? d.r >= minPackLabelRadius : true;
+                    return levelOk && sigOk && radiusOk && Math.abs(t) >= thresholdValue;
                 })
                 .append('text')
                 .attr('class', 'node-label')
@@ -2246,6 +2271,10 @@ function drawTree(sample, globalDomain) {
                 .style('cursor', 'context-menu')
                 .on('contextmenu', handleLabelRightClick)
                 .call(applyLabelOverflow);
+
+            if (typeof hoistPackingLabels === 'function') {
+                try { hoistPackingLabels(packLabels); } catch (_) {}
+            }
         }
 
     } else {
@@ -3052,6 +3081,7 @@ if (typeof window !== 'undefined') {
     window.getDisplayName = getDisplayName;
     window.getLabelColor = getLabelColor;
     window.applyLabelOverflow = applyLabelOverflow;
+    window.hoistPackingLabels = hoistPackingLabels;
     window.setNodeColorOverride = setNodeColorOverride;
     window.clearNodeColorOverride = clearNodeColorOverride;
     window.clearAllNodeColorOverrides = clearAllNodeColorOverrides;

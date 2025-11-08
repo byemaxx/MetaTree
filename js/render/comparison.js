@@ -57,9 +57,31 @@
       const diameter = Math.max(10, Math.min(width, height) - padding);
       const offsetX = (width - diameter) / 2;
       const offsetY = (height - diameter) / 2;
-      const packRoot = root.copy();
+      const packChildAccessor = (node) => (node && node.__collapsed) ? null : node && node.children;
+      let packRoot = null;
+      if (root && root.data) {
+        try {
+          packRoot = d3.hierarchy(root.data, packChildAccessor);
+        } catch (_) {
+          packRoot = null;
+        }
+      }
+      if (!packRoot) {
+        packRoot = (typeof root.copy === 'function')
+          ? root.copy()
+          : d3.hierarchy(treeData, packChildAccessor);
+      }
+      try {
+        if (typeof stripUnaryChainToFirstBranch === 'function') {
+          packRoot = stripUnaryChainToFirstBranch(packRoot);
+        }
+      } catch (_) {}
       packRoot
-        .sum(node => computePackMetric(comparisonStats[node.data.name]))
+        .sum(node => {
+          const label = node && node.data ? node.data.name : null;
+          const stats = label ? comparisonStats[label] : undefined;
+          return computePackMetric(stats);
+        })
         .sort((a, b) => (b.value || 0) - (a.value || 0));
       const pack = d3.pack()
         .size([diameter, diameter])
@@ -546,6 +568,7 @@
       }
       const selectedSet = Array.isArray(labelLevelsSelected) && labelLevelsSelected.length>0 ? new Set(labelLevelsSelected) : null;
 
+      const minPackLabelRadius = Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9), 10);
       const labels = nodeGroup
         .filter(d => {
           const st = comparisonStats[d.data.name];
@@ -554,7 +577,11 @@
           const depthFromLeaf = d.height;
           const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
           const mag = Math.abs(st.comparison_value || 0);
-          return levelOk && mag >= threshold;
+          if (!(levelOk && mag >= threshold)) return false;
+          if (layoutConfig.mode === 'packing') {
+            return typeof d.r === 'number' ? d.r >= minPackLabelRadius : false;
+          }
+          return true;
         })
         .append('text')
         .attr('class','node-label')
@@ -575,6 +602,28 @@
             try { sel.call(window.applyLabelOverflow); } catch (e) { /* noop */ }
           }
         });
+
+      if (layoutConfig.mode === 'packing') {
+        const hoistFn = (typeof window !== 'undefined' && typeof window.hoistPackingLabels === 'function')
+          ? window.hoistPackingLabels
+          : function(sel) {
+              if (!sel || typeof sel.each !== 'function') return;
+              sel.each(function() {
+                const parent = this && this.parentNode;
+                const grandParent = parent && parent.parentNode;
+                if (!parent || !grandParent) return;
+                const parentTransform = parent.getAttribute && parent.getAttribute('transform') || '';
+                const ownTransform = this.getAttribute && this.getAttribute('transform') || '';
+                const combined = [parentTransform, ownTransform].map(str => str.trim()).filter(Boolean).join(' ');
+                if (combined) this.setAttribute('transform', combined);
+                try {
+                  parent.removeChild(this);
+                  grandParent.appendChild(this);
+                } catch(_) {}
+              });
+            };
+        try { hoistFn(labels); } catch (_) {}
+      }
     }
 
     // 提示框

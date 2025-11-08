@@ -2737,38 +2737,20 @@ function exportPNG() {
         alert('Please select at least one sample');
         return;
     }
+    // Delegate to the centralized exporter which embeds DPI and supports 2x scaling.
     activeSamples.forEach(sample => {
-        const svgElement = document.querySelector(`#svg-container-${sample} svg`);
-        if (!svgElement) return;
-        
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const svgData = new XMLSerializer().serializeToString(svgElement);
-        const img = new Image();
-        
-        const container = document.getElementById(`svg-container-${sample}`);
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
-        
-        const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        
-        img.onload = function() {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0);
-            canvas.toBlob(function(blob) {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `treemap_${sample}_${Date.now()}.png`;
-                a.click();
-                URL.revokeObjectURL(url);
-            });
-            URL.revokeObjectURL(url);
-        };
-        
-        img.src = url;
+        const containerId = `svg-container-${sample}`;
+        const prefix = `treemap_${sample}`;
+        if (typeof window !== 'undefined' && typeof window.exportPNGForContainer === 'function') {
+            // fire-and-forget; each export will trigger a download when ready
+            try { window.exportPNGForContainer(containerId, prefix).catch(err => console.warn('Export PNG failed', err)); }
+            catch (e) { /* ignore */ }
+        } else if (typeof exportPNGForContainer === 'function') {
+            try { exportPNGForContainer(containerId, prefix).catch(err => console.warn('Export PNG failed', err)); }
+            catch (e) { /* ignore */ }
+        } else {
+            console.warn('exportPNGForContainer is not available');
+        }
     });
 }
 

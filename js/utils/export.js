@@ -46,6 +46,116 @@
     downloadBlob(blob, filename);
   }
 
+  // Insert or replace pHYs chunk in a PNG Blob to set pixels-per-unit (pixels per meter)
+  // dpi -> pixels per meter = dpi * 39.37007874015748
+  function addPngPhysChunk(blob, dpi) {
+    const PPM_PER_INCH = 39.37007874015748;
+    const ppu = Math.round(dpi * PPM_PER_INCH);
+
+    return blob.arrayBuffer().then(buf => {
+      const bytes = new Uint8Array(buf);
+      // PNG signature
+      const sig = [0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A];
+      for (let i = 0; i < 8; i++) if (bytes[i] !== sig[i]) return blob; // not a PNG
+
+      // Helper to read uint32 BE
+      function readUint32(offset) {
+        return (bytes[offset]<<24) | (bytes[offset+1]<<16) | (bytes[offset+2]<<8) | (bytes[offset+3]);
+      }
+
+      // Helper to write uint32 BE
+      function uint32ToBytes(n) {
+        return [(n >>> 24) & 0xFF, (n >>> 16) & 0xFF, (n >>> 8) & 0xFF, n & 0xFF];
+      }
+
+      // CRC32 implementation
+      const crcTable = (function() {
+        let c, table = new Uint32Array(256);
+        for (let n = 0; n < 256; n++) {
+          c = n;
+          for (let k = 0; k < 8; k++) c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+          table[n] = c >>> 0;
+        }
+        return table;
+      })();
+      function crc32(bytesArr) {
+        let crc = 0xFFFFFFFF;
+        for (let i = 0; i < bytesArr.length; i++) {
+          crc = (crc >>> 8) ^ crcTable[(crc ^ bytesArr[i]) & 0xFF];
+        }
+        return (crc ^ 0xFFFFFFFF) >>> 0;
+      }
+
+      // Parse chunks to find IHDR end and check for existing pHYs
+      let offset = 8;
+      let ihdrEnd = -1;
+      let physOffset = -1;
+      while (offset < bytes.length) {
+        const length = readUint32(offset);
+        const typeOffset = offset + 4;
+        const type = String.fromCharCode(bytes[typeOffset], bytes[typeOffset+1], bytes[typeOffset+2], bytes[typeOffset+3]);
+        const chunkStart = offset;
+        const chunkDataStart = offset + 8;
+        const chunkDataEnd = chunkDataStart + length;
+        const chunkCrcEnd = chunkDataEnd + 4;
+        if (type === 'IHDR') {
+          ihdrEnd = chunkCrcEnd;
+        }
+        if (type === 'pHYs') {
+          physOffset = chunkStart;
+          break; // we'll replace
+        }
+        offset = chunkCrcEnd;
+      }
+
+      // Build pHYs chunk bytes: length(4) + 'pHYs'(4) + data(9) + crc(4)
+      const physData = new Uint8Array(9);
+      const ppuBytes = uint32ToBytes(ppu);
+      physData.set(ppuBytes, 0);
+      physData.set(ppuBytes, 4);
+      physData[8] = 1; // unit: meter
+
+      const typeName = new TextEncoder().encode('pHYs');
+      const crcInput = new Uint8Array(4 + physData.length);
+      crcInput.set(typeName, 0);
+      crcInput.set(physData, 4);
+      const crc = crc32(crcInput);
+      const lengthBytes = new Uint8Array(uint32ToBytes(physData.length));
+      const crcBytes = new Uint8Array(uint32ToBytes(crc));
+
+      const physChunk = new Uint8Array(lengthBytes.length + typeName.length + physData.length + crcBytes.length);
+      let p = 0;
+      physChunk.set(lengthBytes, p); p += lengthBytes.length;
+      physChunk.set(typeName, p); p += typeName.length;
+      physChunk.set(physData, p); p += physData.length;
+      physChunk.set(crcBytes, p);
+
+      if (physOffset >= 0) {
+        // Replace existing pHYs chunk
+        const existingLength = readUint32(physOffset);
+        const existingTotal = 4 + 4 + existingLength + 4;
+        const before = bytes.slice(0, physOffset);
+        const after = bytes.slice(physOffset + existingTotal);
+        const out = new Uint8Array(before.length + physChunk.length + after.length);
+        out.set(before, 0);
+        out.set(physChunk, before.length);
+        out.set(after, before.length + physChunk.length);
+        return new Blob([out], { type: 'image/png' });
+      }
+
+      if (ihdrEnd < 0) return blob; // malformed
+
+      // Insert after IHDR
+      const before = bytes.slice(0, ihdrEnd);
+      const after = bytes.slice(ihdrEnd);
+      const out = new Uint8Array(before.length + physChunk.length + after.length);
+      out.set(before, 0);
+      out.set(physChunk, before.length);
+      out.set(after, before.length + physChunk.length);
+      return new Blob([out], { type: 'image/png' });
+    });
+  }
+
   // Export a single SVG inside a container as PNG. Returns a Promise that resolves when complete.
   function exportPNGForContainer(containerId, filenamePrefix) {
     return new Promise((resolve, reject) => {
@@ -80,10 +190,12 @@
         }
       }
 
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, width);
-      canvas.height = Math.max(1, height);
-      const ctx = canvas.getContext('2d');
+  const SCALE = 2; // export at 2x pixel density
+  const DPI = 300; // target DPI to embed in PNG
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, width) * SCALE;
+  canvas.height = Math.max(1, height) * SCALE;
+  const ctx = canvas.getContext('2d');
 
       // Inline styles similarly to SVG export
       const clone = svgElement.cloneNode(true);
@@ -106,21 +218,60 @@
 
       img.onload = function() {
         try {
-          if (ctx) {
+            if (ctx) {
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Draw at high resolution by using the full canvas pixel size
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           }
 
           if (canvas.toBlob) {
             canvas.toBlob(function(b) {
               if (b) {
-                downloadBlob(b, `${filenamePrefix || 'export'}_${Date.now()}.png`);
-                URL.revokeObjectURL(url);
-                resolve();
+                // Insert pHYs chunk for DPI metadata
+                addPngPhysChunk(b, DPI).then((newBlob) => {
+                  downloadBlob(newBlob, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                  URL.revokeObjectURL(url);
+                  resolve();
+                }).catch(() => {
+                  // fallback to original blob
+                  downloadBlob(b, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                  URL.revokeObjectURL(url);
+                  resolve();
+                });
               } else {
                 // Fallback to data URL
-                const dataUrl = canvas.toDataURL('image/png');
+                try {
+                  const dataUrl = canvas.toDataURL('image/png');
+                  // convert dataURL to blob and insert pHYs
+                  fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
+                    downloadBlob(newB, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                    URL.revokeObjectURL(url);
+                    resolve();
+                  }).catch(() => {
+                    const a = document.createElement('a');
+                    a.href = dataUrl;
+                    a.download = `${filenamePrefix || 'export'}_${Date.now()}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    resolve();
+                  });
+                } catch (e) {
+                  URL.revokeObjectURL(url);
+                  reject(e);
+                }
+              }
+            });
+          } else {
+            try {
+              const dataUrl = canvas.toDataURL('image/png');
+              fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
+                downloadBlob(newB, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                URL.revokeObjectURL(url);
+                resolve();
+              }).catch(() => {
                 const a = document.createElement('a');
                 a.href = dataUrl;
                 a.download = `${filenamePrefix || 'export'}_${Date.now()}.png`;
@@ -129,18 +280,10 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 resolve();
-              }
-            });
-          } else {
-            const dataUrl = canvas.toDataURL('image/png');
-            const a = document.createElement('a');
-            a.href = dataUrl;
-            a.download = `${filenamePrefix || 'export'}_${Date.now()}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            resolve();
+              });
+            } catch (e) {
+              reject(e);
+            }
           }
         } catch (err) {
           URL.revokeObjectURL(url);
@@ -371,9 +514,11 @@
         return reject(new Error('No snapshot'));
       }
       const prefix = resolveVizExportPrefix(filenamePrefix);
+      const SCALE = 2;
+      const DPI = 300;
       const canvas = document.createElement('canvas');
-      canvas.width = snapshot.width;
-      canvas.height = snapshot.height;
+      canvas.width = snapshot.width * SCALE;
+      canvas.height = snapshot.height * SCALE;
       const ctx = canvas.getContext('2d');
       const img = new Image();
       const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(snapshot.svgString)}`;
@@ -386,29 +531,43 @@
           if (canvas.toBlob) {
             canvas.toBlob((blob) => {
               if (blob) {
-                downloadBlob(blob, `${prefix}_${Date.now()}.png`);
-                resolve();
+                addPngPhysChunk(blob, DPI).then(newBlob => {
+                  downloadBlob(newBlob, `${prefix}_${Date.now()}.png`);
+                  resolve();
+                }).catch(() => {
+                  downloadBlob(blob, `${prefix}_${Date.now()}.png`);
+                  resolve();
+                });
               } else {
-                // fallback
                 const dataUrl = canvas.toDataURL('image/png');
-                const a = document.createElement('a');
-                a.href = dataUrl;
-                a.download = `${prefix}_${Date.now()}.png`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                resolve();
+                fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
+                  downloadBlob(newB, `${prefix}_${Date.now()}.png`);
+                  resolve();
+                }).catch(() => {
+                  const a = document.createElement('a');
+                  a.href = dataUrl;
+                  a.download = `${prefix}_${Date.now()}.png`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  resolve();
+                });
               }
             });
           } else {
             const dataUrl = canvas.toDataURL('image/png');
-            const a = document.createElement('a');
-            a.href = dataUrl;
-            a.download = `${prefix}_${Date.now()}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            resolve();
+            fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
+              downloadBlob(newB, `${prefix}_${Date.now()}.png`);
+              resolve();
+            }).catch(() => {
+              const a = document.createElement('a');
+              a.href = dataUrl;
+              a.download = `${prefix}_${Date.now()}.png`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              resolve();
+            });
           }
         } catch (err) {
           reject(err);

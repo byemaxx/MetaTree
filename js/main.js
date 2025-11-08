@@ -2746,10 +2746,10 @@ function addInteractions(nodes, sample) {
             let tooltipHtml = `
                 <div class="tooltip-taxon">${d.data.name}</div>
                 <div><strong>Sample:</strong> ${sample}</div>
-                <div>Full path: ${d.data.fullName || 'Root'}</div>
+                <div>Name: ${d.data.fullName || 'Root'}</div>
                 <div>Depth: ${d.depth}</div>
-                <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
                 ${d.children ? `<div>Children: ${d.children.length}</div>` : ''}
+                <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
             `;
 
             // 如果启用了同步缩放，则在所有 panel 中高亮相同节点并收集丰度信息

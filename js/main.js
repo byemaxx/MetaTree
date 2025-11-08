@@ -1216,6 +1216,8 @@ function buildTreeWithGroupData() {
 function initVisualization() {
     const vizContainer = document.getElementById('viz-container');
     vizContainer.innerHTML = '';
+    // Clear any inline display modifications (e.g., matrix mode may set display:block)
+    try { vizContainer.style.display = ''; } catch (_) {}
     svgs = {};
     zooms = {};
     svgGroups = {};

@@ -631,16 +631,28 @@
       return;
     }
 
-    const vizContainer = document.getElementById('viz-container');
-    vizContainer.innerHTML = '';
+  const vizContainer = document.getElementById('viz-container');
+  vizContainer.innerHTML = '';
+  // For comparison matrix mode, allow the viz container to behave as a block so
+  // the matrix container can size to its content (width = max-content). We
+  // set display:block here and restore it when normal panel rendering runs.
+  try { vizContainer.style.display = 'block'; } catch (_) {}
     const matrixStore = resolveComparisonRendererStore();
     try { matrixStore.clear(); } catch (_) {}
 
     const treatments = [...new Set(comparisons.flatMap(c => [c.treatment_1, c.treatment_2]))];
     const n = treatments.length;
     const matrixContainer = document.createElement('div');
-    matrixContainer.className = 'comparison-matrix-container';
+  matrixContainer.className = 'comparison-matrix-container';
     matrixContainer.id = 'comparison-matrix';
+  // Make the matrix container size to its inner grid so exports capture full width.
+  try {
+    // set inline width to max-content to ensure render/export code sees correct size
+    matrixContainer.style.width = 'max-content';
+    matrixContainer.style.maxWidth = 'none';
+    // keep centering via margin (CSS also sets this)
+    matrixContainer.style.margin = 'var(--spacing-lg) auto';
+  } catch (_) {}
 
     const title = document.createElement('div');
     title.className = 'matrix-title';
@@ -652,11 +664,13 @@
     matrixGrid.id = 'comparison-matrix-grid';
     const colCount = Math.max(n - 1, 0);
     const rowCount = Math.max(n - 1, 0);
+    // Use fixed max for cells (match min) so columns have stable width and the
+    // container's horizontal scrollbar can handle overflow when there are many columns.
     matrixGrid.style.gridTemplateColumns = colCount > 0
-      ? `150px repeat(${colCount}, minmax(var(--matrix-cell-min-width, 150px), 1fr))`
+      ? `150px repeat(${colCount}, minmax(var(--matrix-cell-min-width, 150px), var(--matrix-cell-min-width, 150px)))`
       : '150px';
     matrixGrid.style.gridTemplateRows = rowCount > 0
-      ? `40px repeat(${rowCount}, minmax(var(--matrix-cell-min-height, 150px), 1fr))`
+      ? `40px repeat(${rowCount}, minmax(var(--matrix-cell-min-height, 150px), var(--matrix-cell-min-height, 150px)))`
       : '40px';
 
     const cornerCell = createEmptyCell();

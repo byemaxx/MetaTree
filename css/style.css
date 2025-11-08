@@ -83,6 +83,10 @@
     /* Layout defaults */
     --matrix-cell-min-width: 200px;
     --matrix-cell-min-height: 200px;
+
+    /* 新增：面板最小高度和 SVG 默认高度，方便统一调整 */
+    --panel-min-height: 420px;       /* 面板最小高度（可按需调整） */
+    --panel-svg-height: 520px;       /* SVG 面板默认高度（可按需调整） */
 }
 
 * {
@@ -744,6 +748,10 @@ button:disabled {
     );
     gap: var(--panel-grid-gap);
     justify-content: center;
+
+    /* 新增：确保每一行至少有固定最小高度，便于控制面板高度 */
+    grid-auto-rows: minmax(var(--panel-min-height), auto);
+    align-items: start;
 }
 
 .tree-panel {
@@ -837,7 +845,8 @@ button:disabled {
 
 .tree-svg-container {
     width: 100%;
-    height: var(--panel-svg-height, 700px);
+    /* 使用统一变量以便于高度统一配置；回退值改为更合理的默认值 */
+    height: var(--panel-svg-height, 520px);
     position: relative;
 }
 

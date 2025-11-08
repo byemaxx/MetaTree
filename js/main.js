@@ -108,6 +108,67 @@ try { if (typeof window !== 'undefined') window.lastGlobalDomain = lastGlobalDom
 let manualColorDomainValue = null;
 try { if (typeof window !== 'undefined') window.manualColorDomainValue = manualColorDomainValue; } catch(_) {}
 
+function getResponsiveTreePanelSize(container, options = {}) {
+    if (!container) return { width: 0, height: 0 };
+
+    const width = container.clientWidth || container.offsetWidth || 0;
+    const autoHeight = options.autoHeight !== false;
+    const applyHeight = options.applyHeight !== false && autoHeight;
+    const docStyle = (typeof window !== 'undefined' && window.getComputedStyle)
+        ? window.getComputedStyle(document.documentElement)
+        : null;
+
+    const readVar = (name) => {
+        if (!docStyle || !name) return NaN;
+        const value = parseFloat(docStyle.getPropertyValue(name));
+        return Number.isFinite(value) ? value : NaN;
+    };
+
+    if (!autoHeight) {
+        const fallbackHeight = container.clientHeight || readVar(options.heightVar) || readVar('--panel-svg-height') || 0;
+        return { width, height: fallbackHeight };
+    }
+
+    let configuredWidth = readVar(options.widthVar || '--panel-min-width');
+    if (!(configuredWidth > 0)) configuredWidth = 600;
+
+    const heightVarNames = Array.isArray(options.heightVar)
+        ? options.heightVar.filter(Boolean)
+        : (options.heightVar ? [options.heightVar] : []);
+    if (!heightVarNames.includes('--panel-svg-height')) heightVarNames.push('--panel-svg-height');
+    if (!heightVarNames.includes('--comparison-panel-svg-height')) heightVarNames.push('--comparison-panel-svg-height');
+
+    let configuredHeight = heightVarNames
+        .map((name) => readVar(name))
+        .find((val) => Number.isFinite(val) && val > 0);
+    if (!(configuredHeight > 0)) configuredHeight = 700;
+
+    const maxHeightRaw = Number.isFinite(options.maxHeight) ? options.maxHeight : configuredHeight;
+    const minHeightRaw = Number.isFinite(options.minHeight) ? options.minHeight : 360;
+    const maxHeight = Math.max(1, maxHeightRaw);
+    const minHeight = Math.min(maxHeight, Math.max(1, minHeightRaw));
+
+    let resolvedHeight = configuredHeight;
+    if (width > 0 && configuredWidth > 0) {
+        const aspectRatio = configuredHeight / configuredWidth;
+        if (aspectRatio > 0) {
+            resolvedHeight = width * aspectRatio;
+        }
+    }
+
+    if (Number.isFinite(maxHeight)) resolvedHeight = Math.min(resolvedHeight, maxHeight);
+    if (Number.isFinite(minHeight)) resolvedHeight = Math.max(resolvedHeight, minHeight);
+    resolvedHeight = Math.max(1, resolvedHeight);
+
+    if (applyHeight) {
+        container.style.minHeight = `${resolvedHeight}px`;
+        container.style.height = `${resolvedHeight}px`;
+    }
+
+    return { width, height: resolvedHeight };
+}
+try { if (typeof window !== 'undefined') window.getResponsiveTreePanelSize = getResponsiveTreePanelSize; } catch (_) {}
+
 function getAutoDomainDisplayMagnitude(domain) {
     if (!domain || typeof domain !== 'object') return null;
     let magnitude = null;
@@ -1648,8 +1709,11 @@ function drawTree(sample, globalDomain) {
 
     container.innerHTML = '';
     
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const size = (typeof getResponsiveTreePanelSize === 'function')
+        ? getResponsiveTreePanelSize(container, { heightVar: '--panel-svg-height' })
+        : null;
+    const width = (size && typeof size.width === 'number') ? size.width : container.clientWidth;
+    const height = (size && typeof size.height === 'number') ? size.height : container.clientHeight;
 
     const svg = d3.select(container)
         .append('svg')

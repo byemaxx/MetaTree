@@ -263,8 +263,15 @@
 
     const container = document.getElementById(svgContainer.id);
     if (!container) return;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const size = (typeof getResponsiveTreePanelSize === 'function')
+      ? getResponsiveTreePanelSize(container, {
+          heightVar: '--comparison-panel-svg-height',
+          autoHeight: !useModal,
+          applyHeight: !useModal
+        })
+      : null;
+    const width = (size && typeof size.width === 'number') ? size.width : container.clientWidth;
+    const height = (size && typeof size.height === 'number') ? size.height : container.clientHeight;
 
     const svg = d3.select(container)
       .append('svg')

@@ -3010,8 +3010,9 @@ async function handleLoadExampleClick() {
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = 'Loading example data...';
         
-    // 加载示例 taxa.tsv
-    const taxaResp = await fetch('test/data/taxa.tsv', { cache: 'no-store' });
+    // 加载示例 taxa.tsv（使用基于页面 base URI 的绝对 URL，兼容 GitHub Pages 子路径）
+    const taxaUrl = new URL('test/data/taxa.tsv', document.baseURI).href;
+    const taxaResp = await fetch(taxaUrl, { cache: 'no-store' });
         
         if (!taxaResp.ok) {
             throw new Error(`HTTP error! status: ${taxaResp.status} - ${taxaResp.statusText}`);
@@ -3048,7 +3049,8 @@ async function handleLoadExampleClick() {
         
         // 尝试加载示例 meta.tsv（注意与数据文件同目录，文件名小写）
         try {
-            const metaResp = await fetch('test/data/meta.tsv', { cache: 'no-store' });
+            const metaUrl = new URL('test/data/meta.tsv', document.baseURI).href;
+            const metaResp = await fetch(metaUrl, { cache: 'no-store' });
             
             if (metaResp.ok) {
                 const metaText = await metaResp.text();

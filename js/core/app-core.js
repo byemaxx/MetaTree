@@ -2743,14 +2743,29 @@ function addInteractions(nodes, sample) {
 
             // 构建 tooltip 内容
             const abundance = d.data.abundances[sample] || 0;
+            // If using combined_long (isCombinedLong) and stats are available, include pvalue/padj
+            const statForSample = (d.data && d.data.stats) ? d.data.stats[sample] : null;
             let tooltipHtml = `
                 <div class="tooltip-taxon">${d.data.name}</div>
                 <div><strong>Sample:</strong> ${sample}</div>
                 <div>Name: ${d.data.fullName || 'Root'}</div>
                 <div>Depth: ${d.depth}</div>
                 ${d.children ? `<div>Children: ${d.children.length}</div>` : ''}
-                <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}</div>
-            `;
+                <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+
+            if (isCombinedLong && statForSample) {
+                // show pvalue and padj (qvalue) when available
+                const pv = (Number.isFinite(statForSample.pvalue)) ? statForSample.pvalue : undefined;
+                const qv = (Number.isFinite(statForSample.qvalue)) ? statForSample.qvalue : statForSample.padj !== undefined ? statForSample.padj : undefined;
+                if (pv !== undefined) {
+                    tooltipHtml += ` <span style="font-size:11px; color: #ddd;">p=${pv.toExponential ? pv.toExponential(2) : pv.toFixed ? pv.toFixed(3) : pv}</span>`;
+                }
+                if (qv !== undefined) {
+                    tooltipHtml += ` <span style="font-size:11px; color: #ddd;">padj=${qv.toExponential ? qv.toExponential(2) : qv.toFixed ? qv.toFixed(3) : qv}</span>`;
+                }
+            }
+
+            tooltipHtml += `</div>`;
 
             // 如果启用了同步缩放，则在所有 panel 中高亮相同节点并收集丰度信息
             if (syncZoomEnabled && (visualizationMode === 'single' || visualizationMode === 'group')) {
@@ -2785,11 +2800,13 @@ function addInteractions(nodes, sample) {
                                 .attr('stroke', '#ff6b6b')
                                 .attr('stroke-width', 3);
                             
-                            // 收集丰度信息
+                            // 收集丰度信息以及该节点在目标样本/条件下的统计信息（若有）
                             const otherAbund = nodeData.data.abundances[otherSample] || 0;
+                            const otherStat = (nodeData.data && nodeData.data.stats) ? nodeData.data.stats[otherSample] : null;
                             otherAbundances.push({
                                 sample: otherSample,
-                                abundance: otherAbund
+                                abundance: otherAbund,
+                                stat: otherStat
                             });
                         }
                     });
@@ -2798,8 +2815,23 @@ function addInteractions(nodes, sample) {
                 // 如果有其他样本的丰度信息，添加到 tooltip
                 if (otherAbundances.length > 0) {
                     tooltipHtml += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Other samples:</strong></div>';
+                    // Determine whether the UI has "Filter by significance" for single-sample mode enabled
+                    const singleFilterChecked = !!(document.getElementById('single-show-significance')?.checked);
                     otherAbundances.forEach(info => {
-                        tooltipHtml += `<div style="font-size: 11px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}</div>`;
+                        let suffix = '';
+                        if (singleFilterChecked && isCombinedLong) {
+                            // try to read stats for this node/sample to see if it passes single-sample significance
+                            const nodeStats = (d && d.data && d.data.stats) ? d.data.stats : null;
+                            // NOTE: nodeStats in this scope refers to current hovered node; we need the other sample's stats from the matched nodeData
+                            // Try to access stored stats that we may have on otherAbundances entries (if present)
+                            const otherStat = info.stat || null;
+                            try {
+                                if (otherStat && isSignificantBySingleThresholds(otherStat)) {
+                                    suffix = ' <span style="color:#e74c3c; font-weight:700;">(sig)</span>';
+                                }
+                            } catch (_) { /* ignore */ }
+                        }
+                        tooltipHtml += `<div style="font-size: 11px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}${suffix}</div>`;
                     });
                 }
             }

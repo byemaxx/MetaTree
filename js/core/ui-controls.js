@@ -72,14 +72,14 @@ const FILE_FORMAT_INFO_CONTENT = {
                         <tbody>
                             <tr>
                                 <td>d__Archaea|p__Methanobacteriota|...</td>
-                                <td>Treatment_vs_Control</td>
+                                <td>Control_vs_Group_A</td>
                                 <td>1.37</td>
                                 <td>0.0004</td>
                                 <td>0.002</td>
                             </tr>
                             <tr>
                                 <td>d__Bacteria|p__Actinobacteriota|...</td>
-                                <td>GroupB_vs_GroupA</td>
+                                <td>Control_vs_Group_B</td>
                                 <td>-0.85</td>
                                 <td>0.013</td>
                                 <td>0.040</td>

@@ -742,12 +742,14 @@
     const rowCount = Math.max(n - 1, 0);
     // Use fixed max for cells (match min) so columns have stable width and the
     // container's horizontal scrollbar can handle overflow when there are many columns.
+    // Use the shared CSS variable for label size so row and column labels
+    // are symmetric. Default to 40px when the variable isn't set.
     matrixGrid.style.gridTemplateColumns = colCount > 0
-      ? `150px repeat(${colCount}, minmax(var(--matrix-cell-min-width, 150px), var(--matrix-cell-min-width, 150px)))`
-      : '150px';
+      ? `var(--matrix-label-size, 40px) repeat(${colCount}, minmax(var(--matrix-cell-min-width, 150px), var(--matrix-cell-min-width, 150px)))`
+      : 'var(--matrix-label-size, 40px)';
     matrixGrid.style.gridTemplateRows = rowCount > 0
-      ? `40px repeat(${rowCount}, minmax(var(--matrix-cell-min-height, 150px), var(--matrix-cell-min-height, 150px)))`
-      : '40px';
+      ? `var(--matrix-label-size, 40px) repeat(${rowCount}, minmax(var(--matrix-cell-min-height, 150px), var(--matrix-cell-min-height, 150px)))`
+      : 'var(--matrix-label-size, 40px)';
 
     const cornerCell = createEmptyCell();
     cornerCell.style.pointerEvents = 'none';

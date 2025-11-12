@@ -44,6 +44,12 @@
     border: 1px solid var(--border-color);
 }
 
+/* matrix label sizing: use a single CSS variable so row and column labels
+   share the same size. Default to 40px (matches previous column label height). */
+:root {
+    --matrix-label-size: 40px;
+}
+
 /* Let the grid size itself to its content so the container's scrollbar
    can handle overflow. Using max-content prevents the grid from forcing
    overflow outside the container while preserving column sizing. */
@@ -106,12 +112,28 @@
     text-overflow: ellipsis;
 }
 
-.matrix-row-label {
-    writing-mode: horizontal-tb;
+/* Column labels: use the label size as height so they remain thin */
+.matrix-col-label {
+    height: var(--matrix-label-size, 40px);
+    line-height: var(--matrix-label-size, 40px);
+    writing-mode: horizontal-tb; /* keep column labels horizontal */
 }
 
-.matrix-col-label {
-    writing-mode: horizontal-tb;
+/* Row labels: make them match the column label size (width) and display
+   their text vertically. Use writing-mode + text-orientation for best
+   cross-language support; fall back to rotate for older browsers if needed. */
+.matrix-row-label {
+    width: var(--matrix-label-size, 40px);
+    min-width: var(--matrix-label-size, 40px);
+    max-width: var(--matrix-label-size, 40px);
+    height: auto;
+    writing-mode: sideways-lr;
+    text-orientation: mixed;
+    transform-origin: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--spacing-xs));
 }
 
 

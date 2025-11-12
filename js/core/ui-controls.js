@@ -2943,6 +2943,45 @@ function initSidebarCollapseControl() {
     });
 }
 
+function initSidebarToggleScrollProxy() {
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const mainContent = document.querySelector('.main-content');
+    if (!toggleBtn || !mainContent) return;
+
+    const gutterPadding = 12;
+    const minGutterWidth = 40;
+
+    const handleWheel = (event) => {
+        const rect = toggleBtn.getBoundingClientRect();
+        const gutterWidth = Math.max(rect.width + (gutterPadding * 2), minGutterWidth);
+        const gutterLeft = rect.left - ((gutterWidth - rect.width) / 2);
+        const gutterRight = gutterLeft + gutterWidth;
+        const isWithinGutter = event.clientX >= gutterLeft && event.clientX <= gutterRight;
+        const isBelowToggle = event.clientY > rect.bottom;
+        if (!isWithinGutter || !isBelowToggle) return;
+
+        let consumed = false;
+
+        if (event.deltaY !== 0 && mainContent.scrollHeight > mainContent.clientHeight) {
+            const previousTop = mainContent.scrollTop;
+            mainContent.scrollTop += event.deltaY;
+            consumed = consumed || mainContent.scrollTop !== previousTop;
+        }
+
+        if (event.deltaX !== 0 && mainContent.scrollWidth > mainContent.clientWidth) {
+            const previousLeft = mainContent.scrollLeft;
+            mainContent.scrollLeft += event.deltaX;
+            consumed = consumed || mainContent.scrollLeft !== previousLeft;
+        }
+
+        if (consumed) {
+            event.preventDefault();
+        }
+    };
+
+    document.addEventListener('wheel', handleWheel, { passive: false });
+}
+
 // ========== 页面加载时初始化 ==========
 function initFileFormatInfoModal() {
     const modal = document.getElementById('file-format-modal');
@@ -3001,6 +3040,7 @@ function initFileFormatInfoModal() {
 document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
     initSidebarCollapseControl();
+    initSidebarToggleScrollProxy();
     initDataParameterControls();
     initFileFormatInfoModal();
     

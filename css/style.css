@@ -109,6 +109,10 @@ body {
     line-height: 1.6;
 }
 
+body.info-modal-open {
+    overflow: hidden;
+}
+
 
 .container {
     max-width: 100%;
@@ -732,6 +736,187 @@ button:disabled {
     color: var(--text-secondary);
 }
 
+.label-with-help {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.info-icon-btn {
+    border: none;
+    background: transparent;
+    padding: 2px;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+    box-shadow: none;
+}
+
+.info-icon-btn:hover,
+.info-icon-btn:focus-visible {
+    color: var(--primary-color);
+    background: rgba(102, 116, 219, 0.12);
+    outline: none;
+}
+
+.info-icon-btn svg {
+    pointer-events: none;
+}
+
+.info-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1600;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-modal.is-visible {
+    display: flex;
+}
+
+.info-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.info-modal-content {
+    position: relative;
+    z-index: 1;
+    background: var(--bg-white);
+    border-radius: var(--radius-2xl);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    width: min(680px, 94vw);
+    max-height: 85vh;
+    padding: var(--spacing-2xl);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.info-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.info-modal-header h3 {
+    margin: 0;
+    font-size: var(--font-2xl);
+}
+
+.info-modal-close {
+    border: none;
+    background: transparent;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+}
+
+.info-modal-close:hover,
+.info-modal-close:focus-visible {
+    color: var(--primary-color);
+    background: rgba(102, 116, 219, 0.12);
+    outline: none;
+}
+
+.info-modal-body {
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    line-height: 1.7;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.info-example {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xl);
+    background: var(--bg-lighter);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.info-example-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.info-modal-body pre {
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    overflow-x: auto;
+    font-family: 'Fira Code', 'SFMono-Regular', Consolas, monospace;
+    font-size: 12px;
+    margin: var(--spacing-sm) 0;
+}
+
+.info-table-wrapper {
+    overflow-x: auto;
+    margin-top: var(--spacing-sm);
+}
+
+.info-sample-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-sm);
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.info-sample-table th,
+.info-sample-table td {
+    border: 1px solid var(--border-light);
+    padding: 8px 10px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.info-sample-table thead {
+    background: rgba(102, 116, 219, 0.08);
+    color: var(--text-primary);
+}
+
+.info-sample-table tbody tr:nth-child(even) {
+    background: var(--bg-lighter);
+}
+
+.info-modal-list {
+    margin: var(--spacing-sm) 0 0;
+    padding-left: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-modal-list li {
+    list-style: disc;
+}
+
+@media (max-width: 640px) {
+    .info-modal-content {
+        width: 92vw;
+        padding: var(--spacing-xl);
+    }
+}
 
 /* ========== 可视化容器 ========== */
 .viz-container {

@@ -20,6 +20,125 @@ const MODE_COLOR_KEY_MAP = {
     matrix: 'comparison'
 };
 
+const FILE_FORMAT_INFO_CONTENT = {
+    data: {
+        title: 'Data File Format',
+        html: `
+            <p><strong>Supported inputs:</strong> Tab/CSV/plain-text files that contain either a wide abundance table or a combined long-format statistics table.</p>
+            <div class="info-example">
+                <div class="info-example-title">Wide hierarchy table (recommended)</div>
+                <div class="info-table-wrapper">
+                    <table class="info-sample-table" aria-label="Wide hierarchy table example">
+                        <thead>
+                            <tr>
+                                <th>Taxon</th>
+                                <th>Sample_A</th>
+                                <th>Sample_B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>k__Bacteria|p__Firmicutes|c__Bacilli</td>
+                                <td>123.4</td>
+                                <td>98.1</td>
+                            </tr>
+                            <tr>
+                                <td>k__Bacteria|p__Bacteroidota|c__Bacteroidia</td>
+                                <td>56.0</td>
+                                <td>44.2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="info-modal-list">
+                    <li>Column 1: full ranked path (separator defaults to | and can be edited via "Taxa rank separator").</li>
+                    <li>Remaining columns: numeric values for each sample or condition.</li>
+                    <li>Switch between tab, comma, or custom delimiters inside "Load parameters".</li>
+                </ul>
+            </div>
+            <div class="info-example">
+                <div class="info-example-title">Combined long-format stats</div>
+                <div class="info-table-wrapper">
+                    <table class="info-sample-table" aria-label="Long-format statistics example">
+                        <thead>
+                            <tr>
+                                <th>Item_ID</th>
+                                <th>condition</th>
+                                <th>log2FoldChange</th>
+                                <th>pvalue</th>
+                                <th>padj</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>d__Archaea|p__Methanobacteriota|...</td>
+                                <td>Treatment_vs_Control</td>
+                                <td>1.37</td>
+                                <td>0.0004</td>
+                                <td>0.002</td>
+                            </tr>
+                            <tr>
+                                <td>d__Bacteria|p__Actinobacteriota|...</td>
+                                <td>GroupB_vs_GroupA</td>
+                                <td>-0.85</td>
+                                <td>0.013</td>
+                                <td>0.040</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="info-modal-list">
+                    <li>Item_ID must match a hierarchy node (taxon or taxa-function).</li>
+                    <li>condition labels distinguish contrasts; log2FoldChange/pvalue/padj drive coloring and filtering.</li>
+                    <li>Load the wide table, the long-format table, or both depending on your workflow.</li>
+                </ul>
+            </div>
+            <p class="text-muted">Tip: Use the “Load Example” button to inspect a working template before uploading your own file.</p>
+        `
+    },
+    meta: {
+        title: 'Metadata File Format',
+        html: `
+            <p><strong>Purpose:</strong> Provide sample-level descriptors (Group, Treatment, Batch, etc.) so MetaTree can build groups, filters, and comparisons.</p>
+            <div class="info-example">
+                <div class="info-example-title">Metadata example</div>
+                <div class="info-table-wrapper">
+                    <table class="info-sample-table" aria-label="Metadata example">
+                        <thead>
+                            <tr>
+                                <th>Sample</th>
+                                <th>Group</th>
+                                <th>Treatment</th>
+                                <th>Sex</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sample_A</td>
+                                <td>Control</td>
+                                <td>Placebo</td>
+                                <td>Male</td>
+                            </tr>
+                            <tr>
+                                <td>Sample_B</td>
+                                <td>Treatment</td>
+                                <td>DrugX</td>
+                                <td>Female</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="info-modal-list">
+                    <li>The Sample column must match headers from the data table (case-sensitive).</li>
+                    <li>Additional columns are free-form; MetaTree lists them automatically in the UI.</li>
+                    <li>Mix categorical and numeric fields as needed for grouping or filtering.</li>
+                </ul>
+            </div>
+            <p class="text-muted">Use the same delimiter choice as the data file so both uploads can be parsed consistently.</p>
+        `
+    }
+};
+
 function createEmptyModeColorSetting() {
     return { colors: null, domain: null };
 }
@@ -2825,10 +2944,65 @@ function initSidebarCollapseControl() {
 }
 
 // ========== 页面加载时初始化 ==========
+function initFileFormatInfoModal() {
+    const modal = document.getElementById('file-format-modal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('file-format-modal-title');
+    const bodyEl = document.getElementById('file-format-modal-body');
+    const closeBtn = document.getElementById('file-format-modal-close');
+    const overlay = modal.querySelector('.info-modal-overlay');
+    let activeTrigger = null;
+
+    const openModal = (type, trigger) => {
+        const content = FILE_FORMAT_INFO_CONTENT[type];
+        if (!content || !titleEl || !bodyEl) return;
+        titleEl.textContent = content.title;
+        bodyEl.innerHTML = content.html;
+        modal.classList.add('is-visible');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('info-modal-open');
+        activeTrigger = trigger || null;
+        if (closeBtn) closeBtn.focus();
+    };
+
+    const closeModal = () => {
+        modal.classList.remove('is-visible');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('info-modal-open');
+        if (activeTrigger && typeof activeTrigger.focus === 'function') {
+            activeTrigger.focus();
+        }
+        activeTrigger = null;
+    };
+
+    const handleKeydown = (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
+            closeModal();
+        }
+    };
+
+    document.addEventListener('keydown', handleKeydown);
+
+    const attachTrigger = (elementId, type) => {
+        const trigger = document.getElementById(elementId);
+        if (!trigger) return;
+        trigger.addEventListener('click', () => openModal(type, trigger));
+    };
+
+    attachTrigger('data-file-info-btn', 'data');
+    attachTrigger('meta-file-info-btn', 'meta');
+
+    [closeBtn, overlay].forEach((el) => {
+        if (el) el.addEventListener('click', closeModal);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
     initSidebarCollapseControl();
     initDataParameterControls();
+    initFileFormatInfoModal();
     
     // 初始化 taxon 筛选功能
     initTaxonFilters();

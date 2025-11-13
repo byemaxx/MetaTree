@@ -278,8 +278,8 @@ body.info-modal-open {
 }
 
 .site-icon {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     display: inline-block;
     object-fit: contain;
 }

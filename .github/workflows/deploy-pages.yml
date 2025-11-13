@@ -1,0 +1,37 @@
+name: Deploy MetaTree Site
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-note:
+        description: 'Optional note describing this deploy (shown in workflow UI)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  pages: write
+  actions: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure GitHub Pages target
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifacts for Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v1
+        with:
+          deploy-commit-message: |
+            Deploy site${{ inputs.release-note && format(' – {}', inputs.release-note) }}

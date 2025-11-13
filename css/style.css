@@ -1172,9 +1172,7 @@ button:disabled {
     position: relative;
     border: 1px solid var(--tree-panel-border, var(--border-color));
     border-radius: var(--radius-lg);
-    background: linear-gradient(135deg,
-        var(--tree-panel-bg, #fafbfd) 0%,
-        var(--tree-panel-bg-alt, #f5f7fa) 100%);
+    background: var(--tree-panel-bg, #fafbfd);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
     transition: var(--transition-base);

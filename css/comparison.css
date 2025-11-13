@@ -64,9 +64,7 @@
 /* ========== 矩阵单元格 ========== */
 .matrix-cell {
     position: relative;
-    background: linear-gradient(135deg,
-        var(--tree-panel-bg, var(--bg-white)) 0%,
-        var(--tree-panel-bg-alt, var(--bg-light)) 100%);
+    background: var(--tree-panel-bg, var(--bg-white));
     border: 1px solid var(--tree-panel-border, var(--border-color));
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -219,9 +217,7 @@
 
 /* ========== 单个比较面板 ========== */
 .comparison-panel {
-    background: linear-gradient(135deg,
-        var(--tree-panel-bg, var(--bg-white)) 0%,
-        var(--tree-panel-bg-alt, var(--bg-light)) 100%);
+    background: var(--tree-panel-bg, var(--bg-white));
     border: 1px solid var(--tree-panel-border, var(--border-color));
     box-shadow: var(--shadow-sm);
 }
@@ -235,9 +231,7 @@
 /* Increase the SVG drawing area height for two-group comparison panels */
 .comparison-panel .tree-svg-container {
     height: var(--comparison-panel-svg-height, 800px);
-    background: linear-gradient(180deg,
-        var(--tree-panel-bg, var(--bg-white)) 0%,
-        var(--tree-panel-bg-alt, var(--bg-light)) 100%);
+    background: var(--tree-panel-bg, var(--bg-white));
     border-top: 1px solid var(--tree-panel-border, var(--border-color));
     padding: var(--spacing-md);
     border-radius: 0 0 var(--radius-lg) var(--radius-lg);

@@ -307,11 +307,21 @@
     const width = (size && typeof size.width === 'number') ? size.width : container.clientWidth;
     const height = (size && typeof size.height === 'number') ? size.height : container.clientHeight;
 
+    const treeCanvasBg = (() => {
+      if (typeof window === 'undefined' || !window.getComputedStyle) return '#ffffff';
+      try {
+        const styles = window.getComputedStyle(document.documentElement);
+        const val = styles.getPropertyValue('--tree-panel-bg');
+        if (val && val.trim()) return val.trim();
+      } catch (_) {}
+      return '#ffffff';
+    })();
+
     const svg = d3.select(container)
       .append('svg')
       .attr('width', width)
       .attr('height', height)
-      .style('background', '#ffffff');
+      .style('background', treeCanvasBg);
 
     // 背景
     svg.append('rect')
@@ -319,7 +329,7 @@
       .attr('y', 0)
       .attr('width', width)
       .attr('height', height)
-      .attr('fill', '#ffffff');
+      .attr('fill', treeCanvasBg);
 
     const rootG = svg.append('g');
     const g = rootG.append('g');

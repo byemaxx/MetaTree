@@ -1348,6 +1348,17 @@ button:disabled {
     background: var(--gradient-primary-hover);
 }
 
+#color-previews-toggle::after {
+    content: '▸';
+    display: inline-block;
+    margin-left: 4px;
+    transition: var(--transition-fast);
+}
+
+#color-previews-toggle.expanded::after {
+    content: '▾';
+}
+
 /* ========== Color scheme preview tiles ========== */
 #color-previews {
     display: flex;

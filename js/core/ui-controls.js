@@ -921,17 +921,27 @@ function initEventListeners() {
     document.getElementById('abundance-transform').addEventListener('change', handleAbundanceTransformChange);
     
     // 配色方案选择通过下方的可折叠预览条进行（点击预览切换）
-    const previewsToggle = document.getElementById('color-previews-toggle');
-    if (previewsToggle) {
-        previewsToggle.addEventListener('click', () => {
-            const wrap = document.getElementById('color-previews-wrapper');
-            if (!wrap) return;
-            const current = window.getComputedStyle(wrap).display;
-            const visible = current !== 'none';
-            wrap.style.display = visible ? 'none' : 'block';
-            previewsToggle.classList.toggle('expanded', !visible);
-        });
-    }
+const previewsToggle = document.getElementById('color-previews-toggle');
+if (previewsToggle) {
+    const syncPreviewsToggleState = () => {
+        const wrap = document.getElementById('color-previews-wrapper');
+        if (!wrap) return;
+        const expanded = window.getComputedStyle(wrap).display !== 'none';
+        previewsToggle.classList.toggle('expanded', expanded);
+        previewsToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+    };
+
+    previewsToggle.addEventListener('click', () => {
+        const wrap = document.getElementById('color-previews-wrapper');
+        if (!wrap) return;
+        const current = window.getComputedStyle(wrap).display;
+        const visible = current !== 'none';
+        wrap.style.display = visible ? 'none' : 'block';
+        syncPreviewsToggleState();
+    });
+
+    syncPreviewsToggleState();
+}
     // Removed deprecated diverging previews toggle; diverging palettes are now in Colors & Domain panel
     // 反转颜色复选框
     const rev = document.getElementById('color-reverse');

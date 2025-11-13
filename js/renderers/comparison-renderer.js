@@ -433,6 +433,16 @@
       };
     }
 
+    const comparisonHasNegatives = Array.isArray(comparisonColorDomain)
+      ? comparisonColorDomain.some(v => typeof v === 'number' && v < 0)
+      : false;
+    const zeroLinkColor = (typeof resolveZeroLinkColor === 'function')
+      ? resolveZeroLinkColor(colorAtVal, comparisonHasNegatives)
+      : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_LINK_COLOR);
+    const zeroNodeColor = (typeof resolveZeroNodeColor === 'function')
+      ? resolveZeroNodeColor(colorAtVal, comparisonHasNegatives)
+      : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_NODE_COLOR);
+
     // 自叶到根聚合强度（用于边宽）
     root.eachAfter(node => {
       if (!node.children || node.children.length === 0) {
@@ -465,9 +475,13 @@
         .style('fill', 'none')
         .style('stroke', d => {
           const stats = comparisonStats[d.target.data.name];
-          if (!stats) return ZERO_LINK_COLOR;
-          if (showOnlySignificant && !isSignificantByThresholds(stats)) return NONSIG_LINK_COLOR;
+          if (!stats) return zeroLinkColor;
+          const mean1 = stats.mean_1 || 0;
+          const mean2 = stats.mean_2 || 0;
+          const zeroAbundance = mean1 === 0 && mean2 === 0;
           const value = stats.comparison_value || 0;
+          if (zeroAbundance || value === 0) return zeroLinkColor;
+          if (showOnlySignificant && !isSignificantByThresholds(stats)) return NONSIG_LINK_COLOR;
           return colorAtVal(value);
         })
         .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
@@ -526,13 +540,14 @@
       .attr('r', d => computeVisualRadius(d))
       .style('fill', d => {
         const stats = comparisonStats[d.data.name];
-        if (!stats) return ZERO_NODE_COLOR;
+        if (!stats) return zeroNodeColor;
         const mean1 = stats.mean_1 || 0;
         const mean2 = stats.mean_2 || 0;
         const avg = (mean1 + mean2) / 2;
-        if (avg === 0) return ZERO_NODE_COLOR;
+        if (avg === 0) return zeroNodeColor;
         if (showOnlySignificant && !isSignificantByThresholds(stats)) return NONSIG_NODE_COLOR;
         const value = stats.comparison_value || 0;
+        if (value === 0) return zeroNodeColor;
         return colorAtVal(value);
       })
       .style('fill-opacity', () => Math.max(0, Math.min(1, typeof nodeOpacity !== 'undefined' ? nodeOpacity : 1)))
@@ -1021,6 +1036,16 @@
       };
     }
 
+    const comparisonHasNegativesMini = Array.isArray(comparisonColorDomain)
+      ? comparisonColorDomain.some(v => typeof v === 'number' && v < 0)
+      : false;
+    const zeroLinkColorMini = (typeof resolveZeroLinkColor === 'function')
+      ? resolveZeroLinkColor(colorAtValMini, comparisonHasNegativesMini)
+      : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_LINK_COLOR);
+    const zeroNodeColorMini = (typeof resolveZeroNodeColor === 'function')
+      ? resolveZeroNodeColor(colorAtValMini, comparisonHasNegativesMini)
+      : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_NODE_COLOR);
+
     if (layoutConfig.mode === 'packing') {
       g.selectAll('.link').remove();
     } else {
@@ -1033,9 +1058,13 @@
         .style('fill', 'none')
         .style('stroke', d => {
           const stats = comparisonStats[d.target.data.name];
-          if (!stats) return ZERO_LINK_COLOR;
-          if (showOnlySignificant && !isSignificantByThresholds(stats)) return ZERO_LINK_COLOR;
+          if (!stats) return zeroLinkColorMini;
+          const mean1 = stats.mean_1 || 0;
+          const mean2 = stats.mean_2 || 0;
+          const zeroAbundance = mean1 === 0 && mean2 === 0;
           const value = stats.comparison_value || 0;
+          if (zeroAbundance || value === 0) return zeroLinkColorMini;
+          if (showOnlySignificant && !isSignificantByThresholds(stats)) return zeroLinkColorMini;
           return colorAtValMini(value);
         })
         .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
@@ -1069,13 +1098,14 @@
       .attr('r', d => computeMiniVisualRadius(d))
       .style('fill', d => {
         const stats = comparisonStats[d.data.name];
-        if (!stats) return ZERO_NODE_COLOR;
+        if (!stats) return zeroNodeColorMini;
         const mean1 = stats.mean_1 || 0;
         const mean2 = stats.mean_2 || 0;
         const avgAbundance = (mean1 + mean2) / 2;
-        if (avgAbundance === 0) return ZERO_NODE_COLOR;
-        if (showOnlySignificant && !isSignificantByThresholds(stats)) return ZERO_NODE_COLOR;
+        if (avgAbundance === 0) return zeroNodeColorMini;
+        if (showOnlySignificant && !isSignificantByThresholds(stats)) return zeroNodeColorMini;
         const value = stats.comparison_value || 0;
+        if (value === 0) return zeroNodeColorMini;
         return colorAtValMini(value);
       })
       .style('fill-opacity', () => Math.max(0, Math.min(1, typeof nodeOpacity !== 'undefined' ? nodeOpacity : 1)))

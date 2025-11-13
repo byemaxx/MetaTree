@@ -21,6 +21,8 @@ let customColorEnd = '#08519c'; // 自定义渐变结束颜色
 let customColorMid = '#ffd27f'; // 可选中间色
 // 默认自定义渐变：3 个停靠点（起点-中点-终点）
 let customColorStops = [customColorStart, customColorMid, customColorEnd];
+let customZeroColor = null; // 自定义零值颜色（节点+连线）
+try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) {}
 // 用于绘图的实际树数据(可能是原始treeData或group模式的修改版)
 let activeTreeData = null;
 // 元数据（meta.tsv）
@@ -259,6 +261,43 @@ function formatDomainInputValue(value) {
 // 零丰度可视化颜色（增强可见性）
 const ZERO_NODE_COLOR = '#d6dce6';  // 节点填充
 const ZERO_LINK_COLOR = '#b7c0cf';  // 连线颜色
+
+function normalizeCustomZeroColor(value) {
+    if (typeof value !== 'string') return null;
+    const hex = value.trim();
+    return /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
+}
+
+function hasCustomZeroColor() {
+    return !!normalizeCustomZeroColor(customZeroColor);
+}
+
+function resolveZeroColor(colorFn, fallback, signedDomain = dataHasNegatives) {
+    const override = normalizeCustomZeroColor(customZeroColor);
+    if (override) return override;
+    if (signedDomain && typeof colorFn === 'function') {
+        try {
+            const candidate = colorFn(0);
+            if (candidate) return candidate;
+        } catch (_) {}
+    }
+    return fallback;
+}
+
+function resolveZeroNodeColor(colorFn, signedDomain = dataHasNegatives) {
+    return resolveZeroColor(colorFn, ZERO_NODE_COLOR, signedDomain);
+}
+
+function resolveZeroLinkColor(colorFn, signedDomain = dataHasNegatives) {
+    return resolveZeroColor(colorFn, ZERO_LINK_COLOR, signedDomain);
+}
+
+try {
+    if (typeof window !== 'undefined') {
+        window.resolveZeroNodeColor = resolveZeroNodeColor;
+        window.resolveZeroLinkColor = resolveZeroLinkColor;
+    }
+} catch (_) {}
 
 // ========== 比较模式变量 ==========
 let visualizationMode = 'single';  // 'single', 'group', 'comparison', 'matrix'
@@ -1995,6 +2034,9 @@ function drawTree(sample, globalDomain) {
         colorAt = (v) => effectiveInterpolator(colorNorm(v));
     }
 
+    const zeroLinkColor = resolveZeroLinkColor(colorAt);
+    const zeroNodeColor = resolveZeroNodeColor(colorAt);
+
     // 节点大小比例尺 - 根据变换类型选择合适的 scale
     // 约定：
     // - log/log2/sqrt：数据已变换，使用幂映射以提升低值分辨率
@@ -2091,7 +2133,7 @@ function drawTree(sample, globalDomain) {
                 const t = transformAbundance(abundance);
                 const pass = !singleSigActive || !!(d.target.data && d.target.data.__singleSigPass && d.target.data.__singleSigPass[sample]);
                 if (!pass) return NONSIG_LINK_COLOR;
-                return t === 0 ? ZERO_LINK_COLOR : colorAt(t);
+                return t === 0 ? zeroLinkColor : colorAt(t);
             })
             .attr('stroke-width', d => {
                 const abundance = d.target.data.abundances[sample] || 0;
@@ -2129,7 +2171,7 @@ function drawTree(sample, globalDomain) {
                 const t = transformAbundance(abundance);
                 const pass = !singleSigActive || !!(d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
                 if (!pass) return NONSIG_NODE_COLOR;
-                return t === 0 ? ZERO_NODE_COLOR : colorAt(t);
+                return t === 0 ? zeroNodeColor : colorAt(t);
             })
             .attr('fill-opacity', () => Math.max(0, Math.min(1, nodeOpacity)))
             .attr('stroke', 'none')
@@ -2226,7 +2268,7 @@ function drawTree(sample, globalDomain) {
                 const t = transformAbundance(abundance);
                 const pass = !singleSigActive || !!(d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
                 if (!pass) return NONSIG_NODE_COLOR;
-                return t === 0 ? ZERO_NODE_COLOR : colorAt(t);
+                return t === 0 ? zeroNodeColor : colorAt(t);
             })
             .attr('stroke', 'none')
             .attr('stroke-width', 0)
@@ -2313,7 +2355,7 @@ function drawTree(sample, globalDomain) {
                 const t = transformAbundance(abundance);
                 const pass = !singleSigActive || !!(d.target.data && d.target.data.__singleSigPass && d.target.data.__singleSigPass[sample]);
                 if (!pass) return NONSIG_LINK_COLOR;
-                return t === 0 ? ZERO_LINK_COLOR : colorAt(t);
+                return t === 0 ? zeroLinkColor : colorAt(t);
             })
             .attr('stroke-width', d => {
                 const abundance = d.target.data.abundances[sample] || 0;
@@ -2345,7 +2387,7 @@ function drawTree(sample, globalDomain) {
                 const t = transformAbundance(abundance);
                 const pass = !singleSigActive || !!(d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
                 if (!pass) return NONSIG_NODE_COLOR;
-                return t === 0 ? ZERO_NODE_COLOR : colorAt(t);
+                return t === 0 ? zeroNodeColor : colorAt(t);
             })
             .attr('fill-opacity', () => Math.max(0, Math.min(1, nodeOpacity)))
             .attr('stroke', 'none')

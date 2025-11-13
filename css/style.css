@@ -510,6 +510,33 @@ body.info-modal-open {
     text-decoration: underline;
 }
 
+.zero-color-control {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.zero-color-control label {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.zero-color-input {
+    width: 48px;
+    height: 30px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    padding: 0;
+}
+
+.zero-color-input.disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 .btn-link:hover {
     color: var(--secondary-dark);
 }

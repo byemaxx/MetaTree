@@ -593,6 +593,14 @@
                                     </label>
                                     <button id="apply-custom-color" class="btn-secondary ml-8">Apply</button>
 
+                                    <div class="zero-color-control">
+                                        <label class="flex ai-center gap-6" for="zero-color-toggle">
+                                            <input type="checkbox" id="zero-color-toggle">
+                                            <span class="fs-12">Zero value</span>
+                                        </label>
+                                        <input type="color" id="zero-color-input" value="#d6dce6" aria-label="Zero value color" disabled class="zero-color-input inline-input">
+                                    </div>
+
                                     <label class="ml-12 fs-12" for="custom-presets">Presets</label>
                                     <select id="custom-presets" class="minw-140" aria-label="Custom presets"></select>
                                     <input type="text" id="preset-name" placeholder="Preset name" class="w-120">
@@ -801,6 +809,13 @@
                                     <span>Tree header</span>
                                     <input type="color" id="custom-theme-tree-header" value="#6b7fa8">
                                 </label>
+                                <div class="custom-theme-field zero-color-control">
+                                    <label class="flex ai-center gap-6" for="zero-color-theme-toggle">
+                                        <input type="checkbox" id="zero-color-theme-toggle">
+                                        <span>Zero value</span>
+                                    </label>
+                                    <input type="color" id="zero-color-theme-input" value="#d6dce6" disabled class="zero-color-input inline-input">
+                                </div>
                             </div>
                             <div class="custom-theme-actions">
                                 <button id="apply-custom-theme" class="btn-primary" type="button">Apply custom colors</button>

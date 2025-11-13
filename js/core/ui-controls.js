@@ -420,7 +420,8 @@ function cloneColorSettings(colors) {
         customStops: Array.isArray(colors.customStops) ? colors.customStops.slice() : null,
         customStart: colors.customStart || null,
         customEnd: colors.customEnd || null,
-        customMid: colors.customMid || null
+        customMid: colors.customMid || null,
+        zeroColor: colors.zeroColor || null
     };
 }
 
@@ -446,7 +447,8 @@ function getDefaultModeColorSettings(key) {
                 customStops: Array.isArray(customColorStops) ? customColorStops.slice() : null,
                 customStart: (typeof customColorStart !== 'undefined') ? customColorStart : null,
                 customEnd: (typeof customColorEnd !== 'undefined') ? customColorEnd : null,
-                customMid: (typeof customColorMid !== 'undefined') ? customColorMid : null
+                customMid: (typeof customColorMid !== 'undefined') ? customColorMid : null,
+                zeroColor: (typeof customZeroColor !== 'undefined') ? customZeroColor : null
             },
             domain: getManualDomainForMode(key)
         };
@@ -460,7 +462,8 @@ function getDefaultModeColorSettings(key) {
             customStops: Array.isArray(customColorStops) ? customColorStops.slice() : null,
             customStart: (typeof customColorStart !== 'undefined') ? customColorStart : null,
             customEnd: (typeof customColorEnd !== 'undefined') ? customColorEnd : null,
-            customMid: (typeof customColorMid !== 'undefined') ? customColorMid : null
+            customMid: (typeof customColorMid !== 'undefined') ? customColorMid : null,
+            zeroColor: (typeof customZeroColor !== 'undefined') ? customZeroColor : null
         },
         domain: getManualDomainForMode(key)
     };
@@ -475,7 +478,8 @@ function snapshotCurrentColorSettings() {
         customStops: Array.isArray(customColorStops) ? customColorStops.slice() : null,
         customStart: (typeof customColorStart !== 'undefined') ? customColorStart : null,
         customEnd: (typeof customColorEnd !== 'undefined') ? customColorEnd : null,
-        customMid: (typeof customColorMid !== 'undefined') ? customColorMid : null
+        customMid: (typeof customColorMid !== 'undefined') ? customColorMid : null,
+        zeroColor: (typeof customZeroColor !== 'undefined') ? customZeroColor : null
     };
 }
 
@@ -567,6 +571,13 @@ function applyColorSettingsSnapshot(colors, modeName) {
     }
 
     updateCustomColorInputsFromStops(customColorStops);
+    if (typeof customZeroColor !== 'undefined') {
+        customZeroColor = (colors && Object.prototype.hasOwnProperty.call(colors, 'zeroColor'))
+            ? (colors.zeroColor || null)
+            : customZeroColor || null;
+        try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch(_) {}
+    }
+    updateZeroColorControl(customZeroColor);
 
     const rev = document.getElementById('color-reverse');
     if (rev) rev.checked = !!colorSchemeReversed;
@@ -604,6 +615,57 @@ function updateCustomColorInputsFromStops(stops) {
     });
     const stopsCount = document.getElementById('custom-stops-count');
     if (stopsCount) stopsCount.value = String(count);
+}
+
+const ZERO_COLOR_CONTROLS = [
+    { toggleId: 'zero-color-toggle', inputId: 'zero-color-input' },
+    { toggleId: 'zero-color-theme-toggle', inputId: 'zero-color-theme-input' }
+];
+
+let zeroColorRedrawTimeout = null;
+
+function updateZeroColorControl(value) {
+    const hasValue = typeof value === 'string' && value.trim().length > 0;
+    ZERO_COLOR_CONTROLS.forEach(({ toggleId, inputId }) => {
+        const toggle = document.getElementById(toggleId);
+        const input = document.getElementById(inputId);
+        if (toggle) toggle.checked = hasValue;
+        if (input) {
+            input.disabled = !hasValue;
+            input.classList.toggle('disabled', !hasValue);
+            if (hasValue) input.value = value;
+            else if (typeof input.defaultValue === 'string') input.value = input.defaultValue;
+        }
+    });
+}
+
+function applyZeroColorValue(nextValue) {
+    customZeroColor = nextValue;
+    try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) {}
+    updateZeroColorControl(customZeroColor);
+    if (zeroColorRedrawTimeout) clearTimeout(zeroColorRedrawTimeout);
+    zeroColorRedrawTimeout = setTimeout(() => {
+        zeroColorRedrawTimeout = null;
+        renderColorPreviews && renderColorPreviews();
+        if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
+        persistCurrentModeColorSettings();
+    }, 200);
+}
+
+function bindZeroColorControl(toggleId, inputId) {
+    const toggle = document.getElementById(toggleId);
+    const input = document.getElementById(inputId);
+    if (toggle) {
+        toggle.addEventListener('change', () => {
+            applyZeroColorValue(toggle.checked && input ? input.value : null);
+        });
+    }
+    if (input) {
+        input.addEventListener('input', () => {
+            if (!toggle || !toggle.checked) return;
+            applyZeroColorValue(input.value);
+        });
+    }
 }
 
 function applyDomainValueToUI(domainValue, modeName) {
@@ -921,6 +983,10 @@ function initEventListeners() {
         renderColorPreviews && renderColorPreviews();
         if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
     });
+
+    bindZeroColorControl('zero-color-toggle', 'zero-color-input');
+    bindZeroColorControl('zero-color-theme-toggle', 'zero-color-theme-input');
+    updateZeroColorControl(customZeroColor);
 
     // stops selector toggles mid color visibility
     if (stopsCount) {
@@ -4449,5 +4515,3 @@ function initUniformLabelColors() {
         }
     });
 }
-
-

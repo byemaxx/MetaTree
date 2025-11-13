@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release-note:
-        description: 'Optional note describing this deploy (shown in workflow UI)'
+        description: 'Deploy the site with an optional release note'
         required: false
         default: ''
 

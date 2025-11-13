@@ -756,6 +756,59 @@
                         </div>
                     </div>
                 </div>
+                <div id="theme-panel" class="control-panel card-panel collapsed">
+                    <div class="panel-title">
+                        UI Theme
+                        <button id="theme-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
+                    </div>
+                    <div class="theme-panel-body">
+                        <p class="theme-panel-text">
+                            Choose a soft preset or fine tune primary, surface, and tree panel hues. Changes apply instantly and persist locally.
+                        </p>
+                        <div id="theme-preset-list" class="theme-preset-list" role="listbox" aria-label="Theme presets">
+                            <!-- populated by JS -->
+                        </div>
+                        <div class="custom-theme-card">
+                            <div class="custom-theme-header">
+                                <span>Custom palette</span>
+                            </div>
+                            <div class="custom-theme-grid">
+                                <label class="custom-theme-field" for="custom-theme-primary">
+                                    <span>Primary</span>
+                                    <input type="color" id="custom-theme-primary" value="#6b7fa8">
+                                </label>
+                                <label class="custom-theme-field" for="custom-theme-secondary">
+                                    <span>Secondary</span>
+                                    <input type="color" id="custom-theme-secondary" value="#6674db">
+                                </label>
+                                <label class="custom-theme-field" for="custom-theme-background">
+                                    <span>Background</span>
+                                    <input type="color" id="custom-theme-background" value="#f0f4f8">
+                                </label>
+                                <label class="custom-theme-field" for="custom-theme-surface">
+                                    <span>Panel surface</span>
+                                    <input type="color" id="custom-theme-surface" value="#ffffff">
+                                </label>
+                                <label class="custom-theme-field" for="custom-theme-text">
+                                    <span>Text</span>
+                                    <input type="color" id="custom-theme-text" value="#1a202c">
+                                </label>
+                                <label class="custom-theme-field" for="custom-theme-tree-bg">
+                                    <span>Tree background</span>
+                                    <input type="color" id="custom-theme-tree-bg" value="#f5f7fa">
+                                </label>
+                                <label class="custom-theme-field" for="custom-theme-tree-header">
+                                    <span>Tree header</span>
+                                    <input type="color" id="custom-theme-tree-header" value="#6b7fa8">
+                                </label>
+                            </div>
+                            <div class="custom-theme-actions">
+                                <button id="apply-custom-theme" class="btn-primary" type="button">Apply custom colors</button>
+                                <button id="reset-theme" class="btn-secondary" type="button">Reset to default</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </aside>
 
             <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar" aria-label="Collapse sidebar" title="Collapse sidebar">
@@ -907,6 +960,7 @@
     <script src="js/state/comparison-renderer-store.js"></script>
     <script src="js/core/app-core.js"></script>
     <script src="js/renderers/comparison-renderer.js"></script>
+    <script src="js/core/theme-manager.js"></script>
     <script src="js/core/ui-controls.js"></script>
 </body>
 </html>

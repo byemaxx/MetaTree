@@ -39,6 +39,15 @@
     --gradient-danger: linear-gradient(135deg, #f76b6b 0%, #e85555 100%);
     --gradient-bg: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
     --gradient-accent: linear-gradient(135deg, #7687ed 0%, #6674db 100%);
+
+    /* Tree panel specific */
+    --tree-panel-bg: #fafbfd;
+    --tree-panel-bg-alt: #f5f7fa;
+    --tree-panel-border: #dfe4ee;
+    --tree-panel-hover-border: #d0d7e6;
+    --tree-panel-header-start: #6b7fa8;
+    --tree-panel-header-end: #6674db;
+    --tree-panel-header-text: #ffffff;
     
     /* 间距系统 */
     --spacing-xs: 4px;
@@ -329,6 +338,180 @@ body.info-modal-open {
 .panel-title .toggle-btn {
     margin-left: var(--spacing-md);
     padding: var(--spacing-sm) 10px;
+}
+
+/* Theme panel */
+.theme-panel-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.theme-panel-title-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.theme-panel-title .panel-subtitle {
+    font-size: var(--font-sm);
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+.theme-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.control-panel.collapsed .theme-panel-body {
+    display: none;
+}
+
+.theme-panel-text {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.theme-preset-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 640px) {
+    .theme-preset-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+.theme-chip {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    background: var(--bg-light);
+    cursor: pointer;
+    transition: var(--transition-base);
+    text-align: left;
+}
+
+.theme-chip:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.theme-chip.active {
+    border-color: var(--primary-color);
+    box-shadow: inset 0 0 0 1px var(--primary-color);
+    background: var(--bg-white);
+}
+
+.theme-chip-name {
+    font-weight: 600;
+    font-size: var(--font-md);
+    color: var(--text-primary);
+}
+
+.theme-chip-desc {
+    font-size: var(--font-sm);
+    color: var(--text-light);
+}
+
+.theme-chip-swatches {
+    display: flex;
+    gap: 4px;
+}
+
+.theme-chip-swatch {
+    flex: 1;
+    height: 6px;
+    border-radius: 999px;
+}
+
+.custom-theme-card {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    background: var(--bg-light);
+}
+
+.custom-theme-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.custom-theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 640px) {
+    .custom-theme-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.custom-theme-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--bg-white);
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+}
+
+.custom-theme-field span {
+    flex: 1;
+    min-width: 0;
+}
+
+.custom-theme-field input[type="color"] {
+    width: 44px;
+    height: 28px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-white);
+    cursor: pointer;
+    padding: 0;
+}
+
+.custom-theme-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--secondary-color);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.btn-link:hover {
+    color: var(--secondary-dark);
 }
 
 /* Modal overlay for expanded comparison view */
@@ -987,9 +1170,11 @@ button:disabled {
 
 .tree-panel {
     position: relative;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--tree-panel-border, var(--border-color));
     border-radius: var(--radius-lg);
-    background: linear-gradient(135deg, #fafbfd 0%, #f5f7fa 100%);
+    background: linear-gradient(135deg,
+        var(--tree-panel-bg, #fafbfd) 0%,
+        var(--tree-panel-bg-alt, #f5f7fa) 100%);
     overflow: hidden;
     box-shadow: var(--shadow-sm);
     transition: var(--transition-base);
@@ -997,12 +1182,14 @@ button:disabled {
 
 .tree-panel:hover {
     box-shadow: var(--shadow-md);
-    border-color: #d4dae3;
+    border-color: var(--tree-panel-hover-border, var(--tree-panel-border, #d4dae3));
 }
 
 .tree-panel-header {
-    background: var(--gradient-primary);
-    color: white;
+    background: linear-gradient(135deg,
+        var(--tree-panel-header-start, var(--primary-color)) 0%,
+        var(--tree-panel-header-end, var(--secondary-color)) 100%);
+    color: var(--tree-panel-header-text, #ffffff);
     padding: 10px var(--spacing-lg);
     font-weight: 600;
     font-size: var(--font-md);
@@ -1014,7 +1201,7 @@ button:disabled {
 
 /* Title text inside header */
 .tree-panel-header .panel-title-text {
-    color: #fff;
+    color: var(--tree-panel-header-text, #ffffff);
     font-weight: 700;
     position: absolute;
     left: 50%;
@@ -1059,7 +1246,7 @@ button:disabled {
 /* Subtle back button inside the colored header */
 .tree-panel-header .btn-back {
     background: transparent;
-    color: #fff;
+    color: var(--tree-panel-header-text, #ffffff);
     border: 1px solid rgba(255, 255, 255, 0.65);
     height: 28px;
     padding: 0 10px;
@@ -1069,7 +1256,7 @@ button:disabled {
 
 .tree-panel-header .btn-back:hover {
     background: rgba(255, 255, 255, 0.18);
-    color: #fff;
+    color: var(--tree-panel-header-text, #ffffff);
     transform: none;
     box-shadow: none;
 }

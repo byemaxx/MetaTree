@@ -1221,6 +1221,17 @@ function initEventListeners() {
             layoutToggle.setAttribute('aria-expanded', String(!collapsed));
         });
     }
+    // Theme panel collapse/expand
+    const themePanel = document.getElementById('theme-panel');
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle && themePanel) {
+        themeToggle.addEventListener('click', function() {
+            const collapsed = themePanel.classList.toggle('collapsed');
+            themeToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
+            themeToggle.classList.toggle('expanded', !collapsed);
+            themeToggle.setAttribute('aria-expanded', String(!collapsed));
+        });
+    }
     // Labels reset button
     const labelsResetBtn = document.getElementById('labels-reset');
     if (labelsResetBtn) {
@@ -4438,3 +4449,5 @@ function initUniformLabelColors() {
         }
     });
 }
+
+

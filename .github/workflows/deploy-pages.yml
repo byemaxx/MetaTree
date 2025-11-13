@@ -11,27 +11,36 @@ on:
 permissions:
   contents: read
   pages: write
-  actions: read
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Configure GitHub Pages target
-        uses: actions/configure-pages@v3
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
 
       - name: Upload artifacts for Pages
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+        id: deployment
+        uses: actions/deploy-pages@v4
         with:
-          deploy-commit-message: |
-            Deploy site${{ inputs.release-note && format(' – {}', inputs.release-note) }}
+          commit-message: >
+            Deploy site${{ inputs['release-note'] && format(' – {}', inputs['release-note']) }}

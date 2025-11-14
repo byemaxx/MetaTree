@@ -4,6 +4,32 @@
 // They are executed at call-time, so load order is flexible as long as dependencies are defined before call.
 
 (function(){
+  function resolveReverseColorsFlag() {
+    if (typeof colorSchemeReversed !== 'undefined') return !!colorSchemeReversed;
+    if (typeof window !== 'undefined' && typeof window.colorSchemeReversed !== 'undefined') {
+      return !!window.colorSchemeReversed;
+    }
+    return false;
+  }
+
+  function buildDivergingProjector(domain, reversedFlag) {
+    const hasNegatives = Array.isArray(domain)
+      ? domain.some(v => typeof v === 'number' && v < 0)
+      : false;
+    const low = (Array.isArray(domain) && typeof domain[0] === 'number' && isFinite(domain[0])) ? Number(domain[0]) : null;
+    const high = (Array.isArray(domain) && typeof domain[2] === 'number' && isFinite(domain[2])) ? Number(domain[2]) : null;
+    const project = (value) => {
+      const numeric = (typeof value === 'number' && isFinite(value)) ? value : 0;
+      if (!reversedFlag) return numeric;
+      if (hasNegatives) return -numeric;
+      if (low != null && high != null) {
+        return low + high - numeric;
+      }
+      return -numeric;
+    };
+    return { project };
+  }
+
   function renderSharedLegend(legendDomain, opts) {
     try {
       const container = document.getElementById('viz-container');
@@ -45,13 +71,14 @@
         const colorScale = (typeof createDivergingColorScale === 'function')
           ? createDivergingColorScale(legendDomain, paletteName)
           : d3.scaleLinear().domain(legendDomain).range(['#2166ac','#ffffff','#b2182b']);
+        const reversed = resolveReverseColorsFlag();
+        const { project: projectDiverging } = buildDivergingProjector(legendDomain, reversed);
         const steps = 50;
         let gradient = 'linear-gradient(to right';
         for (let i = 0; i <= steps; i++) {
           const t = i / steps;
           const val = legendDomain[0] + (legendDomain[2] - legendDomain[0]) * t;
-          const reversed = (typeof colorSchemeReversed !== 'undefined') ? colorSchemeReversed : !!window.colorSchemeReversed;
-          gradient += `, ${colorScale(reversed ? -val : val)} ${t * 100}%`;
+          gradient += `, ${colorScale(projectDiverging(val))} ${t * 100}%`;
         }
         gradient += ')';
         const gradientDiv = document.getElementById(gradId);
@@ -150,10 +177,12 @@
       const colorScale = (typeof createDivergingColorScale === 'function')
         ? createDivergingColorScale(domain, paletteName)
         : d3.scaleLinear().domain(domain).range(['#2166ac','#b2182b']);
+      const reversed = resolveReverseColorsFlag();
+      const { project: projectDiverging } = buildDivergingProjector(domain, reversed);
 
-      lg.append('stop').attr('offset', '0%').attr('stop-color', colorScale(domain[0]));
-      lg.append('stop').attr('offset', '50%').attr('stop-color', colorScale(domain[1]));
-      lg.append('stop').attr('offset', '100%').attr('stop-color', colorScale(domain[2]));
+      lg.append('stop').attr('offset', '0%').attr('stop-color', colorScale(projectDiverging(domain[0])));
+      lg.append('stop').attr('offset', '50%').attr('stop-color', colorScale(projectDiverging(domain[1])));
+      lg.append('stop').attr('offset', '100%').attr('stop-color', colorScale(projectDiverging(domain[2])));
 
       g.append('text')
         .attr('x', padding)

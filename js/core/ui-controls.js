@@ -1739,6 +1739,10 @@ function renderColorPreviews() {
     // 清空预览容器
     container.innerHTML = '';
 
+    const reversed = (typeof colorSchemeReversed !== 'undefined')
+        ? !!colorSchemeReversed
+        : !!(typeof window !== 'undefined' && window.colorSchemeReversed);
+
     if (colorSchemeCategory === 'diverging') {
         // 分歧色板
         if (typeof getDivergingPalettes !== 'function') return;
@@ -1751,8 +1755,9 @@ function renderColorPreviews() {
 
             const swatches = document.createElement('div');
             swatches.className = 'swatches';
-            const steps = info.range || ['#2166ac', '#f7f7f7', '#b2182b'];
-            steps.forEach(col => {
+            const steps = Array.isArray(info.range) ? info.range : ['#2166ac', '#f7f7f7', '#b2182b'];
+            const effectiveSteps = reversed ? steps.slice().reverse() : steps;
+            effectiveSteps.forEach(col => {
                 const s = document.createElement('div');
                 s.className = 'swatch';
                 s.style.background = col;

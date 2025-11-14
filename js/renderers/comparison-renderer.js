@@ -16,6 +16,32 @@
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
   const PACK_EPSILON = 1e-6;
 
+  function resolveReverseColorsFlag() {
+    if (typeof colorSchemeReversed !== 'undefined') return !!colorSchemeReversed;
+    if (typeof window !== 'undefined' && typeof window.colorSchemeReversed !== 'undefined') {
+      return !!window.colorSchemeReversed;
+    }
+    return false;
+  }
+
+  function buildDivergingProjector(domain, reversedFlag) {
+    const hasNegatives = Array.isArray(domain)
+      ? domain.some(v => typeof v === 'number' && v < 0)
+      : false;
+    const low = (Array.isArray(domain) && typeof domain[0] === 'number' && isFinite(domain[0])) ? Number(domain[0]) : null;
+    const high = (Array.isArray(domain) && typeof domain[2] === 'number' && isFinite(domain[2])) ? Number(domain[2]) : null;
+    const project = (value) => {
+      const numeric = (typeof value === 'number' && isFinite(value)) ? value : 0;
+      if (!reversedFlag) return numeric;
+      if (hasNegatives) return -numeric;
+      if (low != null && high != null) {
+        return low + high - numeric;
+      }
+      return -numeric;
+    };
+    return { project, hasNegatives };
+  }
+
   function getActiveLayoutMode() {
     const layout = (typeof currentLayout === 'string') ? currentLayout : 'radial';
     return VALID_LAYOUTS.has(layout) ? layout : 'radial';
@@ -461,11 +487,15 @@
     }
 
     // 颜色尺度（支持发散与连续/自定义）
+    const reverseColorsEnabled = resolveReverseColorsFlag();
+    const { project: projectDivergingValue, hasNegatives: comparisonHasNegatives } =
+      buildDivergingProjector(comparisonColorDomain, reverseColorsEnabled);
+
     const cat = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
     let colorAtVal;
     if (cat === 'diverging') {
       const colorScale = createDivergingColorScale(comparisonColorDomain, divergingPalette);
-      colorAtVal = (v) => colorScale(isFinite(v) ? v : 0);
+      colorAtVal = (v) => colorScale(projectDivergingValue(v));
     } else {
       let interpolator;
       if (typeof colorScheme !== 'undefined' && colorScheme === 'Custom') {
@@ -477,7 +507,7 @@
         const info = (typeof COLOR_SCHEMES !== 'undefined' && COLOR_SCHEMES[colorScheme]) ? COLOR_SCHEMES[colorScheme] : {};
         interpolator = info.interpolator || d3.interpolateViridis;
       }
-      const tFor = (t) => ((typeof colorSchemeReversed !== 'undefined' && colorSchemeReversed) ? (1 - t) : t);
+      const tFor = (t) => (reverseColorsEnabled ? (1 - t) : t);
       const M = Math.max(Math.abs(comparisonColorDomain[0] || 0), Math.abs(comparisonColorDomain[2] || 1)) || 1;
       const pow = (typeof colorGamma !== 'undefined') ? colorGamma : 0.8;
       colorAtVal = (v) => {
@@ -488,9 +518,6 @@
       };
     }
 
-    const comparisonHasNegatives = Array.isArray(comparisonColorDomain)
-      ? comparisonColorDomain.some(v => typeof v === 'number' && v < 0)
-      : false;
     const zeroLinkColor = (typeof resolveZeroLinkColor === 'function')
       ? resolveZeroLinkColor(colorAtVal, comparisonHasNegatives)
       : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_LINK_COLOR);
@@ -1053,11 +1080,15 @@
     const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true });
     try { layoutConfig.applyGroupTransform(g); } catch (_) {}
 
+    const reverseColorsEnabled = resolveReverseColorsFlag();
+    const { project: projectDivergingValueMini, hasNegatives: comparisonHasNegativesMini } =
+      buildDivergingProjector(comparisonColorDomain, reverseColorsEnabled);
+
     const catMini = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
     let colorAtValMini;
     if (catMini === 'diverging') {
       const divergeMini = createDivergingColorScale(comparisonColorDomain, divergingPalette);
-      colorAtValMini = (v) => divergeMini(isFinite(v) ? v : 0);
+      colorAtValMini = (v) => divergeMini(projectDivergingValueMini(v));
     } else {
       let interpolator;
       if (typeof colorScheme !== 'undefined' && colorScheme === 'Custom') {
@@ -1069,7 +1100,7 @@
         const info = (typeof COLOR_SCHEMES !== 'undefined' && COLOR_SCHEMES[colorScheme]) ? COLOR_SCHEMES[colorScheme] : {};
         interpolator = info.interpolator || d3.interpolateViridis;
       }
-      const tFor = (t) => ((typeof colorSchemeReversed !== 'undefined' && colorSchemeReversed) ? (1 - t) : t);
+      const tFor = (t) => (reverseColorsEnabled ? (1 - t) : t);
       const M = Math.max(Math.abs(comparisonColorDomain[0] || 0), Math.abs(comparisonColorDomain[2] || 1)) || 1;
       const pow = (typeof colorGamma !== 'undefined') ? colorGamma : 0.8;
       colorAtValMini = (v) => {
@@ -1080,9 +1111,6 @@
       };
     }
 
-    const comparisonHasNegativesMini = Array.isArray(comparisonColorDomain)
-      ? comparisonColorDomain.some(v => typeof v === 'number' && v < 0)
-      : false;
     const zeroLinkColorMini = (typeof resolveZeroLinkColor === 'function')
       ? resolveZeroLinkColor(colorAtValMini, comparisonHasNegativesMini)
       : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_LINK_COLOR);
@@ -1211,13 +1239,15 @@
       const gradientDiv = document.getElementById(gradId);
       if (gradientDiv) {
         const categoryNow = (typeof window !== 'undefined' && window.colorSchemeCategory) ? window.colorSchemeCategory : 'diverging';
+        const reverseNow = resolveReverseColorsFlag();
+        const { project: projectLegendValue } = buildDivergingProjector(comparisonColorDomain, reverseNow);
         if (categoryNow === 'diverging') {
           const colorScale = createDivergingColorScale(comparisonColorDomain, divergingPalette);
           const steps = 50;
           let gradient = 'linear-gradient(to right';
           for (let i = 0; i <= steps; i++) {
             const value = comparisonColorDomain[0] + (comparisonColorDomain[2] - comparisonColorDomain[0]) * i / steps;
-            gradient += `, ${colorScale(value)} ${i / steps * 100}%`;
+            gradient += `, ${colorScale(projectLegendValue(value))} ${i / steps * 100}%`;
           }
           gradient += ')';
           gradientDiv.style.background = gradient;
@@ -1236,8 +1266,7 @@
             const info = (typeof COLOR_SCHEMES !== 'undefined' && COLOR_SCHEMES[schemeName]) ? COLOR_SCHEMES[schemeName] : {};
             interpolator = info.interpolator || d3.interpolateViridis;
           }
-          const reversed = (typeof colorSchemeReversed !== 'undefined') ? colorSchemeReversed : !!window.colorSchemeReversed;
-          const tFor = (t) => (reversed ? (1 - t) : t);
+          const tFor = (t) => (reverseNow ? (1 - t) : t);
           const steps = 50;
           let gradient = 'linear-gradient(to right';
           for (let i = 0; i <= steps; i++) {

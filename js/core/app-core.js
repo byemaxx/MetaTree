@@ -23,6 +23,35 @@ let customColorMid = '#ffd27f'; // 可选中间色
 let customColorStops = [customColorStart, customColorMid, customColorEnd];
 let customZeroColor = null; // 自定义零值颜色（节点+连线）
 try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) {}
+function isReverseColorsEnabled() {
+    if (typeof colorSchemeReversed !== 'undefined') return !!colorSchemeReversed;
+    if (typeof window !== 'undefined' && typeof window.colorSchemeReversed !== 'undefined') {
+        return !!window.colorSchemeReversed;
+    }
+    return false;
+}
+
+function buildDivergingValueProjector(domain, reversedFlag) {
+    const hasNegatives = Array.isArray(domain)
+        ? domain.some(v => typeof v === 'number' && v < 0)
+        : false;
+    const low = (Array.isArray(domain) && typeof domain[0] === 'number' && isFinite(domain[0]))
+        ? Number(domain[0])
+        : null;
+    const high = (Array.isArray(domain) && typeof domain[2] === 'number' && isFinite(domain[2]))
+        ? Number(domain[2])
+        : null;
+    const project = (value) => {
+        const numeric = (typeof value === 'number' && isFinite(value)) ? value : 0;
+        if (!reversedFlag) return numeric;
+        if (hasNegatives) return -numeric;
+        if (low != null && high != null) {
+            return low + high - numeric;
+        }
+        return -numeric;
+    };
+    return { project, hasNegatives };
+}
 // 用于绘图的实际树数据(可能是原始treeData或group模式的修改版)
 let activeTreeData = null;
 // 元数据（meta.tsv）
@@ -2525,11 +2554,13 @@ function createLegend(svg, width, height, legendDomain) {
         .attr('x2', '100%');
 
     const isDiverging = Array.isArray(legendDomain) && legendDomain.length === 3;
+    const reverseColorsEnabled = isReverseColorsEnabled();
     if (isDiverging) {
         const palette = (typeof divergingPalette !== 'undefined' && divergingPalette) ? divergingPalette : 'blueRed';
         const scale = (typeof createDivergingColorScale === 'function')
             ? createDivergingColorScale(legendDomain, palette)
             : d3.scaleLinear().domain(legendDomain).range(['#2166ac','#ffffff','#b2182b']).clamp(true);
+        const { project: projectLegendValue } = buildDivergingValueProjector(legendDomain, reverseColorsEnabled);
 
         // 采样生成渐变
         const steps = 20;
@@ -2538,7 +2569,7 @@ function createLegend(svg, width, height, legendDomain) {
             const val = legendDomain[0] + (legendDomain[2] - legendDomain[0]) * t;
             gradient.append('stop')
                 .attr('offset', `${t * 100}%`)
-                .attr('stop-color', scale((typeof colorSchemeReversed !== 'undefined' && colorSchemeReversed) ? -val : val));
+                .attr('stop-color', scale(projectLegendValue(val)));
         }
     } else {
         // 顺序型渐变
@@ -2552,7 +2583,7 @@ function createLegend(svg, width, height, legendDomain) {
             const info = COLOR_SCHEMES[colorScheme] || {};
             interpolator = info.interpolator || d3.interpolateViridis;
         }
-        const tFor = (v) => (typeof colorSchemeReversed !== 'undefined' && colorSchemeReversed) ? (1 - v) : v;
+        const tFor = (v) => (reverseColorsEnabled ? (1 - v) : v);
         gradient.append('stop').attr('offset', '0%').attr('stop-color', interpolator(tFor(0)));
         gradient.append('stop').attr('offset', '50%').attr('stop-color', interpolator(tFor(0.5)));
         gradient.append('stop').attr('offset', '100%').attr('stop-color', interpolator(tFor(1)));
@@ -3164,5 +3195,4 @@ if (typeof window !== 'undefined') {
     window.clearNodeOverridesByLabel = clearNodeOverridesByLabel;
     window.ensurePanelsRenderedForExport = ensurePanelsRenderedForExport;
 }
-
 

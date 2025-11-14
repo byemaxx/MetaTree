@@ -47,6 +47,55 @@
     return label;
   }
 
+  function annotateComparisonAggregates(root, comparisonStats, options = {}) {
+    if (!root) return { maxAgg: 1, filterBySignificance: false };
+    const filterBySignificance = (typeof options.requireSignificance === 'boolean')
+      ? options.requireSignificance
+      : !!(typeof showOnlySignificant !== 'undefined' && showOnlySignificant);
+    root.eachAfter(node => {
+      const isLeaf = !node.children || node.children.length === 0;
+      if (isLeaf) {
+        const stats = comparisonStats ? comparisonStats[node.data.name] : null;
+        const passesFilter = !filterBySignificance || (
+          stats &&
+          (
+            (typeof isSignificantByThresholds === 'function')
+              ? isSignificantByThresholds(stats)
+              : !!(stats && stats.significant)
+          )
+        );
+        const value = (passesFilter && stats)
+          ? (stats.comparison_value ?? stats.value ?? 0)
+          : 0;
+        const magnitude = Math.abs(isFinite(value) ? value : 0);
+        node._agg = magnitude;
+      } else {
+        let sum = 0;
+        for (const child of node.children) sum += (child._agg || 0);
+        node._agg = sum;
+      }
+    });
+    const maxAgg = d3.max(root.descendants(), n => n._agg || 0) || 1;
+    return { maxAgg, filterBySignificance };
+  }
+
+  function getVisibleComparisonNodes(nodes, filterBySignificance) {
+    if (!Array.isArray(nodes)) return [];
+    if (!filterBySignificance) return nodes;
+    return nodes.filter(node => node && (node._agg || 0) > 0);
+  }
+
+  function getVisibleComparisonLinks(links, visibleNodeSet, filterBySignificance) {
+    if (!Array.isArray(links)) return [];
+    if (!filterBySignificance) return links;
+    return links.filter(link => visibleNodeSet.has(link.source) && visibleNodeSet.has(link.target));
+  }
+
+  function getVisibleCollapsedNodes(collapsedNodes, visibleNodeSet, filterBySignificance) {
+    if (!Array.isArray(collapsedNodes)) return [];
+    if (!filterBySignificance) return collapsedNodes;
+    return collapsedNodes.filter(node => visibleNodeSet.has(node));
+  }
   function buildComparisonLayout(root, width, height, comparisonStats, opts = {}) {
     const mode = getActiveLayoutMode();
     const forMini = !!opts.mini;
@@ -144,7 +193,7 @@
       return layout;
     }
 
-    // 默认径向布局
+    // Default radial layout
     const radialPadding = forMini ? 10 : 40;
     const radius = Math.max(10, Math.min(width, height) / 2 - radialPadding);
     const radialTree = d3.tree()
@@ -443,31 +492,22 @@
       ? resolveZeroNodeColor(colorAtVal, comparisonHasNegatives)
       : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_NODE_COLOR);
 
-    // 自叶到根聚合强度（用于边宽）
-    root.eachAfter(node => {
-      if (!node.children || node.children.length === 0) {
-        const st = comparisonStats[node.data.name];
-        const include = !!st && (!showOnlySignificant || isSignificantByThresholds(st));
-        const mag = include ? Math.abs(st.comparison_value || 0) : 0;
-        node._agg = isFinite(mag) ? mag : 0;
-      } else {
-        let sum = 0;
-        for (const c of node.children) sum += (c._agg || 0);
-        node._agg = sum;
-      }
-    });
-    const maxAgg = d3.max(root.descendants(), n => n._agg || 0) || 1;
+    // Pre-compute aggregates for stroke sizing and filtering
+    const { maxAgg, filterBySignificance } = annotateComparisonAggregates(root, comparisonStats);
     const strokeScale = d3.scaleSqrt().domain([0, maxAgg]).range([0.8, 5]).clamp(true);
 
     const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false });
     try { layoutConfig.applyGroupTransform(g); } catch (_) {}
+    const nodesForRender = getVisibleComparisonNodes(layoutConfig.nodes, filterBySignificance);
+    const visibleNodeSet = new Set(nodesForRender);
+    const linksForRender = getVisibleComparisonLinks(layoutConfig.links, visibleNodeSet, filterBySignificance);
 
     let linkSelection = null;
     if (layoutConfig.mode === 'packing') {
       g.selectAll('.link').remove();
     } else {
       linkSelection = g.selectAll('.link')
-        .data(layoutConfig.links)
+        .data(linksForRender)
         .join('path')
         .attr('class', 'link');
       try { layoutConfig.configureLinks(linkSelection); } catch (_) {}
@@ -481,7 +521,6 @@
           const zeroAbundance = mean1 === 0 && mean2 === 0;
           const value = stats.comparison_value || 0;
           if (zeroAbundance || value === 0) return zeroLinkColor;
-          if (showOnlySignificant && !isSignificantByThresholds(stats)) return NONSIG_LINK_COLOR;
           return colorAtVal(value);
         })
         .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
@@ -531,7 +570,7 @@
 
     // 节点（与 individual 模式一致：每个节点一个 <g>，笛卡尔坐标）
     const nodeGroup = g.selectAll('.node')
-      .data(layoutConfig.nodes)
+      .data(nodesForRender)
       .join('g')
       .attr('class', 'node')
       .attr('transform', d => layoutConfig.positionNode(d));
@@ -545,7 +584,6 @@
         const mean2 = stats.mean_2 || 0;
         const avg = (mean1 + mean2) / 2;
         if (avg === 0) return zeroNodeColor;
-        if (showOnlySignificant && !isSignificantByThresholds(stats)) return NONSIG_NODE_COLOR;
         const value = stats.comparison_value || 0;
         if (value === 0) return zeroNodeColor;
         return colorAtVal(value);
@@ -563,7 +601,7 @@
       .style('pointer-events', 'none');
 
     // 折叠标记
-    const collapsedNodes = layoutConfig.collapsedNodes;
+    const collapsedNodes = getVisibleCollapsedNodes(layoutConfig.collapsedNodes, visibleNodeSet, filterBySignificance);
     const collapseSel = g.selectAll('.collapse-marker')
       .data(collapsedNodes)
       .join('text')
@@ -1046,6 +1084,10 @@
       ? resolveZeroNodeColor(colorAtValMini, comparisonHasNegativesMini)
       : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_NODE_COLOR);
 
+    const { filterBySignificance: filterMini } = annotateComparisonAggregates(root, comparisonStats);
+    const miniNodes = getVisibleComparisonNodes(layoutConfig.nodes, filterMini);
+    const miniNodeSet = new Set(miniNodes);
+    const miniLinks = getVisibleComparisonLinks(layoutConfig.links, miniNodeSet, filterMini);
     if (layoutConfig.mode === 'packing') {
       g.selectAll('.link').remove();
     } else {
@@ -1064,7 +1106,6 @@
           const zeroAbundance = mean1 === 0 && mean2 === 0;
           const value = stats.comparison_value || 0;
           if (zeroAbundance || value === 0) return zeroLinkColorMini;
-          if (showOnlySignificant && !isSignificantByThresholds(stats)) return zeroLinkColorMini;
           return colorAtValMini(value);
         })
         .style('stroke-opacity', () => Math.max(0.05, Math.min(1, typeof edgeOpacity !== 'undefined' ? edgeOpacity : 1)))
@@ -1089,7 +1130,7 @@
     };
 
     const nodeSel = g.selectAll('.node')
-      .data(layoutConfig.nodes)
+      .data(miniNodes)
       .join('g')
       .attr('class', 'node')
       .attr('transform', d => layoutConfig.positionNode(d));
@@ -1103,7 +1144,6 @@
         const mean2 = stats.mean_2 || 0;
         const avgAbundance = (mean1 + mean2) / 2;
         if (avgAbundance === 0) return zeroNodeColorMini;
-        if (showOnlySignificant && !isSignificantByThresholds(stats)) return zeroNodeColorMini;
         const value = stats.comparison_value || 0;
         if (value === 0) return zeroNodeColorMini;
         return colorAtValMini(value);
@@ -1112,7 +1152,7 @@
       .style('stroke', 'none')
       .style('stroke-width', 0);
 
-    const collapsedMini = layoutConfig.collapsedNodes;
+    const collapsedMini = getVisibleCollapsedNodes(layoutConfig.collapsedNodes, miniNodeSet, filterMini);
     const miniCollapse = g.selectAll('.collapse-marker')
       .data(collapsedMini)
       .join('text')

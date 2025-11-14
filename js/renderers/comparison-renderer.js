@@ -68,11 +68,17 @@
           ? (stats.comparison_value ?? stats.value ?? 0)
           : 0;
         const magnitude = Math.abs(isFinite(value) ? value : 0);
-        node._agg = magnitude;
+        node._agg = passesFilter ? magnitude : 0;
+        node._hasVisibleDesc = passesFilter;
       } else {
         let sum = 0;
-        for (const child of node.children) sum += (child._agg || 0);
+        let hasVisible = false;
+        for (const child of node.children) {
+          sum += (child._agg || 0);
+          if (!hasVisible && child._hasVisibleDesc) hasVisible = true;
+        }
         node._agg = sum;
+        node._hasVisibleDesc = hasVisible;
       }
     });
     const maxAgg = d3.max(root.descendants(), n => n._agg || 0) || 1;
@@ -82,7 +88,7 @@
   function getVisibleComparisonNodes(nodes, filterBySignificance) {
     if (!Array.isArray(nodes)) return [];
     if (!filterBySignificance) return nodes;
-    return nodes.filter(node => node && (node._agg || 0) > 0);
+    return nodes.filter(node => node && node._hasVisibleDesc);
   }
 
   function getVisibleComparisonLinks(links, visibleNodeSet, filterBySignificance) {

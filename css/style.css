@@ -90,8 +90,8 @@
     --transition-base: all 0.3s ease;
 
     /* Layout defaults */
-    --matrix-cell-min-width: 200px;
-    --matrix-cell-min-height: 200px;
+    --matrix-cell-min-width: clamp(120px, 18vw, 220px);
+    --matrix-cell-min-height: clamp(140px, 20vw, 240px);
 
     /* 新增：面板最小高度和 SVG 默认高度，方便统一调整 */
     --panel-min-height: 420px;       /* 面板最小高度（可按需调整） */
@@ -1206,18 +1206,14 @@ button:disabled {
 /* ========== 可视化容器 ========== */
 .viz-container {
     position: relative;
-    padding: var(--spacing-3xl);
+    padding: clamp(var(--spacing-lg), 4vw, var(--spacing-3xl));
     background: var(--bg-white);
     --panel-grid-gap: var(--spacing-xl);
     display: grid;
     grid-template-columns: repeat(
         auto-fit,
         minmax(
-            clamp(
-                360px,
-                calc((100% - var(--panel-grid-gap)) / 2),
-                var(--panel-min-width, 600px)
-            ),
+            min(var(--panel-min-width, 600px), 100%),
             1fr
         )
     );

@@ -6,17 +6,18 @@
 
 /* ========== 比较矩阵容器 ========== */
 .comparison-matrix-container {
-    /* Let the container size to its content (the inner grid). Using max-content
-       ensures the container width matches the grid width so exports capture the
-       full matrix. Center the container with auto horizontal margins and keep
-       padding/background for visual framing. */
-    width: max-content;
+    /* Allow the matrix to scroll horizontally on smaller screens while
+       still centering the content when space permits. */
+    width: 100%;
+    max-width: 100%;
     margin: var(--spacing-lg) auto;
-    padding: var(--spacing-xl);
+    padding: clamp(var(--spacing-lg), 3vw, var(--spacing-xl));
     background: var(--bg-light);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
 }
 
 .matrix-title {
@@ -50,15 +51,29 @@
     --matrix-label-size: 40px;
 }
 
+@media (max-width: 1200px) {
+    :root {
+        --matrix-cell-min-width: clamp(120px, 22vw, 200px);
+        --matrix-cell-min-height: clamp(130px, 24vw, 220px);
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --matrix-cell-min-width: 110px;
+        --matrix-cell-min-height: 120px;
+    }
+}
+
 /* Let the grid size itself to its content so the container's scrollbar
    can handle overflow. Using max-content prevents the grid from forcing
    overflow outside the container while preserving column sizing. */
 .comparison-matrix-grid {
-    /* Let the grid size itself to its content so the container (above) will
-       expand to that width. This preserves fixed cell sizing and ensures
-       exports capture the full visible matrix. */
+    /* Let the grid size itself to its content so the scroll container (above)
+       handles overflow while keeping cell sizing intact. */
     box-sizing: border-box;
     width: max-content;
+    min-width: fit-content;
 }
 
 /* ========== 矩阵单元格 ========== */

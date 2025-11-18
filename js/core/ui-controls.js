@@ -1414,61 +1414,87 @@ function redrawCurrentViz() {
 }
 
 // ========== 事件处理函数 ==========
+function loadDataFromText(text, options = {}) {
+    if (typeof text !== 'string' || text.trim().length === 0) {
+        throw new Error('Empty data content');
+    }
+    const firstLine = text.split(/\r?\n/)[0] || '';
+    const low = firstLine.toLowerCase();
+    const looksCombinedLong = low.includes('item_id') && low.includes('condition') && low.includes('log2foldchange');
+    if (looksCombinedLong && typeof parseCombinedLongTSV === 'function') {
+        rawData = parseCombinedLongTSV(text);
+    } else {
+        rawData = parseTSV(text);
+    }
+    treeData = buildHierarchy(rawData);
+
+    // 加载新文件时刷新 Color domain：清除手动 M，输入框回到自动/默认
+    resetManualDomainForAllModes();
+    try { comparisonColorDomain = [-5, 0, 5]; } catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5,0,5]; }
+    const cdInput = document.getElementById('color-domain-abs');
+    if (cdInput) cdInput.value = '';
+
+    const filenameLabel = (typeof options.label === 'string' && options.label.trim().length > 0)
+        ? options.label.trim()
+        : 'Inline data';
+    const filenameDisplay = document.getElementById('filename-display');
+    if (filenameDisplay) filenameDisplay.textContent = filenameLabel;
+
+    // 切换回单样本模式
+    const modeSelect = document.getElementById('viz-mode');
+    if (modeSelect && modeSelect.value !== 'single') {
+        modeSelect.value = 'single';
+        handleVisualizationModeChange();
+    }
+
+    // 更新样本复选框
+    updateSampleCheckboxes();
+
+    // 若为 combined_long 数据，显示单样本显著性过滤控件；否则隐藏
+    const isCombined = !!(typeof window !== 'undefined' && window.isCombinedLong);
+    const rowToggle = document.getElementById('single-significance-toggle-row');
+    const rowThresh = document.getElementById('single-significance-thresholds-row');
+    if (rowToggle) rowToggle.style.display = isCombined ? 'flex' : 'none';
+    if (rowThresh) {
+        const singleToggle = document.getElementById('single-show-significance');
+        const shouldShow = isCombined && !!(singleToggle && singleToggle.checked);
+        rowThresh.style.display = shouldShow ? 'flex' : 'none';
+    }
+
+    // 初始化可视化
+    initVisualization();
+    drawAllTrees();
+    // 依据是否存在负值，刷新颜色方案预览（顺序/分歧自适应）
+    if (typeof renderColorPreviews === 'function') renderColorPreviews();
+
+    // 更新统计信息
+    if (selectedSamples.length > 0) {
+        const hierarchy = d3.hierarchy(treeData);
+        updateStats(hierarchy, selectedSamples[0]);
+    }
+
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('metatree:data-loaded', {
+            detail: {
+                label: filenameLabel,
+                sampleCount: Array.isArray(samples) ? samples.length : 0,
+                isCombinedLong: isCombined
+            }
+        }));
+    }
+
+    return treeData;
+}
+try { if (typeof window !== 'undefined') window.loadDataFromText = loadDataFromText; } catch (_) {}
+
 function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    document.getElementById('filename-display').textContent = file.name;
-
     const reader = new FileReader();
     reader.onload = function(event) {
         try {
-            const text = event.target.result;
-            // 检测是否为 combined_long.tsv 格式（包含 Item_ID / condition / log2FoldChange）
-            const firstLine = text.split(/\r?\n/)[0] || '';
-            const low = firstLine.toLowerCase();
-            const looksCombinedLong = low.includes('item_id') && low.includes('condition') && low.includes('log2foldchange');
-            if (looksCombinedLong && typeof parseCombinedLongTSV === 'function') {
-                rawData = parseCombinedLongTSV(text);
-            } else {
-                rawData = parseTSV(text);
-            }
-            treeData = buildHierarchy(rawData);
-
-            // 加载新文件时刷新 Color domain：清除手动 M，输入框回到自动/默认
-            resetManualDomainForAllModes();
-            try { comparisonColorDomain = [-5, 0, 5]; } catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5,0,5]; }
-            const cdInput = document.getElementById('color-domain-abs');
-            if (cdInput) cdInput.value = '';
-            
-            // 切换回单样本模式
-            const modeSelect = document.getElementById('viz-mode');
-            if (modeSelect && modeSelect.value !== 'single') {
-                modeSelect.value = 'single';
-                handleVisualizationModeChange();
-            }
-            
-            // 更新样本复选框
-            updateSampleCheckboxes();
-
-            // 若为 combined_long 数据，显示单样本显著性过滤控件；否则隐藏
-            const isCombined = !!window.isCombinedLong;
-            const rowToggle = document.getElementById('single-significance-toggle-row');
-            const rowThresh = document.getElementById('single-significance-thresholds-row');
-            if (rowToggle) rowToggle.style.display = isCombined ? 'flex' : 'none';
-            if (rowThresh) rowThresh.style.display = (isCombined && document.getElementById('single-show-significance')?.checked) ? 'flex' : 'none';
-
-            // 初始化可视化
-            initVisualization();
-            drawAllTrees();
-            // 依据是否存在负值，刷新颜色方案预览（顺序/分歧自适应）
-            if (typeof renderColorPreviews === 'function') renderColorPreviews();
-            
-            // 更新统计信息
-            if (selectedSamples.length > 0) {
-                const hierarchy = d3.hierarchy(treeData);
-                updateStats(hierarchy, selectedSamples[0]);
-            }
+            loadDataFromText(event.target.result, { label: file.name });
         } catch (error) {
             alert('Failed to parse data: ' + error.message);
             console.error(error);
@@ -3129,6 +3155,49 @@ function initFileFormatInfoModal() {
     });
 }
 
+function dispatchMetaTreeReadyEvent() {
+    try {
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('metatree:ready'));
+        }
+    } catch (err) {
+        console.warn('Failed to dispatch metatree:ready event', err);
+    }
+}
+
+function bootstrapMetaTreeFromWindowPayload() {
+    if (typeof window === 'undefined') return;
+    const payload = window.MetaTreeBootstrap || window.metaTreeBootstrap;
+    if (!payload) return;
+
+    const { dataText, dataLabel, metaText, metaLabel } = payload;
+    if (typeof dataText === 'string' && dataText.trim().length > 0) {
+        try {
+            loadDataFromText(dataText, { label: dataLabel || 'Inline data' });
+        } catch (err) {
+            console.error('Failed to bootstrap inline data', err);
+        }
+    }
+    if (typeof metaText === 'string' && metaText.trim().length > 0) {
+        try {
+            loadMetaFromText(metaText, { label: metaLabel || 'Inline meta' });
+        } catch (err) {
+            console.error('Failed to bootstrap inline meta', err);
+        }
+    }
+
+    try {
+        delete window.MetaTreeBootstrap;
+    } catch (_) {
+        window.MetaTreeBootstrap = undefined;
+    }
+    try {
+        delete window.metaTreeBootstrap;
+    } catch (_) {
+        window.metaTreeBootstrap = undefined;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initEventListeners();
     initSidebarCollapseControl();
@@ -3262,7 +3331,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 一次性自检：在布局重构后，核对关键 DOM 元素是否齐全，便于快速发现遗漏
     (function verifyRequiredElements(){
-    const requiredIds = [
+        const requiredIds = [
             // 基础容器
             'viz-container','stats-panel','total-nodes','leaf-nodes','max-depth',
             // 数据与元数据
@@ -3307,6 +3376,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('[MetaTree] Missing required DOM elements after layout refactor:', missing);
         }
     })();
+
+    dispatchMetaTreeReadyEvent();
+    bootstrapMetaTreeFromWindowPayload();
 });
 
 // ========== 示例数据自动加载与 meta 集成 ==========
@@ -3474,19 +3546,42 @@ function handleMetaGroupColumnChange(col) {
     updateGroupDefinitionsDisplay();
 }
 
+function loadMetaFromText(text, options = {}) {
+    if (typeof text !== 'string' || text.trim().length === 0) {
+        throw new Error('Empty meta content');
+    }
+    const meta = parseMetaTSV(text);
+    if (!meta) {
+        throw new Error('Metadata missing required "Sample" column or rows.');
+    }
+    populateMetaControls(true);
+    const label = (typeof options.label === 'string' && options.label.trim().length > 0)
+        ? options.label.trim()
+        : 'Inline meta';
+    const disp = document.getElementById('meta-file-display');
+    if (disp) disp.textContent = label;
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('metatree:meta-loaded', {
+            detail: {
+                label,
+                columnCount: Array.isArray(window.metaColumns) ? window.metaColumns.length : 0
+            }
+        }));
+    }
+    return meta;
+}
+try { if (typeof window !== 'undefined') window.loadMetaFromText = loadMetaFromText; } catch (_) {}
+
 function handleMetaUpload(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(evt) {
         try {
-            const text = evt.target.result;
-            const meta = parseMetaTSV(text);
-            populateMetaControls(!!meta);
-            const disp = document.getElementById('meta-file-display');
-            if (disp) disp.textContent = file.name;
+            loadMetaFromText(evt.target.result, { label: file.name });
         } catch (err) {
             alert('Failed to parse meta file: ' + err.message);
+            console.error(err);
         }
     };
     reader.readAsText(file);

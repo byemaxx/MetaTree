@@ -175,3 +175,61 @@ If you prefer to run your own copy:
 + Open index.html in a modern browser via a static server (or your own hosting).
 
 - Use MetaTree as above. No additional build step is required.
+
+## Programmatic integration (MetaX, PyQt, notebooks, etc.)
+
+MetaTree now exposes a small, stable API so that external tools can preload data without manual uploads.
+
+### Lifecycle events
+
+- `metatree:ready` is dispatched on `window` once the UI is initialized. Listen to this event to know when it is safe to call the APIs below.
+- `metatree:data-loaded` and `metatree:meta-loaded` fire after successful programmatic uploads. Their `detail` payload includes the label used, plus counts that can be used for logging.
+
+### Loading data/metadata from memory
+
+```js
+window.loadDataFromText(tsvString, { label: 'MetaX data' });
+window.loadMetaFromText(metaTsvString, { label: 'MetaX meta' });
+```
+
+- `tsvString` / `metaTsvString` must match the same TSV schema that the upload buttons expect (wide hierarchy tables, combined long-format tables, and metadata with a `Sample` column).
+- Both helpers return the parsed object and throw an error if the payload is invalid, so surrounding code can show a custom message or retry.
+
+### Bootstrapping without custom JavaScript
+
+If you cannot easily listen for events (e.g., when launching MetaTree inside another app), set a bootstrap payload before the page finishes loading:
+
+```html
+<script>
+  window.MetaTreeBootstrap = {
+    dataText: 'Taxon\tSample_A\tSample_B\n...',
+    dataLabel: 'Injected data',
+    metaText: 'Sample\tGroup\n...',
+    metaLabel: 'Injected meta'
+  };
+</script>
+```
+
+MetaTree will automatically call `loadDataFromText`/`loadMetaFromText` as soon as the interface is ready.
+
+### Example: feeding pandas DataFrames from MetaX / PyQt5
+
+```python
+import json
+
+def df_to_tsv(df):
+    return df.to_csv(sep='\t', index=False)
+
+data_tsv = df_to_tsv(hierarchy_df)
+meta_tsv = df_to_tsv(meta_df)
+
+js = f"""
+    window.loadDataFromText({json.dumps(data_tsv)}, {{ label: 'MetaX data' }});
+    window.loadMetaFromText({json.dumps(meta_tsv)}, {{ label: 'MetaX meta' }});
+"""
+webview.page().runJavaScript(js)
+```
+
+- Convert the pandas `DataFrame` objects into TSV strings using the same columns you would export for manual uploads.
+- Wait for your `QWebEngineView`/`QWebView` to report that the page has finished loading, then run the JavaScript snippet above.
+- Any other desktop or notebook environment can follow the same pattern (serialize → inject → call the global helpers).

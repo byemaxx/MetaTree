@@ -22,7 +22,7 @@ let customColorMid = '#ffd27f'; // 可选中间色
 // 默认自定义渐变：3 个停靠点（起点-中点-终点）
 let customColorStops = [customColorStart, customColorMid, customColorEnd];
 let customZeroColor = null; // 自定义零值颜色（节点+连线）
-try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) {}
+try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) { }
 function isReverseColorsEnabled() {
     if (typeof colorSchemeReversed !== 'undefined') return !!colorSchemeReversed;
     if (typeof window !== 'undefined' && typeof window.colorSchemeReversed !== 'undefined') {
@@ -58,7 +58,7 @@ let activeTreeData = null;
 let metaData = null;         // { rows: Array<Record<string,string>>, bySample: { [sample]: row }, columns: string[] }
 let metaColumns = [];        // 可用于分组的列名（不含 Sample）
 // 元数据筛选（UI 勾选的过滤条件）: { columnName: Set(values) }
-let metaFilters = {};        
+let metaFilters = {};
 
 // 可视化参数
 let showLabels = true; // 是否显示标签（默认开启）
@@ -106,17 +106,17 @@ let nodeColorOverrideLabel = new Map(); // { nodeAncestorPath: labelName } 用�
 function generateDistinctColor(index) {
     const goldenRatioConjugate = 0.618033988749895;
     const hue = (index * goldenRatioConjugate * 360) % 360;
-    
+
     // 使用不同的饱和度和亮度组合来增加颜色多样性
     const saturationLevels = [70, 85, 60, 75];
     const lightnessLevels = [45, 55, 40, 50];
-    
+
     const satIndex = Math.floor(index / 360) % saturationLevels.length;
     const lightIndex = Math.floor(index / (360 * saturationLevels.length)) % lightnessLevels.length;
-    
+
     const saturation = saturationLevels[satIndex];
     const lightness = lightnessLevels[lightIndex];
-    
+
     return `hsl(${hue.toFixed(0)}, ${saturation}%, ${lightness}%)`;
 }
 // 是否在每个样本图中显示legend（individual samples模式）
@@ -132,12 +132,12 @@ let sampleRenderState = {};               // { [sample]: { rendered: boolean, di
 const NONSIG_NODE_COLOR = '#e0e0e0';
 const NONSIG_LINK_COLOR = '#c8c8c8';
 let lastGlobalDomain = null;             // 最近一次计算的全局颜色/大小域
-try { if (typeof window !== 'undefined') window.lastGlobalDomain = lastGlobalDomain; } catch(_) {}
+try { if (typeof window !== 'undefined') window.lastGlobalDomain = lastGlobalDomain; } catch (_) { }
 // 用户手动设置的全局颜色域幅度 M；
 // - 单/组（丰度）模式使用 [0, M]
 // - 比较/log2FC 模式使用 [-M, M]
 let manualColorDomainValue = null;
-try { if (typeof window !== 'undefined') window.manualColorDomainValue = manualColorDomainValue; } catch(_) {}
+try { if (typeof window !== 'undefined') window.manualColorDomainValue = manualColorDomainValue; } catch (_) { }
 
 const DEFAULT_DATA_DELIMITER = '\t';
 const DEFAULT_TAXON_DELIMITER = '|';
@@ -148,7 +148,7 @@ try {
         window.dataFileDelimiter = dataFileDelimiter;
         window.taxonRankDelimiter = taxonRankDelimiter;
     }
-} catch (_) {}
+} catch (_) { }
 
 function decodeDelimiterEscapes(value) {
     if (value == null) return '';
@@ -177,7 +177,7 @@ function getDataFileDelimiter() {
 
 function setDataFileDelimiter(value) {
     dataFileDelimiter = normalizeDelimiterValue(value, DEFAULT_DATA_DELIMITER);
-    try { if (typeof window !== 'undefined') window.dataFileDelimiter = dataFileDelimiter; } catch (_) {}
+    try { if (typeof window !== 'undefined') window.dataFileDelimiter = dataFileDelimiter; } catch (_) { }
     return dataFileDelimiter;
 }
 
@@ -189,7 +189,7 @@ function getTaxonRankDelimiter() {
 
 function setTaxonRankDelimiter(value) {
     taxonRankDelimiter = normalizeDelimiterValue(value, DEFAULT_TAXON_DELIMITER);
-    try { if (typeof window !== 'undefined') window.taxonRankDelimiter = taxonRankDelimiter; } catch (_) {}
+    try { if (typeof window !== 'undefined') window.taxonRankDelimiter = taxonRankDelimiter; } catch (_) { }
     return taxonRankDelimiter;
 }
 
@@ -252,7 +252,7 @@ function getResponsiveTreePanelSize(container, options = {}) {
 
     return { width, height: resolvedHeight };
 }
-try { if (typeof window !== 'undefined') window.getResponsiveTreePanelSize = getResponsiveTreePanelSize; } catch (_) {}
+try { if (typeof window !== 'undefined') window.getResponsiveTreePanelSize = getResponsiveTreePanelSize; } catch (_) { }
 
 function getAutoDomainDisplayMagnitude(domain) {
     if (!domain || typeof domain !== 'object') return null;
@@ -308,7 +308,7 @@ function resolveZeroColor(colorFn, fallback, signedDomain = dataHasNegatives) {
         try {
             const candidate = colorFn(0);
             if (candidate) return candidate;
-        } catch (_) {}
+        } catch (_) { }
     }
     return fallback;
 }
@@ -326,11 +326,11 @@ try {
         window.resolveZeroNodeColor = resolveZeroNodeColor;
         window.resolveZeroLinkColor = resolveZeroLinkColor;
     }
-} catch (_) {}
+} catch (_) { }
 
 // ========== 比较模式变量 ==========
 let visualizationMode = 'single';  // 'single', 'group', 'comparison', 'matrix'
-try { if (typeof window !== 'undefined') window.visualizationMode = visualizationMode; } catch(_) {}
+try { if (typeof window !== 'undefined') window.visualizationMode = visualizationMode; } catch (_) { }
 let comparisonMetric = 'log2_median_ratio';  // 比较指标
 let divergingPalette = 'blueRed';  // 分歧色板
 let showOnlySignificant = false;  // 只显示显著差异
@@ -386,8 +386,16 @@ function getSignificanceThresholds() {
 function isSignificantByThresholds(stats) {
     if (!stats) return false;
     const thresholds = getSignificanceThresholds();
-    const passPvalue = stats.pvalue !== undefined && stats.pvalue <= thresholds.pvalue;
-    const passQvalue = stats.qvalue !== undefined && stats.qvalue <= thresholds.qvalue;
+
+    // Fix: Treat clamped p-values (<= 1.1e-12) as effectively 0 for filtering
+    // This ensures that if p-value was clamped from 0, both p and q are treated as 0
+    const isEffectivelyZero = stats.pvalue !== undefined && stats.pvalue <= 1.1e-12;
+
+    const effectiveP = isEffectivelyZero ? 0 : stats.pvalue;
+    const effectiveQ = (isEffectivelyZero && stats.qvalue !== undefined) ? 0 : stats.qvalue;
+
+    const passPvalue = effectiveP !== undefined && effectiveP <= thresholds.pvalue;
+    const passQvalue = effectiveQ !== undefined && effectiveQ <= thresholds.qvalue;
     const passLogFC = stats.value !== undefined && Math.abs(stats.value) >= thresholds.logfc;
     return passPvalue && passQvalue && passLogFC;
 }
@@ -408,9 +416,15 @@ function isSignificantBySingleThresholds(stats, thresholds) {
     const thr = thresholds || getSingleSignificanceThresholds();
     const hasP = Number.isFinite(stats.pvalue);
     const hasQ = Number.isFinite(stats.qvalue);
+
+    // Fix: Treat clamped p-values (<= 1.1e-12) as effectively 0
+    const isEffectivelyZero = hasP && stats.pvalue <= 1.1e-12;
+    const effectiveP = isEffectivelyZero ? 0 : stats.pvalue;
+    const effectiveQ = (isEffectivelyZero && hasQ) ? 0 : stats.qvalue;
+
     const passLogFC = stats.value !== undefined && Math.abs(stats.value) >= thr.logfc;
-    const passPvalue = !hasP || stats.pvalue <= thr.pvalue;
-    const passQvalue = !hasQ || stats.qvalue <= thr.qvalue;
+    const passPvalue = !hasP || effectiveP <= thr.pvalue;
+    const passQvalue = !hasQ || effectiveQ <= thr.qvalue;
     return passLogFC && passPvalue && passQvalue;
 }
 
@@ -462,24 +476,24 @@ function parseTSV(text, delimiter) {
     const lines = text.trim().split(/\r?\n/);
     if (lines.length === 0) return [];
     const headers = lines[0].split(separator);
-    
+
     // 提取样本列（除了第一列的 Taxon）
     samples = headers.slice(1);
-    
+
     const data = [];
     let hasNegative = false;
     for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(separator);
         const taxonPath = values[0];
         const abundances = {};
-        
+
         samples.forEach((sample, idx) => {
             const v = parseFloat(values[idx + 1]);
             const num = (v != null && !isNaN(v)) ? v : 0;
             abundances[sample] = num;
             if (num < 0) hasNegative = true;
         });
-        
+
         data.push({
             taxon: taxonPath,
             abundances: abundances
@@ -490,7 +504,7 @@ function parseTSV(text, delimiter) {
     if (typeof window !== 'undefined') window.dataHasNegatives = dataHasNegatives;
     isCombinedLong = false;
     if (typeof window !== 'undefined') window.isCombinedLong = isCombinedLong;
-    
+
     return data;
 }
 
@@ -676,7 +690,7 @@ function calculateLabelThreshold(hierarchy, sample) {
         if (val > 0) allTransformed.push(val);
     });
     allTransformed.sort((a, b) => b - a);
-    
+
     let thresholdValue;
     if (labelThreshold <= 0) {
         thresholdValue = Infinity;
@@ -686,7 +700,7 @@ function calculateLabelThreshold(hierarchy, sample) {
         const numToShow = Math.ceil(allTransformed.length * labelThreshold);
         thresholdValue = allTransformed[Math.min(numToShow - 1, allTransformed.length - 1)];
     }
-    
+
     return thresholdValue;
 }
 
@@ -752,7 +766,7 @@ function stripUnaryChainToFirstBranch(h) {
  */
 function hoistPackingLabels(selection) {
     if (!selection || typeof selection.each !== 'function') return;
-    selection.each(function() {
+    selection.each(function () {
         const el = this;
         const parent = el && el.parentNode;
         const grandParent = parent && parent.parentNode;
@@ -764,7 +778,7 @@ function hoistPackingLabels(selection) {
         try {
             parent.removeChild(el);
             grandParent.appendChild(el);
-        } catch(_) {}
+        } catch (_) { }
     });
 }
 
@@ -781,7 +795,7 @@ function hoistPackingLabels(selection) {
 function getFullLabelName(d) {
     let name = d.data.name || '';
     const rank = d.data.rank;
-    
+
     if (rank === 'species') {
         const parent = d.parent;
         const genus = parent && parent.data ? parent.data.name : null;
@@ -828,7 +842,7 @@ function getDisplayName(d) {
 function applyLabelOverflow(textSelection) {
     if (labelOverflowMode !== 'wrap') return;
     const maxChars = (Number.isFinite(labelMaxLength) && labelMaxLength >= 4) ? Math.floor(labelMaxLength) : 15;
-    textSelection.each(function() {
+    textSelection.each(function () {
         const textEl = d3.select(this);
         const full = textEl.text();
         if (!full) return;
@@ -893,22 +907,22 @@ function getLabelColor(nodeOrLabel) {
     }
     // 传入的是字符串标签名
     const labelName = nodeOrLabel;
-    
+
     // 优先使用用户自定义颜色（即使 uniformLabelColors 未勾选）
     if (customLabelColors.has(labelName)) {
         return customLabelColors.get(labelName);
     }
-    
+
     // 如果未启用统一标签颜色，返回默认黑色
     if (!uniformLabelColors) {
         return '#333';
     }
-    
+
     // 返回预分配的颜色（已在 drawAllTrees 中分配）
     if (labelColorMap.has(labelName)) {
         return labelColorMap.get(labelName);
     }
-    
+
     // 如果没有找到（理论上不应该发生），返回默认颜色
     console.warn('No color found for label:', labelName);
     return '#333';
@@ -1004,25 +1018,25 @@ function resetAllLabelColors() {
  */
 function getAllLabelNames() {
     const labelNames = new Set();
-    
+
     // 使用 activeTreeData 或 treeData
     const dataToUse = activeTreeData || treeData;
-    
+
     if (!dataToUse) {
         console.warn('No tree data available');
         return labelNames;
     }
-    
+
     try {
         // 创建层次结构
         const childAccessor = d => (d.__collapsed ? null : d.children);
         let hierarchy = d3.hierarchy(dataToUse, childAccessor);
-        
+
         // 跳过只有单一子节点的根节点
         if (hierarchy.children && hierarchy.children.length === 1) {
             hierarchy = hierarchy.children[0];
         }
-        
+
         // 遍历所有节点,收集标签名称
         hierarchy.descendants().forEach(node => {
             if (node.data && node.data.name) {
@@ -1032,7 +1046,7 @@ function getAllLabelNames() {
     } catch (error) {
         console.error('Error getting label names:', error);
     }
-    
+
     return labelNames;
 }
 
@@ -1098,9 +1112,9 @@ function buildHierarchy(data) {
             const rank = prefix && rankMap[prefix] ? rankMap[prefix] : undefined;
             // 清理分类名称，移除前缀（如 d__/P__ 等）
             const cleanName = part.replace(/^[a-z]__\s*/i, '');
-            
+
             let child = currentNode.children.find(c => c.name === cleanName);
-            
+
             if (!child) {
                 child = {
                     name: cleanName,
@@ -1113,13 +1127,13 @@ function buildHierarchy(data) {
                 };
                 currentNode.children.push(child);
             }
-            
+
             // 标记内部节点
             currentNode.isLeaf = false;
             currentNode = child;
         });
 
-    if (functionLabel !== null && functionLabel.length > 0) {
+        if (functionLabel !== null && functionLabel.length > 0) {
             // 追加功能层级作为叶节点
             let funcNode = currentNode.children.find(c => c.name === functionLabel && c.rank === 'function');
             if (!funcNode) {
@@ -1151,12 +1165,12 @@ function buildHierarchy(data) {
             // 叶子节点已经有丰度值
             return node.abundances;
         }
-        
+
         // 内部节点：初始化丰度为0
         samples.forEach(sample => {
             node.abundances[sample] = 0;
         });
-        
+
         // 累加所有子节点的丰度
         node.children.forEach(child => {
             const childAbundances = calculateAbundances(child);
@@ -1164,10 +1178,10 @@ function buildHierarchy(data) {
                 node.abundances[sample] += childAbundances[sample] || 0;
             });
         });
-        
+
         return node.abundances;
     }
-    
+
     calculateAbundances(root);
     return root;
 }
@@ -1186,7 +1200,7 @@ function aggregateDataByGroup(metaColumn, aggregation = 'mean') {
 
     // 应用 meta 过滤
     const passes = (s) => (typeof window.samplePassesMetaFilters === 'function') ? window.samplePassesMetaFilters(s) : true;
-    
+
     // 按meta列值对样本分组（仅包含通过过滤的样本）
     const samplesByGroup = {};
     samples.forEach(sample => {
@@ -1194,17 +1208,17 @@ function aggregateDataByGroup(metaColumn, aggregation = 'mean') {
         if (!passes(sample)) {
             return;
         }
-        
+
         const metaRow = metaData.bySample[sample];
         if (!metaRow) {
             return;
         }
-        
+
         const groupValue = metaRow[metaColumn];
         if (!groupValue) {
             return;
         }
-        
+
         if (!samplesByGroup[groupValue]) {
             samplesByGroup[groupValue] = [];
         }
@@ -1222,7 +1236,7 @@ function aggregateDataByGroup(metaColumn, aggregation = 'mean') {
         // 遍历每个taxon
         rawData.forEach(item => {
             const taxonKey = item.taxon;
-            
+
             // 获取这个taxon在所有group样本中的值
             const values = groupSamples
                 .map(s => {
@@ -1287,7 +1301,7 @@ function updateAvailableGroups() {
  */
 function computeGroupedData() {
     console.log('computeGroupedData called, selectedGroups:', selectedGroups, 'groupMetaColumn:', groupMetaColumn);
-    
+
     if (selectedGroups.length === 0) {
         groupedData = {};
         console.log('computeGroupedData: No selected groups');
@@ -1308,22 +1322,22 @@ function computeGroupedData() {
             const groupSamples = groupDefinitions[groupName];
             console.log('Processing group:', groupName, 'samples:', groupSamples);
             if (!groupSamples || groupSamples.length === 0) return;
-            
+
             // 应用 meta 过滤：只使用通过过滤的样本
             const passes = (s) => (typeof window.samplePassesMetaFilters === 'function') ? window.samplePassesMetaFilters(s) : true;
             const filteredSamples = groupSamples.filter(s => passes(s));
-            
+
             if (filteredSamples.length === 0) {
                 console.log('Group', groupName, 'has no samples after meta filtering, skipping');
                 return;
             }
-            
+
             const aggregatedAbundances = {};
-            
+
             // 遍历每个taxon
             rawData.forEach(item => {
                 const taxonKey = item.taxon;
-                
+
                 // 获取这个taxon在过滤后的group样本中的值
                 const values = filteredSamples
                     .map(s => {
@@ -1403,7 +1417,7 @@ function buildTreeWithGroupData() {
         } else if (node.name && node.name !== 'Root') {
             currentPath.push(node.name);
         }
-        
+
         // 初始化该节点的abundances
         selectedGroups.forEach(groupName => {
             node.abundances[groupName] = 0;
@@ -1415,14 +1429,14 @@ function buildTreeWithGroupData() {
             for (const [taxonKey, item] of taxonDataMap.entries()) {
                 // 策略1: 检查taxonKey是否包含当前路径的所有部分
                 const matchesByParts = currentPath.every(part => taxonKey.includes(part));
-                
+
                 // 策略2: 检查taxonKey是否以当前节点的fullName结尾
                 const matchesByEnd = node.fullName && taxonKey.endsWith(node.fullName);
-                
+
                 // 策略3: 检查路径是否完全匹配
                 const pathStr = currentPath.join(getTaxonRankDelimiter());
                 const matchesByPath = taxonKey === pathStr || taxonKey.includes(pathStr);
-                
+
                 if (matchesByParts || matchesByEnd || matchesByPath) {
                     // 从groupedData获取聚合值
                     selectedGroups.forEach(groupName => {
@@ -1430,7 +1444,7 @@ function buildTreeWithGroupData() {
                             node.abundances[groupName] = groupedData[groupName][taxonKey];
                         }
                     });
-                    
+
                     break; // 找到匹配就停止
                 }
             }
@@ -1438,7 +1452,7 @@ function buildTreeWithGroupData() {
             // 内部节点:先递归处理子节点
             if (node.children && node.children.length > 0) {
                 node.children.forEach(child => setGroupAbundances(child, currentPath));
-                
+
                 // 从子节点聚合
                 selectedGroups.forEach(groupName => {
                     const sum = node.children.reduce((acc, child) => {
@@ -1451,7 +1465,7 @@ function buildTreeWithGroupData() {
     };
 
     setGroupAbundances(groupTree);
-    
+
     return groupTree;
 }
 
@@ -1460,12 +1474,12 @@ function initVisualization() {
     const vizContainer = document.getElementById('viz-container');
     vizContainer.innerHTML = '';
     // Clear any inline display modifications (e.g., matrix mode may set display:block)
-    try { vizContainer.style.display = ''; } catch (_) {}
+    try { vizContainer.style.display = ''; } catch (_) { }
     svgs = {};
     zooms = {};
     svgGroups = {};
     sampleRenderState = {};
-    
+
     // 根据模式决定要绘制的项目
     let activeSamples;
     if (visualizationMode === 'group') {
@@ -1475,7 +1489,7 @@ function initVisualization() {
         // single模式：绘制选中的样本
         activeSamples = typeof getActiveSamples === 'function' ? getActiveSamples() : selectedSamples.slice();
     }
-    
+
     activeSamples.forEach(sample => {
         // 创建面板
         const panel = document.createElement('div');
@@ -1494,8 +1508,8 @@ function initVisualization() {
         const btnReset = document.createElement('button');
         btnReset.className = 'btn-icon';
         btnReset.title = 'Reset zoom';
-        btnReset.setAttribute('aria-label','Reset zoom');
-    btnReset.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        btnReset.setAttribute('aria-label', 'Reset zoom');
+        btnReset.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
         btnReset.addEventListener('click', () => {
             if (svgs[sample] && zooms[sample]) {
                 svgs[sample].transition().duration(500).call(zooms[sample].transform, d3.zoomIdentity);
@@ -1514,18 +1528,18 @@ function initVisualization() {
         const btnSvg = document.createElement('button');
         btnSvg.className = 'btn-icon';
         btnSvg.title = 'Export SVG';
-        btnSvg.setAttribute('aria-label','Export SVG');
-    btnSvg.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+        btnSvg.setAttribute('aria-label', 'Export SVG');
+        btnSvg.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
         btnSvg.addEventListener('click', () => exportSVGForContainer(`svg-container-${sample}`, `treemap_${sample}`));
         // Export PNG button
         const btnPng = document.createElement('button');
         btnPng.className = 'btn-icon';
         btnPng.title = 'Export PNG';
-        btnPng.setAttribute('aria-label','Export PNG');
-    btnPng.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 6l2-2h6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>';
+        btnPng.setAttribute('aria-label', 'Export PNG');
+        btnPng.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 6l2-2h6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>';
         btnPng.addEventListener('click', () => exportPNGForContainer(`svg-container-${sample}`, `treemap_${sample}`));
-    actionsWrap.appendChild(btnReset);
-    actionsWrap.appendChild(btnRestore);
+        actionsWrap.appendChild(btnReset);
+        actionsWrap.appendChild(btnRestore);
         actionsWrap.appendChild(btnSvg);
         actionsWrap.appendChild(btnPng);
         header.appendChild(titleSpan);
@@ -1543,7 +1557,7 @@ function initVisualization() {
         // 初始化渲染状态并观察面板可见性
         sampleRenderState[sample] = { rendered: false, dirty: true };
         setupPanelObserver();
-        try { panelObserver && panelObserver.observe(panel); } catch (e) {}
+        try { panelObserver && panelObserver.observe(panel); } catch (e) { }
     });
 
     // 创建全局工具提示
@@ -1583,7 +1597,7 @@ function setupPanelObserver() {
 
 function drawAllTrees() {
     console.log('drawAllTrees called, customLabelColors:', customLabelColors.size);
-    
+
     // 在group模式下,先构建包含group数据的树
     if (visualizationMode === 'group') {
         computeGroupedData();
@@ -1593,7 +1607,7 @@ function drawAllTrees() {
         // single模式或其他模式使用原始treeData
         activeTreeData = treeData;
     }
-    
+
     // ========== 重新分配标签颜色（仅对当前显示的标签） ==========
     if (uniformLabelColors && activeTreeData) {
         // 收集所有当前会被实际渲染的唯一标签名称
@@ -1601,20 +1615,20 @@ function drawAllTrees() {
         try {
             const childAccessor = d => (d.__collapsed ? null : d.children);
             let hierarchy = d3.hierarchy(activeTreeData, childAccessor);
-            
+
             // 跳过只有单一子节点的根节点
             if (hierarchy.children && hierarchy.children.length === 1) {
                 hierarchy = hierarchy.children[0];
             }
-            
+
             // 获取标签层级过滤器
             const selectedSet = getLabelLevelSet();
-            
+
             // 如果在 single 模式，需要对每个样本计算阈值
             if (visualizationMode === 'single' && selectedSamples && selectedSamples.length > 0) {
                 selectedSamples.forEach(sample => {
                     const thresholdValue = calculateLabelThreshold(hierarchy, sample);
-                    
+
                     // 收集会被渲染的标签
                     hierarchy.descendants().forEach(node => {
                         if (node.data && node.data.name) {
@@ -1622,7 +1636,7 @@ function drawAllTrees() {
                             const transformed = transformAbundance(abundance);
                             const depthFromLeaf = node.height;
                             const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
-                            
+
                             // 只收集满足层级和阈值条件的标签（使用完整标签名称）
                             if (levelOk && Math.abs(transformed) >= thresholdValue) {
                                 visibleLabels.add(getFullLabelName(node));
@@ -1670,7 +1684,7 @@ function drawAllTrees() {
                     if (node.data && node.data.name) {
                         const depthFromLeaf = node.height;
                         const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
-                        
+
                         // 使用完整标签名称
                         if (levelOk) {
                             visibleLabels.add(getFullLabelName(node));
@@ -1681,11 +1695,11 @@ function drawAllTrees() {
         } catch (error) {
             console.warn('Error collecting visible labels:', error);
         }
-        
+
         // 清除自动分配的颜色（保留用户自定义颜色）
         const newLabelColorMap = new Map();
         labelColorIndex = 0;
-        
+
         // 为可见标签重新分配颜色
         const sortedLabels = Array.from(visibleLabels).sort(); // 排序确保一致性
         sortedLabels.forEach(labelName => {
@@ -1699,11 +1713,11 @@ function drawAllTrees() {
                 labelColorIndex++;
             }
         });
-        
+
         labelColorMap = newLabelColorMap;
         console.log('Reassigned colors for', visibleLabels.size, 'visible labels (mode:', visualizationMode, ')');
     }
-    
+
     // 先计算所有样本的全局最大丰度（应用转换后）
     const globalAbundances = [];
     // 使用子节点访问器以支持折叠/展开
@@ -1711,12 +1725,12 @@ function drawAllTrees() {
     let hierarchy = d3.hierarchy(activeTreeData, childAccessor);
     // 跳过前导的“单子节点链”，直至第一个分叉
     hierarchy = stripToFirstBranch(hierarchy);
-    
+
     // 计算最大叶距（用于标签层级多选UI）
     const maxLeafHeight = d3.max(hierarchy.descendants(), d => d.height) || 0;
     // 是否存在功能叶节点
     const hasFunctionLeaf = hierarchy.leaves().some(nd => nd.data && nd.data.rank === 'function');
-    
+
     // 基于当前层级结构，按“从叶向外”的距离动态推断每一层的常见 rank 名称
     // 这样即使跳过了单子节点根，也能保持标签语义正确
     const displayRankMap = {
@@ -1756,7 +1770,7 @@ function drawAllTrees() {
             window.updateLabelLevelsOptions(maxLeafHeight, hasFunctionLeaf, namesFromLeafDynamic, leafCount);
         }
     }
-    
+
     // 根据模式获取要绘制的项目
     let activeSamples;
     if (visualizationMode === 'group') {
@@ -1764,7 +1778,7 @@ function drawAllTrees() {
     } else {
         activeSamples = typeof getActiveSamples === 'function' ? getActiveSamples() : selectedSamples.slice();
     }
-    
+
     activeSamples.forEach(sample => {
         hierarchy.each(node => {
             if (node.data.abundances && node.data.abundances[sample] != null) {
@@ -1800,7 +1814,7 @@ function drawAllTrees() {
         globalDomain = { low: qLow, high: qHigh, max: globalMaxAbundance };
     }
     lastGlobalDomain = globalDomain;
-    try { if (typeof window !== 'undefined') window.lastGlobalDomain = lastGlobalDomain; } catch(_) {}
+    try { if (typeof window !== 'undefined') window.lastGlobalDomain = lastGlobalDomain; } catch (_) { }
 
     // 标记所有样本需要刷新；仅对可见面板触发绘制
     const isVisible = (panelEl) => {
@@ -1836,7 +1850,7 @@ function drawAllTrees() {
             } else if (typeof manualColorDomainValue === 'number' && isFinite(manualColorDomainValue) && manualColorDomainValue > 0) {
                 MmanualLeg = manualColorDomainValue;
             }
-        } catch(_) {}
+        } catch (_) { }
         let legendDomain;
         if (typeof MmanualLeg === 'number' && isFinite(MmanualLeg) && MmanualLeg > 0) {
             if (category === 'diverging') {
@@ -1878,7 +1892,7 @@ function drawAllTrees() {
                 }
             }
         }
-    } catch(_) {}
+    } catch (_) { }
 }
 
 function drawTree(sample, globalDomain) {
@@ -1890,7 +1904,7 @@ function drawTree(sample, globalDomain) {
     if (!container) return;
 
     container.innerHTML = '';
-    
+
     const size = (typeof getResponsiveTreePanelSize === 'function')
         ? getResponsiveTreePanelSize(container, { heightVar: '--panel-svg-height' })
         : null;
@@ -1902,7 +1916,7 @@ function drawTree(sample, globalDomain) {
         .attr('width', width)
         .attr('height', height);
 
-        // Add zoom functionality
+    // Add zoom functionality
     const zoom = d3.zoom()
         .scaleExtent([0.1, 10])
         .on('zoom', (event) => {
@@ -1923,7 +1937,7 @@ function drawTree(sample, globalDomain) {
                         const otherSvg = svgs[other];
                         const otherZoom = zooms[other];
                         if (otherSvg && otherZoom) {
-                            try { otherSvg.call(otherZoom.transform, event.transform); } catch (_) {}
+                            try { otherSvg.call(otherZoom.transform, event.transform); } catch (_) { }
                         }
                     });
                 } finally {
@@ -1944,7 +1958,7 @@ function drawTree(sample, globalDomain) {
     let hierarchy = d3.hierarchy(sourceTree, childAccessor);
     // 跳过前导的“单子节点链”，直至第一个分叉
     hierarchy = stripToFirstBranch(hierarchy);
-    
+
     // 是否启用单样本显著性过滤（仅对 combined_long 数据有效）
     const singleSigActive = (visualizationMode === 'single') && (typeof window !== 'undefined' && window.isCombinedLong) && !!document.getElementById('single-show-significance')?.checked;
     const singleSigThr = singleSigActive ? getSingleSignificanceThresholds() : null;
@@ -1973,7 +1987,7 @@ function drawTree(sample, globalDomain) {
             node._singleSigPass = pass;
             return pass;
         };
-        try { markPass(hierarchy); } catch (_) {}
+        try { markPass(hierarchy); } catch (_) { }
     }
 
     // 使用全局最大丰度（如果提供），否则计算当前样本的最大值
@@ -2000,7 +2014,7 @@ function drawTree(sample, globalDomain) {
         } else if (typeof manualColorDomainValue === 'number' && isFinite(manualColorDomainValue) && manualColorDomainValue > 0) {
             MmanualColor = manualColorDomainValue;
         }
-    } catch(_) {}
+    } catch (_) { }
     const colorMinAuto = globalDomain ? globalDomain.low : 0;
     const colorMaxAuto = globalDomain ? globalDomain.high : maxAbundance;
     const hasManualColor = typeof MmanualColor === 'number' && isFinite(MmanualColor) && MmanualColor > 0;
@@ -2030,7 +2044,7 @@ function drawTree(sample, globalDomain) {
         const palette = (typeof divergingPalette !== 'undefined' && divergingPalette) ? divergingPalette : 'blueRed';
         const scale = (typeof createDivergingColorScale === 'function')
             ? createDivergingColorScale(domain, palette)
-            : d3.scaleLinear().domain(domain).range(['#2166ac','#ffffff','#b2182b']).clamp(true);
+            : d3.scaleLinear().domain(domain).range(['#2166ac', '#ffffff', '#b2182b']).clamp(true);
         // 支持“Reverse colors”对分歧色的反转：
         // - 有负值：通过取 -v 达到两端互换
         // - 非负值：围绕中点镜像 v' = low + high - v
@@ -2074,7 +2088,7 @@ function drawTree(sample, globalDomain) {
     let sizeScale;
     const adjustedMinSize = minNodeSize * nodeSizeMultiplier;
     const adjustedMaxSize = maxNodeSize * nodeSizeMultiplier;
-    
+
     if (abundanceTransform === 'log' || abundanceTransform === 'log2' || abundanceTransform === 'sqrt') {
         // 数据已变换，使用分位数域的幂映射，增强分辨率
         // 对于 log 变换，减小最大节点大小以避免节点过大
@@ -2346,7 +2360,7 @@ function drawTree(sample, globalDomain) {
                 .call(applyLabelOverflow);
 
             if (typeof hoistPackingLabels === 'function') {
-                try { hoistPackingLabels(packLabels); } catch (_) {}
+                try { hoistPackingLabels(packLabels); } catch (_) { }
             }
         }
 
@@ -2479,7 +2493,7 @@ function drawTree(sample, globalDomain) {
             } else if (typeof manualColorDomainValue === 'number' && isFinite(manualColorDomainValue) && manualColorDomainValue > 0) {
                 MmanualLeg = manualColorDomainValue;
             }
-        } catch(_) {}
+        } catch (_) { }
         let legendDomain;
         if (typeof MmanualLeg === 'number' && isFinite(MmanualLeg) && MmanualLeg > 0) {
             if (cat === 'diverging') {
@@ -2559,7 +2573,7 @@ function createLegend(svg, width, height, legendDomain) {
         const palette = (typeof divergingPalette !== 'undefined' && divergingPalette) ? divergingPalette : 'blueRed';
         const scale = (typeof createDivergingColorScale === 'function')
             ? createDivergingColorScale(legendDomain, palette)
-            : d3.scaleLinear().domain(legendDomain).range(['#2166ac','#ffffff','#b2182b']).clamp(true);
+            : d3.scaleLinear().domain(legendDomain).range(['#2166ac', '#ffffff', '#b2182b']).clamp(true);
         const { project: projectLegendValue } = buildDivergingValueProjector(legendDomain, reverseColorsEnabled);
 
         // 采样生成渐变
@@ -2655,19 +2669,19 @@ function createLegend(svg, width, height, legendDomain) {
             .attr('text-anchor', 'end')
             .text(fmt(legendDomain[1]));
     }
-    
+
     // 添加变换类型提示（小字）
-    const transformHint = abundanceTransform === 'log' ? 'log10' : 
-                         abundanceTransform === 'log2' ? 'log2' : 
-                         abundanceTransform === 'sqrt' ? 'sqrt' : 
-                         abundanceTransform === 'area' ? 'area' : 'linear';
+    const transformHint = abundanceTransform === 'log' ? 'log10' :
+        abundanceTransform === 'log2' ? 'log2' :
+            abundanceTransform === 'sqrt' ? 'sqrt' :
+                abundanceTransform === 'area' ? 'area' : 'linear';
     legend.append('text')
         .attr('x', legendWidth / 2)
         .attr('y', 13)
         .attr('font-size', `${titleFontSize}px`)
         .attr('fill', '#999')
         .attr('text-anchor', 'middle')
-        .text(`${transformHint} (q${(quantileLow*100).toFixed(1).replace(/\.0$/,'')}%-q${(quantileHigh*100).toFixed(1).replace(/\.0$/,'')}%)`);
+        .text(`${transformHint} (q${(quantileLow * 100).toFixed(1).replace(/\.0$/, '')}%-q${(quantileHigh * 100).toFixed(1).replace(/\.0$/, '')}%)`);
 }
 
 // 在 viz-container 底部渲染一个单一共享图例（HTML/CSS）
@@ -2679,31 +2693,31 @@ function createLegend(svg, width, height, legendDomain) {
 function handleLabelRightClick(event, d) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     try {
         if (typeof window.hideVizExportMenu === 'function') {
             window.hideVizExportMenu();
         }
-    } catch (_) {}
-    
+    } catch (_) { }
+
     const labelName = getFullLabelName(d);
     const displayName = getDisplayName(d);
     const nodePath = getNodeAncestorPath(d);
     const menu = document.getElementById('label-color-menu');
     const menuTitle = document.getElementById('label-color-menu-title');
     const colorPicker = document.getElementById('label-color-picker');
-    
+
     console.log('Right click on label:', labelName, 'event position:', event.clientX, event.clientY);
-    
+
     if (!menu || !menuTitle || !colorPicker) {
         console.error('Label color menu elements not found');
         return;
     }
-    
+
     // 设置菜单标题 - 显示截断后的名称，但工具提示显示完整名称
     menuTitle.textContent = `Color: ${displayName}`;
     menuTitle.title = labelName; // 鼠标悬停显示完整名称
-    
+
     // 设置颜色选择器当前值（优先节点级覆盖，其次标签级自定义/自动）
     let currentColor;
     if (nodePath && nodeColorOverrides && nodeColorOverrides.has(nodePath)) {
@@ -2715,9 +2729,9 @@ function handleLabelRightClick(event, d) {
     } else {
         currentColor = generateDistinctColor(labelColorIndex);
     }
-    
+
     console.log('Current color for', labelName, ':', currentColor);
-    
+
     // 转换 HSL 颜色为 HEX (如果需要)
     if (currentColor.startsWith('hsl')) {
         // 创建临时元素来转换颜色
@@ -2726,7 +2740,7 @@ function handleLabelRightClick(event, d) {
         document.body.appendChild(tempDiv);
         const rgbColor = window.getComputedStyle(tempDiv).color;
         document.body.removeChild(tempDiv);
-        
+
         // 转换 RGB 到 HEX
         const rgb = rgbColor.match(/\d+/g);
         if (rgb) {
@@ -2740,35 +2754,35 @@ function handleLabelRightClick(event, d) {
     } else {
         colorPicker.value = currentColor;
     }
-    
+
     // 存储当前标签名称与节点唯一路径
     menu.dataset.labelName = labelName;
     if (nodePath) menu.dataset.nodePath = nodePath;
-    
+
     // 显示菜单 - 使用 clientX/Y 而不是 pageX/Y 以避免滚动问题
     menu.style.display = 'block';
-    
+
     // 计算菜单位置，确保不超出屏幕
     const menuWidth = menu.offsetWidth || 240;
     const menuHeight = menu.offsetHeight || 150;
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-    
+
     let left = event.clientX;
     let top = event.clientY;
-    
+
     // 如果菜单会超出右边界，向左调整
     if (left + menuWidth > windowWidth) {
         left = windowWidth - menuWidth - 10;
     }
-    
+
     // 如果菜单会超出下边界，向上调整
     if (top + menuHeight > windowHeight) {
         top = windowHeight - menuHeight - 10;
     }
-    
+
     console.log('Menu position:', { left, top, menuWidth, menuHeight });
-    
+
     menu.style.left = left + 'px';
     menu.style.top = top + 'px';
 }
@@ -2806,7 +2820,7 @@ function getNodeAncestorPath(d) {
 
 function addInteractions(nodes, sample) {
     nodes
-        .on('mouseover', function(event, d) {
+        .on('mouseover', function (event, d) {
             // 高亮当前节点
             d3.select(this).select('circle')
                 .transition()
@@ -2824,7 +2838,7 @@ function addInteractions(nodes, sample) {
                 <div>Name: ${d.data.fullName || 'Root'}</div>
                 <div>Depth: ${d.depth}</div>
                 ${d.children ? `<div>Children: ${d.children.length}</div>` : ''}
-                <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
+                <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 
             if (isCombinedLong && statForSample) {
                 // show pvalue and padj (qvalue) when available
@@ -2850,19 +2864,19 @@ function addInteractions(nodes, sample) {
                 } else {
                     activeSamples = (typeof getActiveSamples === 'function') ? getActiveSamples() : selectedSamples.slice();
                 }
-                
+
                 // 收集所有样本的丰度信息
                 const otherAbundances = [];
-                
+
                 activeSamples.forEach(otherSample => {
                     // 跳过当前 sample - 只在其他 panel 中高亮
                     if (otherSample === sample) return;
-                    
+
                     const otherSvg = svgs[otherSample];
                     if (!otherSvg) return;
-                    
+
                     // 在其他 panel 中找到相同路径的节点并高亮
-                    otherSvg.selectAll('.node').each(function(nodeData) {
+                    otherSvg.selectAll('.node').each(function (nodeData) {
                         const otherNodePath = getNodeAncestorPath(nodeData);
                         // 只有完整路径完全匹配时才高亮
                         if (otherNodePath === nodeAncestorPath) {
@@ -2872,7 +2886,7 @@ function addInteractions(nodes, sample) {
                                 .duration(200)
                                 .attr('stroke', '#ff6b6b')
                                 .attr('stroke-width', 3);
-                            
+
                             // 收集丰度信息以及该节点在目标样本/条件下的统计信息（若有）
                             const otherAbund = nodeData.data.abundances[otherSample] || 0;
                             const otherStat = (nodeData.data && nodeData.data.stats) ? nodeData.data.stats[otherSample] : null;
@@ -2884,7 +2898,7 @@ function addInteractions(nodes, sample) {
                         }
                     });
                 });
-                
+
                 // 如果有其他样本的丰度信息，添加到 tooltip
                 if (otherAbundances.length > 0) {
                     tooltipHtml += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Other samples:</strong></div>';
@@ -2904,18 +2918,18 @@ function addInteractions(nodes, sample) {
                                 }
                             } catch (_) { /* ignore */ }
                         }
-                        tooltipHtml += `<div style="font-size: 11px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, {maximumFractionDigits: 2})}${suffix}</div>`;
+                        tooltipHtml += `<div style="font-size: 11px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}</div>`;
                     });
                 }
             }
-            
+
             tooltip
                 .html(tooltipHtml)
                 .classed('show', true)
                 .style('left', (event.pageX + 15) + 'px')
                 .style('top', (event.pageY - 15) + 'px');
         })
-        .on('click', function(event, d) {
+        .on('click', function (event, d) {
             // 仅对拥有子节点的数据节点进行折叠/展开
             if (d && d.data && Array.isArray(d.data.children) && d.data.children.length > 0) {
                 const newState = !d.data.__collapsed;
@@ -2929,7 +2943,7 @@ function addInteractions(nodes, sample) {
                 drawAllTrees();
             }
         })
-        .on('mouseout', function(event, d) {
+        .on('mouseout', function (event, d) {
             // 移除当前节点高亮
             d3.select(this).select('circle')
                 .transition()
@@ -2947,15 +2961,15 @@ function addInteractions(nodes, sample) {
                 } else {
                     activeSamples = (typeof getActiveSamples === 'function') ? getActiveSamples() : selectedSamples.slice();
                 }
-                
+
                 activeSamples.forEach(otherSample => {
                     if (otherSample === sample) return; // 跳过当前 sample
-                    
+
                     const otherSvg = svgs[otherSample];
                     if (!otherSvg) return;
-                    
+
                     // 在其他 panel 中找到相同路径的节点并移除高亮
-                    otherSvg.selectAll('.node').each(function(nodeData) {
+                    otherSvg.selectAll('.node').each(function (nodeData) {
                         const otherNodePath = getNodeAncestorPath(nodeData);
                         // 只有完整路径完全匹配时才移除高亮
                         if (otherNodePath === nodeAncestorPath) {
@@ -2971,7 +2985,7 @@ function addInteractions(nodes, sample) {
 
             tooltip.classed('show', false);
         })
-        .on('mousemove', function(event) {
+        .on('mousemove', function (event) {
             tooltip
                 .style('left', (event.pageX + 15) + 'px')
                 .style('top', (event.pageY - 15) + 'px');
@@ -3010,7 +3024,7 @@ function exportSVG() {
     activeSamples.forEach(sample => {
         const svgElement = document.querySelector(`#svg-container-${sample} svg`);
         if (!svgElement) return;
-        
+
         const serializer = new XMLSerializer();
         const svgString = serializer.serializeToString(svgElement);
         const blob = new Blob([svgString], { type: 'image/svg+xml' });

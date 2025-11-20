@@ -11,6 +11,7 @@
     *   **Individual**: Heat-tree matrices for single samples.
     *   **Group / Aggregated**: Automatically aggregate samples by metadata.
     *   **Two-Group Comparison**: Direct comparison with effect size and significance-aware styling.
+    *   **Multi-Group Comparison**: Simultaneous visualization of multiple group contrasts.
 *   **Flexible Inputs**: Supports both hierarchical abundance tables (wide format) and differential statistics tables (long format).
 *   **Rich Customization**: Adjust layouts (radial, tree, packing), color schemes, transforms (log, sqrt), and filtering without writing code.
 *   **Publication-Ready Export**: Export high-quality SVG and PNG images directly from the browser.
@@ -19,7 +20,7 @@
 
 ### Online (Recommended)
 Access the latest version of MetaTree directly in your browser:
-[**Launch MetaTree Online**](https://byemaxx.github.io/MetaTree/)
+**[Launch MetaTree Online](https://byemaxx.github.io/MetaTree/)**
 
 ### Local Usage
 You can run MetaTree locally, but for full functionality (especially image export), we recommend using a local web server to avoid browser security restrictions on `file://` protocols.

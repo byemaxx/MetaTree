@@ -233,16 +233,17 @@ Before any test, samples are filtered based on the **Min Abundance** threshold.
 MetaTree supports two options for testing differences between two independent groups:
 
 - **Wilcoxon Rank Sum Test (Mann–Whitney U test)** (default): a non-parametric test that compares distributions without assuming normality.
-- **Two-sample T-test (Welch)**: an option that assumes approximately normally distributed data but does not assume equal variances between groups. Select the test in the Comparison panel under "Test:".
 
--   **Exact Method (Combined observations ≤ 12)**: When the total number of observations across both groups is small, MetaTree computes the **exact p-value** by enumerating all possible group label assignments and calculating the exact distribution of the U statistic.
+    -   **Exact Method (Combined observations ≤ 12)**: When the total number of observations across both groups is small, MetaTree computes the **exact p-value** by enumerating all possible group label assignments and calculating the exact distribution of the U statistic.
 
--   **Normal Approximation (Combined observations > 12)**: For larger datasets, MetaTree applies the **normal approximation** to the Mann–Whitney U distribution. Included steps are:
-      - computing the U statistic
-      - applying tie correction
-      - applying continuity correction
-      - converting U to a Z-score
-      - obtaining the p-value from the standard normal distribution.
+    -   **Normal Approximation (Combined observations > 12)**: For larger datasets, MetaTree applies the **normal approximation** to the Mann–Whitney U distribution. Included steps are:
+        - computing the U statistic
+        - applying tie correction
+        - applying continuity correction
+        - converting U to a Z-score
+        - obtaining the p-value from the standard normal distribution.
+  
++ **T-test (Welch)**: an option that assumes approximately normally distributed data but does not assume equal variances between groups. Select the test in the Comparison panel under "Test:".
 
 ### 7.3. Effect Size
 **Cohen's d** is calculated to quantify the magnitude of the difference. It represents the standardized difference between the two group means, using a pooled standard deviation that accounts for the sample sizes and variances of both groups.

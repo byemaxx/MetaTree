@@ -724,26 +724,7 @@ body.info-modal-open {
     background-color: transparent;
 }
 
-/* 模式面板特殊样式 */
-.mode-panel {
-    background: linear-gradient(135deg, #f5f8fc 0%, #eef2f7 100%);
-    border: 1px solid #d4dae3;
-    box-shadow: var(--shadow-md);
-}
 
-.mode-panel .panel-title {
-    background: linear-gradient(135deg, #e8edf4 0%, #dce3ec 100%);
-    color: var(--text-primary);
-    border-bottom: 1px solid #d4dae3;
-}
-
-.mode-panel .panel-title::after {
-    display: none;
-}
-
-.mode-panel label {
-    color: var(--text-primary);
-}
 
 /* 分组显示区域 */
 .group-display {

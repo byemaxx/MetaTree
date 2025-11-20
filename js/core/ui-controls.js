@@ -3006,25 +3006,71 @@ function populateComparisonResultsModal() {
         return;
     }
 
-    // Build a simple table preview
-    const columns = ['taxon_id','log2_median_ratio','pvalue','qvalue','effect_size','significant','n_samples_1','n_samples_2'];
+    // Build a flexible table preview: derive columns from stats keys (exclude treatments)
+    const statsObj = comp.stats || {};
+    const rows = Object.values(statsObj);
+    if (rows.length === 0) {
+        body.innerHTML = '<em class="text-muted">No comparison rows available</em>';
+        return;
+    }
+
+    // Collect all keys present in stats
+    const allKeysSet = new Set();
+    rows.forEach(r => { Object.keys(r || {}).forEach(k => allKeysSet.add(k)); });
+    // Exclude group-level meta fields that we don't want as columns
+    ['treatment_1', 'treatment_2'].forEach(k => allKeysSet.delete(k));
+
+    // Preferred ordering for common fields (if present)
+    const preferred = ['taxon_id','log2_median_ratio','log2_mean_ratio','median_1','median_2','mean_1','mean_2','fold_change','difference','wilcox_p_value','pvalue','qvalue','FDR_q_value','effect_size','significant','n_samples_1','n_samples_2'];
+
+    const allKeys = Array.from(allKeysSet);
+    const finalCols = [];
+    preferred.forEach(k => { if (allKeysSet.has(k)) { finalCols.push(k); } });
+    // Append any remaining keys (stable order)
+    allKeys.sort();
+    allKeys.forEach(k => { if (!finalCols.includes(k)) finalCols.push(k); });
+
+    // Build header
     let html = '<div style="overflow:auto; padding:6px;"><table class="info-sample-table"><thead><tr>';
-    columns.forEach(col => { html += `<th>${col}</th>`; });
+    finalCols.forEach(col => { html += `<th>${escapeHtml(String(col))}</th>`; });
     html += '</tr></thead><tbody>';
 
-    // Convert stats object to array and sort by qvalue then pvalue
-    const rows = Object.values(comp.stats || {});
-    rows.sort((a,b) => (a.qvalue - b.qvalue) || (a.pvalue - b.pvalue));
+    // Sorting rows: prefer qvalue -> pvalue if present, otherwise leave as-is
+    rows.sort((a,b) => {
+        const aq = (isFinite(a.qvalue) ? a.qvalue : (isFinite(a.FDR_q_value) ? a.FDR_q_value : Infinity));
+        const bq = (isFinite(b.qvalue) ? b.qvalue : (isFinite(b.FDR_q_value) ? b.FDR_q_value : Infinity));
+        if (aq !== bq) return aq - bq;
+        const ap = isFinite(a.pvalue) ? a.pvalue : (isFinite(a.wilcox_p_value) ? a.wilcox_p_value : Infinity);
+        const bp = isFinite(b.pvalue) ? b.pvalue : (isFinite(b.wilcox_p_value) ? b.wilcox_p_value : Infinity);
+        return ap - bp;
+    });
+
+    const getDecimalsForKey = (key) => {
+        if (!key) return 4;
+        const lk = key.toLowerCase();
+        if (lk.includes('pvalue') || lk === 'pvalue' || lk.includes('q') || lk.includes('fdr')) return 6;
+        if (lk.includes('log2') || lk.includes('ratio') || lk.includes('fold') || lk.includes('difference') || lk.includes('effect')) return 4;
+        return 3;
+    };
+
     rows.forEach(stat => {
         html += '<tr>';
-        html += `<td title="${escapeHtml(String(stat.taxon_id || ''))}">${escapeHtml(String(stat.taxon_id || ''))}</td>`;
-        html += `<td>${formatNumber(stat.log2_median_ratio,4)}</td>`;
-        html += `<td>${formatNumber(stat.pvalue,6)}</td>`;
-        html += `<td>${formatNumber(stat.qvalue,6)}</td>`;
-        html += `<td>${formatNumber(stat.effect_size,4)}</td>`;
-        html += `<td>${stat.significant ? 'true' : 'false'}</td>`;
-        html += `<td>${stat.n_samples_1 || 0}</td>`;
-        html += `<td>${stat.n_samples_2 || 0}</td>`;
+        finalCols.forEach(col => {
+            let v = stat[col];
+            let cell = '';
+            if (v == null || v === '') {
+                cell = '';
+            } else if (typeof v === 'number' && isFinite(v)) {
+                cell = formatNumber(v, getDecimalsForKey(col));
+            } else if (!isNaN(Number(v)) && v !== null && v !== '') {
+                // numeric-like strings
+                cell = formatNumber(Number(v), getDecimalsForKey(col));
+            } else {
+                cell = escapeHtml(String(v));
+            }
+            const title = (col === 'taxon_id') ? ` title="${escapeHtml(String(stat[col] || ''))}"` : '';
+            html += `<td${title}>${cell}</td>`;
+        });
         html += '</tr>';
     });
 

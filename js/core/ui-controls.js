@@ -2888,13 +2888,224 @@ function handleRunComparison() {
     }, 100);
 }
 
-function handleExportComparison() {
+// Open a modal to preview comparison results and offer export options
+function handleViewResults() {
     if (!window.comparisonResults || window.comparisonResults.length === 0) {
-        alert('No comparison results to export.');
+        alert('No comparison results to view. Please run a comparison first.');
         return;
     }
-    
-    exportComparisonResults(window.comparisonResults);
+    createComparisonResultsModal();
+    populateComparisonResultsModal();
+    const modal = document.getElementById('comparison-results-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        const closeBtn = document.getElementById('comparison-results-close');
+        if (closeBtn) closeBtn.focus();
+    }
+}
+
+function createComparisonResultsModal() {
+    if (document.getElementById('comparison-results-modal')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'comparison-results-modal';
+    overlay.className = 'comparison-modal-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-hidden', 'true');
+
+    overlay.innerHTML = `
+        <div class="comparison-modal-content" role="document">
+            <div class="comparison-modal-header">
+                <div class="modal-title">Comparison results</div>
+                <div class="modal-actions">
+                    <select id="comparison-select" aria-label="Select comparison"></select>
+                    <button id="comparison-export-tsv" class="btn-icon" title="Export current comparison (TSV)">TSV</button>
+                    <button id="comparison-export-csv" class="btn-icon" title="Export current comparison (CSV)">CSV</button>
+                    <button class="comparison-modal-close" id="comparison-results-close" aria-label="Close results">Close</button>
+                </div>
+            </div>
+            <div class="comparison-modal-body" id="comparison-results-body"></div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Event listeners
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) {
+            closeComparisonResultsModal();
+        }
+    });
+
+    document.getElementById('comparison-results-close').addEventListener('click', closeComparisonResultsModal);
+
+    document.getElementById('comparison-export-tsv').addEventListener('click', function () {
+        const idx = parseInt(document.getElementById('comparison-select').value, 10) || 0;
+        const singleComp = (window.comparisonResults && window.comparisonResults[idx]) ? window.comparisonResults[idx] : null;
+        const comp = singleComp ? [singleComp] : (window.comparisonResults || []);
+        // Build filename including group names when exporting a single comparison
+        let filename = 'comparison_results.tsv';
+        if (singleComp) {
+            const t1 = sanitizeFilename(singleComp.treatment_1 || 'A');
+            const t2 = sanitizeFilename(singleComp.treatment_2 || 'B');
+            filename = `comparison_result_${t1}_vs_${t2}.tsv`;
+        }
+        exportComparisonResults(comp, filename);
+    });
+
+    document.getElementById('comparison-export-csv').addEventListener('click', function () {
+        const idx = parseInt(document.getElementById('comparison-select').value, 10) || 0;
+        const comp = (window.comparisonResults && window.comparisonResults[idx]) ? window.comparisonResults[idx] : null;
+        if (!comp) {
+            alert('No comparison selected');
+            return;
+        }
+        // Build CSV from the selected comparison
+        const { treatment_1, treatment_2, stats } = comp;
+        let csv = 'treatment_1,treatment_2,taxon_id,log2_median_ratio,log2_mean_ratio,median_1,median_2,mean_1,mean_2,fold_change,difference,wilcox_p_value,FDR_q_value,effect_size,significant,n_samples_1,n_samples_2\n';
+        Object.values(stats).forEach(stat => {
+            const safe = (v) => (v == null || !isFinite(v)) ? '0' : String(v);
+            csv += `${treatment_1},${treatment_2},"${String(stat.taxon_id || '')}",${safe(stat.log2_median_ratio)},${safe(stat.log2_mean_ratio)},${safe(stat.median_1)},${safe(stat.median_2)},${safe(stat.mean_1)},${safe(stat.mean_2)},${safe(stat.fold_change)},${safe(stat.difference)},${safe(stat.wilcox_p_value)},${safe(stat.qvalue)},${safe(stat.effect_size)},${stat.significant || false},${stat.n_samples_1 || 0},${stat.n_samples_2 || 0}\n`;
+        });
+        const t1 = sanitizeFilename(comp.treatment_1 || 'A');
+        const t2 = sanitizeFilename(comp.treatment_2 || 'B');
+        const csvName = `comparison_result_${t1}_vs_${t2}.csv`;
+        downloadTextFile(csvName, csv, 'text/csv');
+    });
+
+    const select = document.getElementById('comparison-select');
+    select.addEventListener('change', populateComparisonResultsModal);
+}
+
+function populateComparisonResultsModal() {
+    const body = document.getElementById('comparison-results-body');
+    const select = document.getElementById('comparison-select');
+    if (!body || !select) return;
+    // Preserve current selection (if any) before rebuilding options
+    const prevValue = (typeof select.value === 'string' && select.value !== '') ? parseInt(select.value, 10) : 0;
+    const comps = window.comparisonResults || [];
+    select.innerHTML = '';
+    comps.forEach((c, i) => {
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = `${c.treatment_1}  vs  ${c.treatment_2}`;
+        select.appendChild(opt);
+    });
+
+    if (comps.length === 0) {
+        body.innerHTML = '<em class="text-muted">No comparison results available</em>';
+        return;
+    }
+
+    // Restore previous selection if valid, otherwise default to 0
+    const idx = (Number.isFinite(prevValue) && prevValue >= 0 && prevValue < comps.length) ? prevValue : 0;
+    select.value = String(idx);
+    const comp = comps[idx] || comps[0];
+    if (!comp) {
+        body.innerHTML = '<em class="text-muted">No comparison results available</em>';
+        return;
+    }
+
+    // Build a simple table preview
+    const columns = ['taxon_id','log2_median_ratio','pvalue','qvalue','effect_size','significant','n_samples_1','n_samples_2'];
+    let html = '<div style="overflow:auto; padding:6px;"><table class="info-sample-table"><thead><tr>';
+    columns.forEach(col => { html += `<th>${col}</th>`; });
+    html += '</tr></thead><tbody>';
+
+    // Convert stats object to array and sort by qvalue then pvalue
+    const rows = Object.values(comp.stats || {});
+    rows.sort((a,b) => (a.qvalue - b.qvalue) || (a.pvalue - b.pvalue));
+    rows.forEach(stat => {
+        html += '<tr>';
+        html += `<td title="${escapeHtml(String(stat.taxon_id || ''))}">${escapeHtml(String(stat.taxon_id || ''))}</td>`;
+        html += `<td>${formatNumber(stat.log2_median_ratio,4)}</td>`;
+        html += `<td>${formatNumber(stat.pvalue,6)}</td>`;
+        html += `<td>${formatNumber(stat.qvalue,6)}</td>`;
+        html += `<td>${formatNumber(stat.effect_size,4)}</td>`;
+        html += `<td>${stat.significant ? 'true' : 'false'}</td>`;
+        html += `<td>${stat.n_samples_1 || 0}</td>`;
+        html += `<td>${stat.n_samples_2 || 0}</td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    body.innerHTML = html;
+
+    // 初始化表格列点击排序（绑定在生成的表格上）
+    try {
+        const table = body.querySelector('table.info-sample-table');
+        if (table) {
+            const getCellValue = (tr, idx) => {
+                const cell = tr.children[idx];
+                if (!cell) return '';
+                return cell.textContent || cell.innerText || '';
+            };
+
+            const comparer = (idx, asc, type) => (a, b) => {
+                const v1 = getCellValue(asc ? a : b, idx).trim();
+                const v2 = getCellValue(asc ? b : a, idx).trim();
+                if (type === 'number') {
+                    const n1 = parseFloat(v1.replace(/[^0-9eE.+-]/g, ''));
+                    const n2 = parseFloat(v2.replace(/[^0-9eE.+-]/g, ''));
+                    if (isNaN(n1) && isNaN(n2)) return 0;
+                    if (isNaN(n1)) return 1;
+                    if (isNaN(n2)) return -1;
+                    return n1 - n2;
+                }
+                return v1.localeCompare(v2, undefined, { numeric: true, sensitivity: 'base' });
+            };
+
+            const ths = table.querySelectorAll('th');
+            ths.forEach((th, idx) => {
+                th.style.cursor = 'pointer';
+                th.addEventListener('click', () => {
+                    const colName = th.textContent.trim().toLowerCase();
+                    const numericCols = ['log2_median_ratio','pvalue','qvalue','effect_size','n_samples_1','n_samples_2'];
+                    const type = numericCols.includes(colName) ? 'number' : 'string';
+                    const tbody = table.tBodies[0];
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const currentAsc = th.classList.contains('sorted-asc');
+                    ths.forEach(x => x.classList.remove('sorted-asc','sorted-desc'));
+                    th.classList.add(currentAsc ? 'sorted-desc' : 'sorted-asc');
+                    rows.sort(comparer(idx, !currentAsc, type));
+                    rows.forEach(r => tbody.appendChild(r));
+                });
+            });
+        }
+    } catch (err) {
+        console.warn('Table sorting init failed', err);
+    }
+}
+
+function closeComparisonResultsModal() {
+    const modal = document.getElementById('comparison-results-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function downloadTextFile(filename, content, mime) {
+    const blob = new Blob([content], { type: mime || 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+function sanitizeFilename(name) {
+    if (!name) return '';
+    // Remove quotes and trim, replace spaces and unsafe chars with underscore
+    return String(name).trim().replace(/"/g, '').replace(/[^a-zA-Z0-9\-_.]/g, '_');
+}
+
+function formatNumber(v, d) {
+    if (v == null || !isFinite(v)) return '0';
+    return Number(v).toFixed(d);
+}
+
+function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function handleComparisonMetricChange() {
@@ -3029,6 +3240,7 @@ function initSidebarCollapseControl() {
 
     const persistState = (collapsed) => {
         try {
+    
             localStorage.setItem(storageKey, collapsed ? 'true' : 'false');
         } catch (_) {}
     };
@@ -3218,7 +3430,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('cancel-group-btn').addEventListener('click', handleCloseGroupModal);
     document.getElementById('close-group-modal').addEventListener('click', handleCloseGroupModal);
     document.getElementById('run-comparison').addEventListener('click', handleRunComparison);
-    document.getElementById('export-comparison').addEventListener('click', handleExportComparison);
+    document.getElementById('export-comparison').addEventListener('click', handleViewResults);
     document.getElementById('comparison-metric').addEventListener('change', handleComparisonMetricChange);
     document.getElementById('show-significance').addEventListener('change', handleSignificanceChange);
     const colorDomainAbs = document.getElementById('color-domain-abs');

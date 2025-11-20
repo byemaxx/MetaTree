@@ -1165,6 +1165,43 @@ button:disabled {
     background: var(--bg-lighter);
 }
 
+/* 排序指示器（简约风格） */
+.info-sample-table th {
+    cursor: pointer;
+    position: relative;
+    padding-right: 28px; /* 留出空间给箭头 */
+    user-select: none;
+}
+
+.info-sample-table th::after {
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: var(--text-light);
+    opacity: 0.9;
+    transition: transform 0.12s ease, color 0.12s ease, opacity 0.12s ease;
+}
+
+.info-sample-table th.sorted-asc::after {
+    content: '▲';
+    color: var(--primary-color);
+    transform: translateY(-50%) translateY(-1px);
+}
+
+.info-sample-table th.sorted-desc::after {
+    content: '▼';
+    color: var(--primary-color);
+    transform: translateY(-50%) translateY(1px);
+}
+
+.info-sample-table th:hover::after {
+    color: var(--primary-dark);
+    opacity: 1;
+}
+
 .info-modal-list {
     margin: var(--spacing-sm) 0 0;
     padding-left: var(--spacing-xl);

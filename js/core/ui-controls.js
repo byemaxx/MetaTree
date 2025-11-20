@@ -3110,6 +3110,32 @@ function escapeHtml(s) {
 
 function handleComparisonMetricChange() {
     comparisonMetric = document.getElementById('comparison-metric').value;
+    // 将已计算的 comparison results 中的 comparison_value 字段切换为新选择的指标值，
+    // 这样无需重新运行比较（因为 compareGroups 已把所有指标保存在 stats 中）
+    try {
+        if (typeof window !== 'undefined' && Array.isArray(window.comparisonResults)) {
+            window.comparisonResults.forEach(comp => {
+                const stats = comp && comp.stats ? comp.stats : null;
+                if (!stats) return;
+                Object.values(stats).forEach(stat => {
+                    if (!stat || typeof stat !== 'object') return;
+                    if (Object.prototype.hasOwnProperty.call(stat, comparisonMetric)) {
+                        stat.comparison_value = stat[comparisonMetric];
+                    } else {
+                        // 回退：保留原有 comparison_value 或置 0
+                        stat.comparison_value = stat.comparison_value != null ? stat.comparison_value : 0;
+                    }
+                });
+            });
+        }
+    } catch (err) {
+        console.warn('Failed to update existing comparisonResults for new metric', err);
+    }
+
+    // 当处于比较或矩阵视图时，切换 metric 后应立即更新可视化
+    if (visualizationMode === 'comparison' || visualizationMode === 'matrix') {
+        try { if (typeof redrawCurrentViz === 'function') redrawCurrentViz(); } catch (err) { console.warn('Failed to redraw after comparison metric change', err); }
+    }
 }
 
 // Render clickable previews for diverging palettes (used in comparison mode)

@@ -393,18 +393,6 @@
 
                     <!-- 比较模式分组控制 -->
                     <div id="comparison-controls" class="comparison-controls">
-                        <!-- 比较指标选择 -->
-                        <div class="control-row">
-                            <div class="control-group">
-                                <label for="comparison-metric">Metric:</label>
-                                <select id="comparison-metric" class="minw-160" title="Choose comparison metric">
-                                    <option value="log2_median_ratio" selected>Log2 fold change (median)</option>
-                                    <option value="log2_mean_ratio">Log2 fold change (mean)</option>
-                                    <option value="fold_change">Fold change</option>
-                                    <option value="difference">Difference (median2 - median1)</option>
-                                </select>
-                            </div>
-                        </div>
 
                         <div class="control-row">
                             <div class="control-group">
@@ -473,6 +461,23 @@
 
                         
 
+                        <div class="control-row">
+                            <button id="run-comparison" class="btn-run-comparison">Run comparison</button>
+                            <button id="export-comparison" class="btn-export-comparison">View results</button>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label for="comparison-metric">Metric:</label>
+                                <select id="comparison-metric" class="minw-160" title="Choose comparison metric">
+                                    <option value="log2_median_ratio" selected>Log2 fold change (median)</option>
+                                    <option value="log2_mean_ratio">Log2 fold change (mean)</option>
+                                    <option value="fold_change">Fold change</option>
+                                    <option value="difference">Difference (median2 - median1)</option>
+                                </select>
+                            </div>
+                        </div>
+
                         <div class="control-row" id="significance-toggle-row">
                             <div class="control-group">
                                 <label>
@@ -511,11 +516,6 @@
                                     </svg>
                                 </span>
                             </div>
-                        </div>
-
-                        <div class="control-row">
-                            <button id="run-comparison" class="btn-run-comparison">Run comparison</button>
-                            <button id="export-comparison" class="btn-export-comparison">View results</button>
                         </div>
                     </div>
                 </div>

@@ -756,7 +756,7 @@
             <div><strong>${group1}</strong> median: ${fmt(st.median_1, 2)} | mean: ${fmt(st.mean_1, 2)}</div>
             <div><strong>${group2}</strong> median: ${fmt(st.median_2, 2)} | mean: ${fmt(st.mean_2, 2)}</div>
             <div>Log2 fold change (${group2}/${group1}): <strong>${fmt(st.log2_median_ratio, 3)}</strong></div>
-            <div>p (Wilcoxon): ${fmt(st.wilcox_p_value, 4)} ${st.significant ? '<strong style="color:#e74c3c">(sig)</strong>' : ''}</div>
+            <div>p (${(st && st.test && String(st.test).toLowerCase().startsWith('t')) ? 't-test' : 'Wilcoxon'}): ${fmt(st.pvalue, 4)} ${st.significant ? '<strong style="color:#e74c3c">(sig)</strong>' : ''}</div>
           `)
           .classed('show', true)
           .style('left', (event.pageX + 15) + 'px')

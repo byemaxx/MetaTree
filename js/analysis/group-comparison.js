@@ -62,6 +62,114 @@ function wilcoxonTest(group1, group2) {
     return clampPValue(p);
 }
 
+/**
+ * Welch 两样本 t 检验（不假定方差相等）
+ * 返回双侧 p-value
+ */
+function tTest(group1, group2) {
+    const g1 = group1.filter(v => v != null && isFinite(v));
+    const g2 = group2.filter(v => v != null && isFinite(v));
+
+    if (g1.length === 0 || g2.length === 0) return 1.0;
+
+    const n1 = g1.length;
+    const n2 = g2.length;
+    const mean1 = d3.mean(g1) || 0;
+    const mean2 = d3.mean(g2) || 0;
+    const var1 = (n1 > 1) ? d3.variance(g1) : 0; // sample variance (ddof=1)
+    const var2 = (n2 > 1) ? d3.variance(g2) : 0;
+
+    const se = Math.sqrt((var1 / n1) + (var2 / n2));
+    if (!isFinite(se) || se === 0) return 1.0;
+
+    const t = (mean2 - mean1) / se;
+
+    // Welch-Satterthwaite degrees of freedom
+    const numerator = Math.pow((var1 / n1) + (var2 / n2), 2);
+    const denom = ((n1 > 1) ? (Math.pow(var1 / n1, 2) / (n1 - 1)) : 0) + ((n2 > 1) ? (Math.pow(var2 / n2, 2) / (n2 - 1)) : 0);
+    const df = denom > 0 ? numerator / denom : Math.max(1, n1 + n2 - 2);
+
+    const p = 2 * (1 - studentTCDF(Math.abs(t), df));
+    return clampPValue(p);
+}
+
+// Student's t CDF using relation with regularized incomplete beta
+function studentTCDF(t, v) {
+    // Returns P(T <= t) for t >= 0
+    if (!isFinite(t) || !isFinite(v) || v <= 0) return 0.5;
+    const x = v / (v + t * t);
+    const a = v / 2;
+    const b = 0.5;
+    const ib = regularizedIncompleteBeta(x, a, b);
+    // For positive t: CDF = 1 - 0.5 * I_x(a, b)
+    return 1 - 0.5 * ib;
+}
+
+// Regularized incomplete beta I_x(a,b)
+function regularizedIncompleteBeta(x, a, b) {
+    if (x <= 0) return 0;
+    if (x >= 1) return 1;
+    const bt = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log(1 - x));
+    let result;
+    if (x < (a + 1) / (a + b + 2)) {
+        result = bt * betacf(a, b, x) / a;
+    } else {
+        result = 1 - bt * betacf(b, a, 1 - x) / b;
+    }
+    return Math.max(0, Math.min(1, result));
+}
+
+// Continued fraction for incomplete beta
+function betacf(a, b, x) {
+    const MAXIT = 200;
+    const EPS = 3e-7;
+    const FPMIN = 1e-30;
+    let qab = a + b;
+    let qap = a + 1;
+    let qam = a - 1;
+    let c = 1;
+    let d = 1 - qab * x / qap;
+    if (Math.abs(d) < FPMIN) d = FPMIN;
+    d = 1 / d;
+    let h = d;
+    for (let m = 1; m <= MAXIT; m++) {
+        const m2 = 2 * m;
+        let aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+        d = 1 + aa * d;
+        if (Math.abs(d) < FPMIN) d = FPMIN;
+        c = 1 + aa / c;
+        if (Math.abs(c) < FPMIN) c = FPMIN;
+        d = 1 / d;
+        h = h * d * c;
+        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+        d = 1 + aa * d;
+        if (Math.abs(d) < FPMIN) d = FPMIN;
+        c = 1 + aa / c;
+        if (Math.abs(c) < FPMIN) c = FPMIN;
+        d = 1 / d;
+        const del = d * c;
+        h = h * del;
+        if (Math.abs(del - 1) < EPS) break;
+    }
+    return h;
+}
+
+// Lanczos approximation for log gamma
+function logGamma(z) {
+    const cof = [76.18009172947146, -86.50532032941677, 24.01409824083091,
+        -1.231739572450155, 0.001208650973866179, -5.395239384953e-06];
+    let x = z;
+    let y = z;
+    let tmp = x + 5.5;
+    tmp -= (x + 0.5) * Math.log(tmp);
+    let ser = 1.000000000190015;
+    for (let j = 0; j < cof.length; j++) {
+        y += 1;
+        ser += cof[j] / y;
+    }
+    return -tmp + Math.log(2.5066282746310005 * ser / x);
+}
+
 function clampPValue(p) {
     if (!isFinite(p) || p <= 0) return 1e-12;
     if (p >= 1) return 1;
@@ -213,7 +321,8 @@ function compareGroups(treeData, groups, options = {}) {
         metric = 'log2_median_ratio',  // 比较指标
         transform = 'none',             // 数据转换
         minAbundance = 0,               // 最小丰度过滤
-        runTests = true                 // 是否运行显著性检验
+        runTests = true,                // 是否运行显著性检验
+        test = 'wilcoxon'               // 检验类型: 'wilcoxon' or 't'
     } = options;
     
     const groupNames = Object.keys(groups);
@@ -229,13 +338,14 @@ function compareGroups(treeData, groups, options = {}) {
                 treeData,
                 groups[group1],
                 groups[group2],
-                { metric, transform, minAbundance, runTests }
+                { metric, transform, minAbundance, runTests, test }
             );
             
             comparisons.push({
                 treatment_1: group1,
                 treatment_2: group2,
-                stats: result
+                stats: result,
+                test: test
             });
         }
     }
@@ -330,7 +440,16 @@ function calculatePairwiseComparison(treeData, samples1, samples2, options) {
         let effectSize = 0;
 
         if (!belowThreshold && runTests && effective1.length >= 2 && effective2.length >= 2) {
-            pValue = wilcoxonTest(effective1, effective2);
+            const testType = (options && options.test) ? String(options.test).toLowerCase() : 'wilcoxon';
+            if (testType === 't' || testType === 'ttest' || testType === 'welch') {
+                const tP = tTest(effective1, effective2);
+                pValue = tP;
+                // store test-specific field
+                // effect size still Cohen's d
+            } else {
+                const wP = wilcoxonTest(effective1, effective2);
+                pValue = wP;
+            }
             effectSize = cohensD(effective1, effective2);
             significant = pValue < 0.05;
         }
@@ -356,8 +475,11 @@ function calculatePairwiseComparison(treeData, samples1, samples2, options) {
             mean_difference: isFinite(mean_difference) ? mean_difference : 0,
             comparison_value: !belowThreshold && isFinite(comparisonValue) ? comparisonValue : 0,
             value: !belowThreshold && isFinite(comparisonValue) ? comparisonValue : 0, // 用于阈值判断
-            wilcox_p_value: isFinite(pValue) ? pValue : 1,
-            pvalue: isFinite(pValue) ? pValue : 1, // 标准化字段名
+            // record both: legacy wilcox field (for compatibility) and generic pvalue
+            wilcox_p_value: (options && options.test && String(options.test).toLowerCase() !== 't') ? (isFinite(pValue) ? pValue : 1) : (isFinite(pValue) ? null : 1),
+            t_p_value: (options && options.test && String(options.test).toLowerCase().startsWith('t')) ? (isFinite(pValue) ? pValue : 1) : null,
+            pvalue: isFinite(pValue) ? pValue : 1, // 通用 p-value 字段
+            test: (options && options.test) ? String(options.test).toLowerCase() : 'wilcoxon',
             qvalue: 1, // 将在后续 FDR 校正中计算
             effect_size: isFinite(effectSize) ? effectSize : 0,
             significant: significant,
@@ -589,16 +711,17 @@ function exportComparisonResults(comparisons, filename = 'comparison_results.tsv
     let tsvContent = '';
     
     // 遍历所有比较
+    const safeStr = (s) => String(s == null ? '' : s).replace(/\t/g, ' ');
     comparisons.forEach(comp => {
         const { treatment_1, treatment_2, stats } = comp;
         
         // 表头
-        if (tsvContent === '') {
-            tsvContent += 'treatment_1\ttreatment_2\ttaxon_id\t';
-            tsvContent += 'log2_median_ratio\tlog2_mean_ratio\t';
-            tsvContent += 'median_1\tmedian_2\tmean_1\tmean_2\t';
-            tsvContent += 'fold_change\tdifference\tmean_difference\t';
-            tsvContent += 'wilcox_p_value\tFDR_q_value\teffect_size\tsignificant\t';
+            if (tsvContent === '') {
+                tsvContent += 'treatment_1\ttreatment_2\ttaxon_id\t';
+                tsvContent += 'log2_median_ratio\tlog2_mean_ratio\t';
+                tsvContent += 'median_1\tmedian_2\tmean_1\tmean_2\t';
+                tsvContent += 'fold_change\tdifference\tmean_difference\t';
+                tsvContent += 'p_value\ttest\tFDR_q_value\teffect_size\tsignificant\t';
             tsvContent += 'n_samples_1\tn_samples_2\n';
         }
         
@@ -614,7 +737,7 @@ function exportComparisonResults(comparisons, filename = 'comparison_results.tsv
             tsvContent += `${safeFixed(stat.median_1, 2)}\t${safeFixed(stat.median_2, 2)}\t`;
             tsvContent += `${safeFixed(stat.mean_1, 2)}\t${safeFixed(stat.mean_2, 2)}\t`;
             tsvContent += `${safeFixed(stat.fold_change, 4)}\t${safeFixed(stat.difference, 2)}\t${safeFixed(stat.mean_difference, 2)}\t`;
-            tsvContent += `${safeFixed(stat.wilcox_p_value, 6)}\t${safeFixed(stat.qvalue, 6)}\t${safeFixed(stat.effect_size, 4)}\t`;
+            tsvContent += `${safeFixed(stat.pvalue, 6)}\t${safeStr(stat.test || '')}\t${safeFixed(stat.qvalue, 6)}\t${safeFixed(stat.effect_size, 4)}\t`;
             tsvContent += `${stat.significant || false}\t${stat.n_samples_1 || 0}\t${stat.n_samples_2 || 0}\n`;
         });
     });

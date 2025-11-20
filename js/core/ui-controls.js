@@ -2803,6 +2803,7 @@ function handleRunComparison() {
     comparisonMetric = document.getElementById('comparison-metric').value;
     // divergingPalette is now managed by clickable previews (setDivergingPalette)
     showOnlySignificant = document.getElementById('show-significance').checked;
+    const comparisonTest = (document.getElementById('comparison-test') && document.getElementById('comparison-test').value) ? document.getElementById('comparison-test').value : 'wilcoxon';
     
     // 使用单一域输入：M（默认5）；比较模式下为 [-M, 0, M]
     const domainInput = document.getElementById('color-domain-abs');
@@ -2839,7 +2840,8 @@ function handleRunComparison() {
                 metric: comparisonMetric,
                 transform: 'none',  // 已在数据中应用
                 minAbundance: 0,
-                runTests: true
+                runTests: true,
+                test: comparisonTest
             });
             
             // 验证结果
@@ -2962,10 +2964,10 @@ function createComparisonResultsModal() {
         }
         // Build CSV from the selected comparison
         const { treatment_1, treatment_2, stats } = comp;
-        let csv = 'treatment_1,treatment_2,taxon_id,log2_median_ratio,log2_mean_ratio,median_1,median_2,mean_1,mean_2,fold_change,difference,mean_difference,wilcox_p_value,FDR_q_value,effect_size,significant,n_samples_1,n_samples_2\n';
+        let csv = 'treatment_1,treatment_2,taxon_id,log2_median_ratio,log2_mean_ratio,median_1,median_2,mean_1,mean_2,fold_change,difference,mean_difference,p_value,test,FDR_q_value,effect_size,significant,n_samples_1,n_samples_2\n';
         Object.values(stats).forEach(stat => {
             const safe = (v) => (v == null || !isFinite(v)) ? '0' : String(v);
-            csv += `${treatment_1},${treatment_2},"${String(stat.taxon_id || '')}",${safe(stat.log2_median_ratio)},${safe(stat.log2_mean_ratio)},${safe(stat.median_1)},${safe(stat.median_2)},${safe(stat.mean_1)},${safe(stat.mean_2)},${safe(stat.fold_change)},${safe(stat.difference)},${safe(stat.mean_difference)},${safe(stat.wilcox_p_value)},${safe(stat.qvalue)},${safe(stat.effect_size)},${stat.significant || false},${stat.n_samples_1 || 0},${stat.n_samples_2 || 0}\n`;
+            csv += `${treatment_1},${treatment_2},"${String(stat.taxon_id || '')}",${safe(stat.log2_median_ratio)},${safe(stat.log2_mean_ratio)},${safe(stat.median_1)},${safe(stat.median_2)},${safe(stat.mean_1)},${safe(stat.mean_2)},${safe(stat.fold_change)},${safe(stat.difference)},${safe(stat.mean_difference)},${safe(stat.pvalue)},"${String(stat.test || '')}",${safe(stat.qvalue)},${safe(stat.effect_size)},${stat.significant || false},${stat.n_samples_1 || 0},${stat.n_samples_2 || 0}\n`;
         });
         const t1 = sanitizeFilename(comp.treatment_1 || 'A');
         const t2 = sanitizeFilename(comp.treatment_2 || 'B');
@@ -3014,25 +3016,38 @@ function populateComparisonResultsModal() {
         return;
     }
 
-    // Collect all keys present in stats
-    const allKeysSet = new Set();
-    rows.forEach(r => { Object.keys(r || {}).forEach(k => allKeysSet.add(k)); });
-    // Exclude group-level meta fields that we don't want as columns
-    ['treatment_1', 'treatment_2'].forEach(k => allKeysSet.delete(k));
+    // Simplified column set for preview table (keep it concise)
+    // Preferred columns (in order): taxon_id, log2_median_ratio, log2_mean_ratio, median_1, median_2, mean_1, mean_2,
+    // pvalue, FDR_q_value, test, effect_size, significant, n_samples_1, n_samples_2
+    const preferredSimple = ['taxon_id','log2_median_ratio','log2_mean_ratio','median_1','median_2','mean_1','mean_2','pvalue','FDR_q_value','test','effect_size','significant','n_samples_1','n_samples_2'];
+    // Ensure we don't include internal group fields
+    const finalCols = preferredSimple.slice();
 
-    // Preferred ordering for common fields (if present)
-    const preferred = ['taxon_id','log2_median_ratio','log2_mean_ratio','median_1','median_2','mean_1','mean_2','fold_change','difference','wilcox_p_value','pvalue','qvalue','FDR_q_value','effect_size','significant','n_samples_1','n_samples_2'];
+    // Friendly column labels mapping (key -> display)
+    const colLabels = {
+        taxon_id: 'Taxon ID',
+        log2_median_ratio: 'log2 Median Ratio',
+        log2_mean_ratio: 'log2 Mean Ratio',
+        median_1: 'Median (Group 1)',
+        median_2: 'Median (Group 2)',
+        mean_1: 'Mean (Group 1)',
+        mean_2: 'Mean (Group 2)',
+        pvalue: 'p-value',
+        FDR_q_value: 'FDR (q)',
+        qvalue: 'FDR (q)',
+        test: 'Test',
+        effect_size: 'Effect Size',
+        significant: 'Significant',
+        n_samples_1: 'N (Group 1)',
+        n_samples_2: 'N (Group 2)'
+    };
 
-    const allKeys = Array.from(allKeysSet);
-    const finalCols = [];
-    preferred.forEach(k => { if (allKeysSet.has(k)) { finalCols.push(k); } });
-    // Append any remaining keys (stable order)
-    allKeys.sort();
-    allKeys.forEach(k => { if (!finalCols.includes(k)) finalCols.push(k); });
-
-    // Build header
+    // Build header (use data-col attributes so sorting can reference original key)
     let html = '<div style="overflow:auto; padding:6px;"><table class="info-sample-table"><thead><tr>';
-    finalCols.forEach(col => { html += `<th>${escapeHtml(String(col))}</th>`; });
+    finalCols.forEach(col => {
+        const label = colLabels[col] || String(col);
+        html += `<th data-col="${escapeHtml(String(col))}">${escapeHtml(String(label))}</th>`;
+    });
     html += '</tr></thead><tbody>';
 
     // Sorting rows: prefer qvalue -> pvalue if present, otherwise leave as-is
@@ -3056,7 +3071,15 @@ function populateComparisonResultsModal() {
     rows.forEach(stat => {
         html += '<tr>';
         finalCols.forEach(col => {
-            let v = stat[col];
+            // Resolve fallbacks for common keys
+            let v = null;
+            if (col === 'pvalue') {
+                v = (isFinite(stat.pvalue) ? stat.pvalue : (isFinite(stat.wilcox_p_value) ? stat.wilcox_p_value : (isFinite(stat.t_p_value) ? stat.t_p_value : null)));
+            } else if (col === 'FDR_q_value' || col === 'qvalue') {
+                v = (isFinite(stat.FDR_q_value) ? stat.FDR_q_value : (isFinite(stat.qvalue) ? stat.qvalue : null));
+            } else {
+                v = stat[col];
+            }
             let cell = '';
             if (v == null || v === '') {
                 cell = '';
@@ -3068,7 +3091,7 @@ function populateComparisonResultsModal() {
             } else {
                 cell = escapeHtml(String(v));
             }
-            const title = (col === 'taxon_id') ? ` title="${escapeHtml(String(stat[col] || ''))}"` : '';
+            const title = (col === 'taxon_id') ? ` title="${escapeHtml(String(stat['taxon_id'] || stat.id || ''))}"` : '';
             html += `<td${title}>${cell}</td>`;
         });
         html += '</tr>';
@@ -3105,9 +3128,10 @@ function populateComparisonResultsModal() {
             ths.forEach((th, idx) => {
                 th.style.cursor = 'pointer';
                 th.addEventListener('click', () => {
-                    const colName = th.textContent.trim().toLowerCase();
-                    const numericCols = ['log2_median_ratio','pvalue','qvalue','effect_size','n_samples_1','n_samples_2'];
-                    const type = numericCols.includes(colName) ? 'number' : 'string';
+                    const dataCol = th.getAttribute('data-col') || th.textContent.trim();
+                    const numericCols = ['log2_median_ratio','log2_mean_ratio','median_1','median_2','mean_1','mean_2','pvalue','qvalue','FDR_q_value','fdr_q_value','effect_size','n_samples_1','n_samples_2'];
+                    const isNumeric = numericCols.includes(String(dataCol));
+                    const type = isNumeric ? 'number' : 'string';
                     const tbody = table.tBodies[0];
                     const rows = Array.from(tbody.querySelectorAll('tr'));
                     const currentAsc = th.classList.contains('sorted-asc');

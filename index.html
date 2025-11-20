@@ -462,11 +462,6 @@
                         
 
                         <div class="control-row">
-                            <button id="run-comparison" class="btn-run-comparison">Run comparison</button>
-                            <button id="export-comparison" class="btn-export-comparison">View results</button>
-                        </div>
-
-                        <div class="control-row">
                             <div class="control-group">
                                 <label for="comparison-metric">Metric:</label>
                                 <select id="comparison-metric" class="minw-160" title="Choose comparison metric">
@@ -476,6 +471,21 @@
                                     <option value="mean_difference">Difference (mean2 - mean1)</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label for="comparison-test">Test:</label>
+                                <select id="comparison-test" class="minw-160" title="Choose statistical test">
+                                    <option value="wilcoxon" selected>Wilcoxon Rank Sum</option>
+                                    <option value="t">T-test (Welch)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="control-row">
+                            <button id="run-comparison" class="btn-run-comparison">Run comparison</button>
+                            <button id="export-comparison" class="btn-export-comparison">View results</button>
                         </div>
 
                         <div class="control-row" id="significance-toggle-row">

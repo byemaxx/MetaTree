@@ -230,7 +230,10 @@ Before any test, samples are filtered based on the **Min Abundance** threshold.
 - If fewer than 2 samples remain in either group after filtering, the statistical test is skipped.
 
 ### 7.2. Hypothesis Testing
-MetaTree uses the **Wilcoxon Rank Sum Test (Mann–Whitney U test)** to determine whether two independent groups differ significantly in their distributions.
+MetaTree supports two options for testing differences between two independent groups:
+
+- **Wilcoxon Rank Sum Test (Mann–Whitney U test)** (default): a non-parametric test that compares distributions without assuming normality.
+- **Two-sample T-test (Welch)**: an option that assumes approximately normally distributed data but does not assume equal variances between groups. Select the test in the Comparison panel under "Test:".
 
 -   **Exact Method (Combined observations ≤ 12)**: When the total number of observations across both groups is small, MetaTree computes the **exact p-value** by enumerating all possible group label assignments and calculating the exact distribution of the U statistic.
 
@@ -250,8 +253,7 @@ To control the False Discovery Rate (FDR), raw p-values are adjusted using the *
 ### 7.5. Fold Change Metrics
 - **Log2 Median Ratio**: Logarithm (base 2) of the ratio between the group medians.
 - **Log2 Mean Ratio**: Logarithm (base 2) of the ratio between the group means.
-- **Fold Change**: Ratio of the group medians.
-- **Difference**: Simple subtraction of the group medians.
+- **Difference**: Simple subtraction of the group medians or means.
 
 *Note: A small pseudo-count is added to values to avoid division by zero or undefined logarithms.*
 

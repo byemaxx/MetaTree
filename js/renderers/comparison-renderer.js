@@ -2,15 +2,15 @@
 // Depends on globals from core/app-core.js (state, sizes, colors), components/legend-panel.js (createComparisonLegendSVG),
 // analysis/group-comparison.js (createDivergingColorScale), and utils/export-tools.js (exportSVGForContainer/exportPNGForContainer)
 
-(function(){
+(function () {
   const EMPTY_COMPARISON_STORE = {
     getSvg: () => null,
-    setSvg: () => {},
+    setSvg: () => { },
     getZoom: () => null,
-    setZoom: () => {},
-    clear: () => {},
+    setZoom: () => { },
+    clear: () => { },
     getStats: () => null,
-    setStats: () => {}
+    setStats: () => { }
   };
 
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
@@ -168,7 +168,7 @@
         if (typeof stripUnaryChainToFirstBranch === 'function') {
           packRoot = stripUnaryChainToFirstBranch(packRoot);
         }
-      } catch (_) {}
+      } catch (_) { }
       packRoot
         .sum(node => {
           const label = node && node.data ? node.data.name : null;
@@ -280,7 +280,7 @@
   // 主渲染：比较树（支持普通、内联与模态容器）
   function drawComparisonTree(group1, group2, comparisonStats, opts = {}) {
     const store = resolveComparisonRendererStore(opts.rendererStore);
-    try { store.setStats(comparisonStats); } catch (_) {}
+    try { store.setStats(comparisonStats); } catch (_) { }
     const useModal = !!opts.isModal;
     const containerId = opts.containerId || 'viz-container';
     const showBack = !!opts.showBack;
@@ -320,7 +320,7 @@
       const btnReset = document.createElement('button');
       btnReset.className = 'btn-icon';
       btnReset.title = 'Reset zoom';
-      btnReset.setAttribute('aria-label','Reset zoom');
+      btnReset.setAttribute('aria-label', 'Reset zoom');
       btnReset.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
       btnReset.addEventListener('click', () => {
         const svgRef = store.getSvg();
@@ -333,21 +333,21 @@
       const btnRestore = document.createElement('button');
       btnRestore.className = 'btn-icon';
       btnRestore.title = 'Restore last collapsed node';
-      btnRestore.setAttribute('aria-label','Restore last collapsed node');
+      btnRestore.setAttribute('aria-label', 'Restore last collapsed node');
       btnRestore.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5a7 7 0 1 1-4.95 11.95" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 5H4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       btnRestore.addEventListener('click', () => { if (typeof window.restoreLastCollapsed === 'function') window.restoreLastCollapsed(); });
 
       const btnSvg = document.createElement('button');
       btnSvg.className = 'btn-icon';
       btnSvg.title = 'Export SVG';
-      btnSvg.setAttribute('aria-label','Export SVG');
+      btnSvg.setAttribute('aria-label', 'Export SVG');
       btnSvg.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
       btnSvg.addEventListener('click', () => exportSVGForContainer('svg-container-comparison', `comparison_${group1}_vs_${group2}`));
 
       const btnPng = document.createElement('button');
       btnPng.className = 'btn-icon';
       btnPng.title = 'Export PNG';
-      btnPng.setAttribute('aria-label','Export PNG');
+      btnPng.setAttribute('aria-label', 'Export PNG');
       btnPng.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 6l2-2h6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>';
       btnPng.addEventListener('click', () => exportPNGForContainer('svg-container-comparison', `comparison_${group1}_vs_${group2}`));
 
@@ -380,10 +380,10 @@
     if (!container) return;
     const size = (typeof getResponsiveTreePanelSize === 'function')
       ? getResponsiveTreePanelSize(container, {
-          heightVar: '--comparison-panel-svg-height',
-          autoHeight: !useModal,
-          applyHeight: !useModal
-        })
+        heightVar: '--comparison-panel-svg-height',
+        autoHeight: !useModal,
+        applyHeight: !useModal
+      })
       : null;
     const width = (size && typeof size.width === 'number') ? size.width : container.clientWidth;
     const height = (size && typeof size.height === 'number') ? size.height : container.clientHeight;
@@ -414,7 +414,7 @@
     try {
       store.setSvg(svg);
       store.setZoom(zoom);
-    } catch (_) {}
+    } catch (_) { }
 
     // 层级数据
     let root = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);
@@ -424,7 +424,7 @@
       } else if (root && root.children && root.children.length === 1) {
         root = root.children[0];
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // ========== 统一标签颜色（comparison 模式）==========
     if (typeof uniformLabelColors !== 'undefined' && uniformLabelColors && root && comparisonStats) {
@@ -437,17 +437,17 @@
           const v = Math.abs(st.comparison_value || 0);
           if (isFinite(v)) values.push(v);
         });
-        values.sort((a,b)=>b-a);
+        values.sort((a, b) => b - a);
         let threshold = 0;
         if (typeof labelThreshold !== 'undefined') {
           if (labelThreshold <= 0) threshold = Infinity;
           else if (labelThreshold >= 1) threshold = 0;
           else {
             const k = Math.max(1, Math.ceil(values.length * labelThreshold));
-            threshold = values[Math.min(k-1, values.length-1)] ?? 0;
+            threshold = values[Math.min(k - 1, values.length - 1)] ?? 0;
           }
         }
-        const selectedSet = (Array.isArray(labelLevelsSelected) && labelLevelsSelected.length>0) ? new Set(labelLevelsSelected) : null;
+        const selectedSet = (Array.isArray(labelLevelsSelected) && labelLevelsSelected.length > 0) ? new Set(labelLevelsSelected) : null;
 
         // 收集本次会显示的标签（使用完整名称）
         const visibleLabels = new Set();
@@ -476,7 +476,7 @@
             if (customLabelColors.has(lbl)) {
               newMap.set(lbl, customLabelColors.get(lbl));
             } else {
-              const color = (typeof generateDistinctColor === 'function') ? generateDistinctColor(labelColorIndex) : `hsl(${(labelColorIndex*47)%360},70%,50%)`;
+              const color = (typeof generateDistinctColor === 'function') ? generateDistinctColor(labelColorIndex) : `hsl(${(labelColorIndex * 47) % 360},70%,50%)`;
               newMap.set(lbl, color);
               labelColorIndex++;
             }
@@ -530,8 +530,21 @@
     const strokeScale = d3.scaleSqrt().domain([0, maxAgg]).range([0.8, 5]).clamp(true);
 
     const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false });
-    try { layoutConfig.applyGroupTransform(g); } catch (_) {}
+    try { layoutConfig.applyGroupTransform(g); } catch (_) { }
     const nodesForRender = getVisibleComparisonNodes(layoutConfig.nodes, filterBySignificance);
+
+    // Show message if no nodes are visible due to filtering
+    if (filterBySignificance && nodesForRender.length === 0) {
+      svg.append('text')
+        .attr('class', 'no-results-message')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '16px')
+        .style('fill', '#666')
+        .text('No significant results found at the current threshold.');
+    }
+
     const visibleNodeSet = new Set(nodesForRender);
     const linksForRender = getVisibleComparisonLinks(layoutConfig.links, visibleNodeSet, filterBySignificance);
 
@@ -543,7 +556,7 @@
         .data(linksForRender)
         .join('path')
         .attr('class', 'link');
-      try { layoutConfig.configureLinks(linkSelection); } catch (_) {}
+      try { layoutConfig.configureLinks(linkSelection); } catch (_) { }
       linkSelection
         .style('fill', 'none')
         .style('stroke', d => {
@@ -645,7 +658,7 @@
       .style('font-weight', '700')
       .attr('fill', '#2c3e50')
       .style('pointer-events', 'none');
-    try { layoutConfig.configureCollapse(collapseSel); } catch (_) {}
+    try { layoutConfig.configureCollapse(collapseSel); } catch (_) { }
 
     // 标签（与 individual 模式一致：固定 ±6px 偏移，基于角度旋转）
     if (showLabels) {
@@ -656,15 +669,15 @@
         const v = Math.abs(st.comparison_value || 0);
         if (isFinite(v)) values.push(v);
       });
-      values.sort((a,b)=>b-a);
+      values.sort((a, b) => b - a);
       let threshold = 0;
       if (labelThreshold <= 0) threshold = Infinity;
       else if (labelThreshold >= 1) threshold = 0;
       else {
         const k = Math.max(1, Math.ceil(values.length * labelThreshold));
-        threshold = values[Math.min(k-1, values.length-1)] ?? 0;
+        threshold = values[Math.min(k - 1, values.length - 1)] ?? 0;
       }
-      const selectedSet = Array.isArray(labelLevelsSelected) && labelLevelsSelected.length>0 ? new Set(labelLevelsSelected) : null;
+      const selectedSet = Array.isArray(labelLevelsSelected) && labelLevelsSelected.length > 0 ? new Set(labelLevelsSelected) : null;
 
       const minPackLabelRadius = Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9), 10);
       const labels = nodeGroup
@@ -686,9 +699,9 @@
           return true;
         })
         .append('text')
-        .attr('class','node-label')
+        .attr('class', 'node-label')
         .attr('dy', layoutConfig.mode === 'packing' ? '0.35em' : '0.31em');
-      try { layoutConfig.configureLabels(labels); } catch (_) {}
+      try { layoutConfig.configureLabels(labels); } catch (_) { }
       labels
         .text(d => (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || ''))
         .style('font-size', `${labelFontSize}px`)
@@ -708,23 +721,23 @@
       if (layoutConfig.mode === 'packing') {
         const hoistFn = (typeof window !== 'undefined' && typeof window.hoistPackingLabels === 'function')
           ? window.hoistPackingLabels
-          : function(sel) {
-              if (!sel || typeof sel.each !== 'function') return;
-              sel.each(function() {
-                const parent = this && this.parentNode;
-                const grandParent = parent && parent.parentNode;
-                if (!parent || !grandParent) return;
-                const parentTransform = parent.getAttribute && parent.getAttribute('transform') || '';
-                const ownTransform = this.getAttribute && this.getAttribute('transform') || '';
-                const combined = [parentTransform, ownTransform].map(str => str.trim()).filter(Boolean).join(' ');
-                if (combined) this.setAttribute('transform', combined);
-                try {
-                  parent.removeChild(this);
-                  grandParent.appendChild(this);
-                } catch(_) {}
-              });
-            };
-        try { hoistFn(labels); } catch (_) {}
+          : function (sel) {
+            if (!sel || typeof sel.each !== 'function') return;
+            sel.each(function () {
+              const parent = this && this.parentNode;
+              const grandParent = parent && parent.parentNode;
+              if (!parent || !grandParent) return;
+              const parentTransform = parent.getAttribute && parent.getAttribute('transform') || '';
+              const ownTransform = this.getAttribute && this.getAttribute('transform') || '';
+              const combined = [parentTransform, ownTransform].map(str => str.trim()).filter(Boolean).join(' ');
+              if (combined) this.setAttribute('transform', combined);
+              try {
+                parent.removeChild(this);
+                grandParent.appendChild(this);
+              } catch (_) { }
+            });
+          };
+        try { hoistFn(labels); } catch (_) { }
       }
     }
 
@@ -734,39 +747,39 @@
       const fullLabel = getNodeFullLabel(d);
       const displayName = escapeHtml(d.data.name || '');
       const fullLabelHtml = fullLabel ? escapeHtml(fullLabel) : '';
-      const fmt = (x, n=3) => (x!=null && isFinite(x)) ? x.toFixed(n) : '0';
+      const fmt = (x, n = 3) => (x != null && isFinite(x)) ? x.toFixed(n) : '0';
       try {
         tooltip
           .html(`
             <div class="tooltip-taxon">${displayName}</div>
             ${fullLabelHtml ? `<div class="tooltip-path">${fullLabelHtml}</div>` : ''}
-            <div><strong>${group1}</strong> median: ${fmt(st.median_1,2)} | mean: ${fmt(st.mean_1,2)}</div>
-            <div><strong>${group2}</strong> median: ${fmt(st.median_2,2)} | mean: ${fmt(st.mean_2,2)}</div>
-            <div>Log2 fold change (${group2}/${group1}): <strong>${fmt(st.log2_median_ratio,3)}</strong></div>
-            <div>p (Wilcoxon): ${fmt(st.wilcox_p_value,4)} ${st.significant?'<strong style="color:#e74c3c">(sig)</strong>':''}</div>
+            <div><strong>${group1}</strong> median: ${fmt(st.median_1, 2)} | mean: ${fmt(st.mean_1, 2)}</div>
+            <div><strong>${group2}</strong> median: ${fmt(st.median_2, 2)} | mean: ${fmt(st.mean_2, 2)}</div>
+            <div>Log2 fold change (${group2}/${group1}): <strong>${fmt(st.log2_median_ratio, 3)}</strong></div>
+            <div>p (Wilcoxon): ${fmt(st.wilcox_p_value, 4)} ${st.significant ? '<strong style="color:#e74c3c">(sig)</strong>' : ''}</div>
           `)
           .classed('show', true)
           .style('left', (event.pageX + 15) + 'px')
           .style('top', (event.pageY - 15) + 'px');
-      } catch(_) {}
+      } catch (_) { }
     };
-    const hideTip = () => { try { tooltip.classed('show', false); } catch(_) {} };
+    const hideTip = () => { try { tooltip.classed('show', false); } catch (_) { } };
 
     nodeGroup
-      .on('mouseover', function(event, d){
+      .on('mouseover', function (event, d) {
         showTip(event, d);
         try {
           d3.select(this).select('.node-hover-ring').style('opacity', 1);
-        } catch (_) {}
+        } catch (_) { }
       })
-      .on('mousemove', function(event){ try { tooltip.style('left', (event.pageX + 15) + 'px').style('top', (event.pageY - 15) + 'px'); } catch(_) {} })
-      .on('mouseout', function(){
+      .on('mousemove', function (event) { try { tooltip.style('left', (event.pageX + 15) + 'px').style('top', (event.pageY - 15) + 'px'); } catch (_) { } })
+      .on('mouseout', function () {
         hideTip();
         try {
           d3.select(this).select('.node-hover-ring').style('opacity', 0);
-        } catch (_) {}
+        } catch (_) { }
       })
-      .on('click', function(event, d){
+      .on('click', function (event, d) {
         if (d && d.data) {
           const newState = !d.data.__collapsed;
           if (newState) {
@@ -793,28 +806,28 @@
       return;
     }
 
-  const vizContainer = document.getElementById('viz-container');
-  vizContainer.innerHTML = '';
-  // For comparison matrix mode, allow the viz container to behave as a block so
-  // the matrix container can size to its content (width = max-content). We
-  // set display:block here and restore it when normal panel rendering runs.
-  try { vizContainer.style.display = 'block'; } catch (_) {}
+    const vizContainer = document.getElementById('viz-container');
+    vizContainer.innerHTML = '';
+    // For comparison matrix mode, allow the viz container to behave as a block so
+    // the matrix container can size to its content (width = max-content). We
+    // set display:block here and restore it when normal panel rendering runs.
+    try { vizContainer.style.display = 'block'; } catch (_) { }
     const matrixStore = resolveComparisonRendererStore();
-    try { matrixStore.clear(); } catch (_) {}
+    try { matrixStore.clear(); } catch (_) { }
 
     const treatments = [...new Set(comparisons.flatMap(c => [c.treatment_1, c.treatment_2]))];
     const n = treatments.length;
     const matrixContainer = document.createElement('div');
-  matrixContainer.className = 'comparison-matrix-container';
+    matrixContainer.className = 'comparison-matrix-container';
     matrixContainer.id = 'comparison-matrix';
-  // Make the matrix container size to its inner grid so exports capture full width.
-  try {
-    // set inline width to max-content to ensure render/export code sees correct size
-    matrixContainer.style.width = 'max-content';
-    matrixContainer.style.maxWidth = 'none';
-    // keep centering via margin (CSS also sets this)
-    matrixContainer.style.margin = 'var(--spacing-lg) auto';
-  } catch (_) {}
+    // Make the matrix container size to its inner grid so exports capture full width.
+    try {
+      // set inline width to max-content to ensure render/export code sees correct size
+      matrixContainer.style.width = 'max-content';
+      matrixContainer.style.maxWidth = 'none';
+      // keep centering via margin (CSS also sets this)
+      matrixContainer.style.margin = 'var(--spacing-lg) auto';
+    } catch (_) { }
 
     const title = document.createElement('div');
     title.className = 'matrix-title';
@@ -886,7 +899,7 @@
 
     vizContainer.appendChild(matrixContainer);
     if (typeof window.requestLayoutPanelContextSync === 'function') {
-      try { window.requestLayoutPanelContextSync(); } catch (_) {}
+      try { window.requestLayoutPanelContextSync(); } catch (_) { }
     }
   }
 
@@ -960,27 +973,27 @@
     const btnRestore = document.createElement('button');
     btnRestore.className = 'btn-icon';
     btnRestore.title = 'Restore last collapsed node';
-    btnRestore.setAttribute('aria-label','Restore last collapsed node');
+    btnRestore.setAttribute('aria-label', 'Restore last collapsed node');
     btnRestore.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 5a7 7 0 1 1-4.95 11.95" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 5H4v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     btnRestore.addEventListener('click', () => { if (typeof window.restoreLastCollapsed === 'function') window.restoreLastCollapsed(); });
 
     const btnSvg = document.createElement('button');
     btnSvg.className = 'btn-icon';
     btnSvg.title = 'Export SVG';
-    btnSvg.setAttribute('aria-label','Export SVG');
+    btnSvg.setAttribute('aria-label', 'Export SVG');
     btnSvg.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
     btnSvg.addEventListener('click', () => exportSVGForContainer('svg-container-comparison-modal', `comparison_${comparison.treatment_1}_vs_${comparison.treatment_2}`));
 
     const btnPng = document.createElement('button');
     btnPng.className = 'btn-icon';
     btnPng.title = 'Export PNG';
-    btnPng.setAttribute('aria-label','Export PNG');
+    btnPng.setAttribute('aria-label', 'Export PNG');
     btnPng.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 6l2-2h6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>';
     btnPng.addEventListener('click', () => exportPNGForContainer('svg-container-comparison-modal', `comparison_${comparison.treatment_1}_vs_${comparison.treatment_2}`));
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'comparison-modal-close';
-    closeBtn.setAttribute('aria-label','Close');
+    closeBtn.setAttribute('aria-label', 'Close');
     closeBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
     actionsWrap.appendChild(btnRestore);
@@ -1005,8 +1018,8 @@
     drawComparisonTree(comparison.treatment_1, comparison.treatment_2, comparison.stats, { containerId: 'comparison-modal-body', isModal: true });
 
     const removeModal = () => {
-      try { delete window.currentModalComparison; } catch(e) { window.currentModalComparison = null; }
-      try { window.removeEventListener('keydown', escHandler); } catch (e) {}
+      try { delete window.currentModalComparison; } catch (e) { window.currentModalComparison = null; }
+      try { window.removeEventListener('keydown', escHandler); } catch (e) { }
       const el = document.getElementById('comparison-modal-overlay');
       if (el) el.remove();
     };
@@ -1028,7 +1041,7 @@
     // Remember current focused item so redraws in matrix mode keep this view
     window.currentInlineComparison = comparison;
     if (typeof window.requestLayoutPanelContextSync === 'function') {
-      try { window.requestLayoutPanelContextSync(); } catch (_) {}
+      try { window.requestLayoutPanelContextSync(); } catch (_) { }
     }
 
     // Create a dedicated body container so subsequent draw does not remove the back bar
@@ -1075,10 +1088,10 @@
       } else if (root && root.children && root.children.length === 1) {
         root = root.children[0];
       }
-    } catch (_) {}
+    } catch (_) { }
 
     const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true });
-    try { layoutConfig.applyGroupTransform(g); } catch (_) {}
+    try { layoutConfig.applyGroupTransform(g); } catch (_) { }
 
     const reverseColorsEnabled = resolveReverseColorsFlag();
     const { project: projectDivergingValueMini, hasNegatives: comparisonHasNegativesMini } =
@@ -1129,7 +1142,7 @@
         .data(layoutConfig.links)
         .join('path')
         .attr('class', 'link');
-      try { layoutConfig.configureLinks(linkMini); } catch (_) {}
+      try { layoutConfig.configureLinks(linkMini); } catch (_) { }
       linkMini
         .style('fill', 'none')
         .style('stroke', d => {
@@ -1197,13 +1210,13 @@
       .style('font-weight', '700')
       .attr('fill', '#2c3e50')
       .style('pointer-events', 'none');
-    try { layoutConfig.configureCollapse(miniCollapse); } catch (_) {}
+    try { layoutConfig.configureCollapse(miniCollapse); } catch (_) { }
   }
 
   function createComparisonLegend(group1Label, group2Label) {
     const legend = document.createElement('div');
     legend.className = 'comparison-legend';
-    const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2,7)}`;
+    const uniqueSuffix = `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     legend.id = `comparison-legend-${uniqueSuffix}`;
 
     const gradId = `legend-gradient-${uniqueSuffix}`;
@@ -1257,9 +1270,9 @@
             const stops = (Array.isArray(customColorStops) && customColorStops.length >= 2)
               ? customColorStops
               : [
-                  (typeof customColorStart !== 'undefined') ? customColorStart : (window.customColorStart || '#2c7bb6'),
-                  (typeof customColorEnd !== 'undefined') ? customColorEnd : (window.customColorEnd || '#d7191c')
-                ];
+                (typeof customColorStart !== 'undefined') ? customColorStart : (window.customColorStart || '#2c7bb6'),
+                (typeof customColorEnd !== 'undefined') ? customColorEnd : (window.customColorEnd || '#d7191c')
+              ];
             interpolator = (stops.length === 2) ? d3.interpolate(stops[0], stops[1]) : d3.interpolateRgbBasis(stops);
           } else {
             const schemeName = (typeof colorScheme !== 'undefined') ? colorScheme : window.colorScheme;

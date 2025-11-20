@@ -2962,10 +2962,10 @@ function createComparisonResultsModal() {
         }
         // Build CSV from the selected comparison
         const { treatment_1, treatment_2, stats } = comp;
-        let csv = 'treatment_1,treatment_2,taxon_id,log2_median_ratio,log2_mean_ratio,median_1,median_2,mean_1,mean_2,fold_change,difference,wilcox_p_value,FDR_q_value,effect_size,significant,n_samples_1,n_samples_2\n';
+        let csv = 'treatment_1,treatment_2,taxon_id,log2_median_ratio,log2_mean_ratio,median_1,median_2,mean_1,mean_2,fold_change,difference,mean_difference,wilcox_p_value,FDR_q_value,effect_size,significant,n_samples_1,n_samples_2\n';
         Object.values(stats).forEach(stat => {
             const safe = (v) => (v == null || !isFinite(v)) ? '0' : String(v);
-            csv += `${treatment_1},${treatment_2},"${String(stat.taxon_id || '')}",${safe(stat.log2_median_ratio)},${safe(stat.log2_mean_ratio)},${safe(stat.median_1)},${safe(stat.median_2)},${safe(stat.mean_1)},${safe(stat.mean_2)},${safe(stat.fold_change)},${safe(stat.difference)},${safe(stat.wilcox_p_value)},${safe(stat.qvalue)},${safe(stat.effect_size)},${stat.significant || false},${stat.n_samples_1 || 0},${stat.n_samples_2 || 0}\n`;
+            csv += `${treatment_1},${treatment_2},"${String(stat.taxon_id || '')}",${safe(stat.log2_median_ratio)},${safe(stat.log2_mean_ratio)},${safe(stat.median_1)},${safe(stat.median_2)},${safe(stat.mean_1)},${safe(stat.mean_2)},${safe(stat.fold_change)},${safe(stat.difference)},${safe(stat.mean_difference)},${safe(stat.wilcox_p_value)},${safe(stat.qvalue)},${safe(stat.effect_size)},${stat.significant || false},${stat.n_samples_1 || 0},${stat.n_samples_2 || 0}\n`;
         });
         const t1 = sanitizeFilename(comp.treatment_1 || 'A');
         const t2 = sanitizeFilename(comp.treatment_2 || 'B');

@@ -308,10 +308,10 @@ function calculatePairwiseComparison(treeData, samples1, samples2, options) {
                 comparisonValue = safelog2(mean2, mean1);
                 break;
             
-            case 'fold_change':
-                // 简单倍数变化
-                comparisonValue = (median2 + 1) / (median1 + 1);
-                if (!isFinite(comparisonValue)) comparisonValue = 1;
+            case 'mean_difference':
+                // Mean-based difference (mean2 - mean1)
+                comparisonValue = mean2 - mean1;
+                if (!isFinite(comparisonValue)) comparisonValue = 0;
                 break;
             
             case 'difference':
@@ -340,6 +340,7 @@ function calculatePairwiseComparison(treeData, samples1, samples2, options) {
         const log2MeanRatio = safelog2(mean2, mean1);
         const foldChange = (median2 + 1) / (median1 + 1);
         const difference = median2 - median1;
+        const mean_difference = mean2 - mean1;
 
         // 存储结果
         stats[nodeData.name] = {
@@ -352,6 +353,7 @@ function calculatePairwiseComparison(treeData, samples1, samples2, options) {
             mean_2: isFinite(mean2) ? mean2 : 0,
             fold_change: isFinite(foldChange) ? foldChange : 1,
             difference: isFinite(difference) ? difference : 0,
+            mean_difference: isFinite(mean_difference) ? mean_difference : 0,
             comparison_value: !belowThreshold && isFinite(comparisonValue) ? comparisonValue : 0,
             value: !belowThreshold && isFinite(comparisonValue) ? comparisonValue : 0, // 用于阈值判断
             wilcox_p_value: isFinite(pValue) ? pValue : 1,
@@ -595,7 +597,7 @@ function exportComparisonResults(comparisons, filename = 'comparison_results.tsv
             tsvContent += 'treatment_1\ttreatment_2\ttaxon_id\t';
             tsvContent += 'log2_median_ratio\tlog2_mean_ratio\t';
             tsvContent += 'median_1\tmedian_2\tmean_1\tmean_2\t';
-            tsvContent += 'fold_change\tdifference\t';
+            tsvContent += 'fold_change\tdifference\tmean_difference\t';
             tsvContent += 'wilcox_p_value\tFDR_q_value\teffect_size\tsignificant\t';
             tsvContent += 'n_samples_1\tn_samples_2\n';
         }
@@ -611,7 +613,7 @@ function exportComparisonResults(comparisons, filename = 'comparison_results.tsv
             tsvContent += `${safeFixed(stat.log2_median_ratio, 4)}\t${safeFixed(stat.log2_mean_ratio, 4)}\t`;
             tsvContent += `${safeFixed(stat.median_1, 2)}\t${safeFixed(stat.median_2, 2)}\t`;
             tsvContent += `${safeFixed(stat.mean_1, 2)}\t${safeFixed(stat.mean_2, 2)}\t`;
-            tsvContent += `${safeFixed(stat.fold_change, 4)}\t${safeFixed(stat.difference, 2)}\t`;
+            tsvContent += `${safeFixed(stat.fold_change, 4)}\t${safeFixed(stat.difference, 2)}\t${safeFixed(stat.mean_difference, 2)}\t`;
             tsvContent += `${safeFixed(stat.wilcox_p_value, 6)}\t${safeFixed(stat.qvalue, 6)}\t${safeFixed(stat.effect_size, 4)}\t`;
             tsvContent += `${stat.significant || false}\t${stat.n_samples_1 || 0}\t${stat.n_samples_2 || 0}\n`;
         });

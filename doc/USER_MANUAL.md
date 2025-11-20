@@ -230,10 +230,16 @@ Before any test, samples are filtered based on the **Min Abundance** threshold.
 - If fewer than 2 samples remain in either group after filtering, the statistical test is skipped.
 
 ### 7.2. Hypothesis Testing
-MetaTree uses the **Wilcoxon Rank Sum Test** (Mann-Whitney U test) to determine if there is a significant difference between two independent groups.
+MetaTree uses the **Wilcoxon Rank Sum Test (Mann–Whitney U test)** to determine whether two independent groups differ significantly in their distributions.
 
-- **Small Sample Size (Total samples $\le$ 10)**: An **Exact Method** is used, calculating the exact probability by enumerating all possible combinations.
-- **Large Sample Size (Total samples > 10)**: A **Normal Approximation** is applied. This involves calculating the U statistic, correcting for ties, converting to a Z-score, and deriving the p-value from the standard normal distribution.
+-   **Exact Method (Combined observations ≤ 12)**: When the total number of observations across both groups is small, MetaTree computes the **exact p-value** by enumerating all possible group label assignments and calculating the exact distribution of the U statistic.
+
+-   **Normal Approximation (Combined observations > 12)**: For larger datasets, MetaTree applies the **normal approximation** to the Mann–Whitney U distribution. Included steps are:
+      - computing the U statistic
+      - applying tie correction
+      - applying continuity correction
+      - converting U to a Z-score
+      - obtaining the p-value from the standard normal distribution.
 
 ### 7.3. Effect Size
 **Cohen's d** is calculated to quantify the magnitude of the difference. It represents the standardized difference between the two group means, using a pooled standard deviation that accounts for the sample sizes and variances of both groups.

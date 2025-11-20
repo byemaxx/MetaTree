@@ -40,7 +40,7 @@ function wilcoxonTest(group1, group2) {
     const observedU = mannWhitneyU(g1, g2);
     const minObservedU = Math.min(observedU, totalPairs - observedU);
 
-    if (n1 + n2 <= 10) {
+    if (n1 + n2 <= 12) {
         const exactP = exactMannWhitneyPValue(g1, g2, minObservedU);
         if (isFinite(exactP)) {
             return clampPValue(exactP);
@@ -55,15 +55,15 @@ function wilcoxonTest(group1, group2) {
     if (variance <= 0) return 1.0;
 
     const sigma = Math.sqrt(variance);
-    const zNumerator = Math.max(0, Math.abs(observedU - mu) - 0.5);
-    const z = zNumerator / sigma;
-    const p = 2 * (1 - normalCDF(z));
+    const diff = observedU - mu;
+    const z = (diff - 0.5 * Math.sign(diff || 1)) / sigma;
+    const p = 2 * (1 - normalCDF(Math.abs(z)));
 
     return clampPValue(p);
 }
 
 function clampPValue(p) {
-    if (!isFinite(p) || p <= 0) return 0.0001;
+    if (!isFinite(p) || p <= 0) return 1e-12;
     if (p >= 1) return 1;
     return p;
 }

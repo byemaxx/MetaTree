@@ -16,6 +16,13 @@
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  // Human-readable timestamp for filenames: YYYY-MM-DD_HH-MM-SS
+  function formatTimestamp() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+  }
+
   function exportSVGForContainer(containerId, filenamePrefix) {
     const svgElement = document.querySelector(`#${containerId} svg`);
     if (!svgElement) return;
@@ -42,7 +49,7 @@
     const serializer = new XMLSerializer();
     const svgString = serializer.serializeToString(clone);
     const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-    const filename = `${filenamePrefix || 'export'}_${Date.now()}.svg`;
+    const filename = `${filenamePrefix || 'export'}_${formatTimestamp()}.svg`;
     downloadBlob(blob, filename);
   }
 
@@ -230,12 +237,12 @@
               if (b) {
                 // Insert pHYs chunk for DPI metadata
                 addPngPhysChunk(b, DPI).then((newBlob) => {
-                  downloadBlob(newBlob, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                  downloadBlob(newBlob, `${filenamePrefix || 'export'}_${formatTimestamp()}.png`);
                   URL.revokeObjectURL(url);
                   resolve();
                 }).catch(() => {
                   // fallback to original blob
-                  downloadBlob(b, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                  downloadBlob(b, `${filenamePrefix || 'export'}_${formatTimestamp()}.png`);
                   URL.revokeObjectURL(url);
                   resolve();
                 });
@@ -245,13 +252,13 @@
                   const dataUrl = canvas.toDataURL('image/png');
                   // convert dataURL to blob and insert pHYs
                   fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
-                    downloadBlob(newB, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                    downloadBlob(newB, `${filenamePrefix || 'export'}_${formatTimestamp()}.png`);
                     URL.revokeObjectURL(url);
                     resolve();
                   }).catch(() => {
                     const a = document.createElement('a');
                     a.href = dataUrl;
-                    a.download = `${filenamePrefix || 'export'}_${Date.now()}.png`;
+                    a.download = `${filenamePrefix || 'export'}_${formatTimestamp()}.png`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -268,13 +275,13 @@
             try {
               const dataUrl = canvas.toDataURL('image/png');
               fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
-                downloadBlob(newB, `${filenamePrefix || 'export'}_${Date.now()}.png`);
+                downloadBlob(newB, `${filenamePrefix || 'export'}_${formatTimestamp()}.png`);
                 URL.revokeObjectURL(url);
                 resolve();
               }).catch(() => {
                 const a = document.createElement('a');
                 a.href = dataUrl;
-                a.download = `${filenamePrefix || 'export'}_${Date.now()}.png`;
+                a.download = `${filenamePrefix || 'export'}_${formatTimestamp()}.png`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -317,32 +324,25 @@
     return styles.join('\n');
   }
 
-  function buildVizContainerSnapshot() {
+  // Generic: build a snapshot SVG string for any element (returns {svgString, width, height})
+  // opts: { removeSelectors: string or array, matchBackgroundFrom: element (optional) }
+  function buildSnapshot(element, opts = {}) {
     if (typeof document === 'undefined') return null;
+    if (!element) return null;
+    let el = element;
+    if (typeof element === 'string') el = document.getElementById(element);
+    if (!el) return null;
 
-    const vizContainer = document.getElementById('viz-container');
-    if (!vizContainer) return null;
-
-    // Ensure all panels & legend are rendered
     try {
-      if (typeof window !== 'undefined'
-        && typeof window.ensurePanelsRenderedForExport === 'function') {
+      if (typeof window !== 'undefined' && typeof window.ensurePanelsRenderedForExport === 'function') {
         window.ensurePanelsRenderedForExport();
       }
     } catch (_) {}
 
-    // ---- 1. Clone current layout of #viz-container ----
-    const rect = vizContainer.getBoundingClientRect();
-    const baseWidth = Math.max(
-      rect.width || 0,
-      vizContainer.scrollWidth || 0,
-      vizContainer.offsetWidth || 0,
-      1
-    );
+    const rect = el.getBoundingClientRect();
+    const baseWidth = Math.max(rect.width || 0, el.scrollWidth || 0, el.offsetWidth || 0, 1);
 
-    const clone = vizContainer.cloneNode(true);
-
-    // Keep id so #viz-container rules still apply inside snapshot
+    const clone = el.cloneNode(true);
     clone.style.margin = '0';
     clone.style.boxSizing = 'border-box';
     clone.style.overflow = 'visible';
@@ -350,18 +350,18 @@
     clone.style.maxWidth = 'none';
     clone.style.maxHeight = 'none';
 
-    // Remove purely interactive controls from export
-    clone.querySelectorAll(
-      '.panel-actions,' +
-      '.tree-panel-header .btn-back,' +
-      '.tree-panel-header button,' +
-      '.modal,' +
-      '.modal-backdrop,' +
-      '.modal-actions,' +
-      '[data-export-exclude="1"]'
-    ).forEach(el => el.remove());
+    // Remove selectors provided
+    try {
+      const sel = opts.removeSelectors;
+      if (sel) {
+        if (Array.isArray(sel)) {
+          sel.join(',');
+        }
+        clone.querySelectorAll(Array.isArray(sel) ? sel.join(',') : sel).forEach(elm => elm.remove());
+      }
+    } catch (_) {}
 
-    // ---- 2. Off-screen HTML host for measuring ----
+    // Off-screen host for measuring
     const tempHost = document.createElement('div');
     tempHost.style.position = 'absolute';
     tempHost.style.left = '-100000px';
@@ -380,19 +380,22 @@
     wrapper.style.maxWidth = 'none';
     wrapper.style.overflow = 'visible';
 
-    // Match background from original container
+    // Match background if requested
     try {
-      const cs = window.getComputedStyle(vizContainer);
-      if (cs && cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-        wrapper.style.background = cs.backgroundColor;
-      } else {
-        wrapper.style.background = '#ffffff';
+      const bgSource = opts.matchBackgroundFrom || el;
+      if (bgSource) {
+        const cs = window.getComputedStyle(bgSource);
+        if (cs && cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+          wrapper.style.background = cs.backgroundColor;
+        } else {
+          wrapper.style.background = '#ffffff';
+        }
       }
     } catch (_) {
       wrapper.style.background = '#ffffff';
     }
 
-    // ---- 3. Copy CSS variables so runtime settings (panel width/height, etc.) are honored ----
+    // copy CSS variables so runtime settings are honored
     function copyCssVars(src, dest) {
       if (!src || !dest) return;
       try {
@@ -408,14 +411,13 @@
     }
     copyCssVars(document.documentElement, wrapper);
     copyCssVars(document.body, wrapper);
-    copyCssVars(vizContainer, wrapper);
+    copyCssVars(el, wrapper);
 
-    // Inline global styles (css/style.css, css/comparison.css, etc.)
+    // Inline global styles
     const styleEl = document.createElement('style');
     styleEl.textContent = collectStyleText();
     wrapper.appendChild(styleEl);
 
-    // Put cloned viz into wrapper and measure in pure HTML environment
     wrapper.appendChild(clone);
     tempHost.appendChild(wrapper);
 
@@ -424,30 +426,20 @@
     wrapper.offsetHeight;
 
     const wrapperRect = wrapper.getBoundingClientRect();
-    const contentWidth = Math.max(
-      wrapper.scrollWidth || 0,
-      wrapperRect.width || 0,
-      baseWidth,
-      1
-    );
-    const contentHeight = Math.max(
-      wrapper.scrollHeight || 0,
-      wrapperRect.height || 0,
-      1
-    );
+    const contentWidth = Math.max(wrapper.scrollWidth || 0, wrapperRect.width || 0, baseWidth, 1);
+    const contentHeight = Math.max(wrapper.scrollHeight || 0, wrapperRect.height || 0, 1);
 
     const width = Math.max(1, Math.round(contentWidth));
-    const height = Math.max(1, Math.round(contentHeight + 4)); // tiny padding to avoid 1px clipping
+    const height = Math.max(1, Math.round(contentHeight + 4));
 
     if (!width || !height) {
       tempHost.remove();
       return null;
     }
 
-    // ---- 4. Build SVG with <foreignObject>, reusing the measured wrapper ----
     // Detach wrapper from tempHost to reuse it inside foreignObject
-    tempHost.removeChild(wrapper);
-    tempHost.remove();
+    try { tempHost.removeChild(wrapper); } catch (_) {}
+    try { tempHost.remove(); } catch (_) {}
 
     const svgNS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(svgNS, 'svg');
@@ -463,7 +455,7 @@
     foreignObject.setAttribute('width', width);
     foreignObject.setAttribute('height', height);
 
-    // Finalize wrapper size and clipping
+    // finalize wrapper sizing
     wrapper.style.width = width + 'px';
     wrapper.style.height = height + 'px';
     wrapper.style.overflow = 'hidden';
@@ -473,8 +465,92 @@
 
     const serializer = new XMLSerializer();
     const svgString = serializer.serializeToString(svg);
-
     return { svgString, width, height };
+  }
+
+  // Render snapshot to PNG via canvas, embed pHYs chunk, and download (returns Promise)
+  function renderSnapshotToPNG(snapshot, prefix) {
+    return new Promise((resolve, reject) => {
+      if (!snapshot) return reject(new Error('No snapshot'));
+      const SCALE = 2;
+      const DPI = 300;
+      const canvas = document.createElement('canvas');
+      canvas.width = snapshot.width * SCALE;
+      canvas.height = snapshot.height * SCALE;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(snapshot.svgString)}`;
+      try { img.crossOrigin = 'anonymous'; } catch (e) {}
+      img.onload = function() {
+        try {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          if (canvas.toBlob) {
+            canvas.toBlob((blob) => {
+              if (blob) {
+                addPngPhysChunk(blob, DPI).then(newBlob => {
+                  downloadBlob(newBlob, `${prefix || 'export'}_${formatTimestamp()}.png`);
+                  resolve();
+                }).catch(() => {
+                  downloadBlob(blob, `${prefix || 'export'}_${formatTimestamp()}.png`);
+                  resolve();
+                });
+              } else {
+                const dataUrl = canvas.toDataURL('image/png');
+                fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
+                  downloadBlob(newB, `${prefix || 'export'}_${formatTimestamp()}.png`);
+                  resolve();
+                }).catch(() => {
+                  const a = document.createElement('a');
+                  a.href = dataUrl;
+                  a.download = `${prefix || 'export'}_${formatTimestamp()}.png`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  resolve();
+                });
+              }
+            });
+          } else {
+            const dataUrl = canvas.toDataURL('image/png');
+            fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
+              downloadBlob(newB, `${prefix || 'export'}_${formatTimestamp()}.png`);
+              resolve();
+            }).catch(() => {
+              const a = document.createElement('a');
+              a.href = dataUrl;
+              a.download = `${prefix || 'export'}_${formatTimestamp()}.png`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              resolve();
+            });
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = function() { reject(new Error('Failed to render snapshot for PNG export')); };
+      img.src = svgDataUrl;
+    });
+  }
+
+  function buildVizContainerSnapshot() {
+    const vizContainer = (typeof document !== 'undefined') ? document.getElementById('viz-container') : null;
+    if (!vizContainer) return null;
+    return buildSnapshot(vizContainer, {
+      removeSelectors: [
+        '.panel-actions',
+        '.tree-panel-header .btn-back',
+        '.tree-panel-header button',
+        '.modal',
+        '.modal-backdrop',
+        '.modal-actions',
+        '[data-export-exclude="1"]'
+      ],
+      matchBackgroundFrom: vizContainer
+    });
   }
 
   function resolveVizExportPrefix(explicitPrefix) {
@@ -502,82 +578,57 @@
     }
     const prefix = resolveVizExportPrefix(filenamePrefix);
     const blob = new Blob([snapshot.svgString], { type: 'image/svg+xml;charset=utf-8' });
-    downloadBlob(blob, `${prefix}_${Date.now()}.svg`);
+    downloadBlob(blob, `${prefix}_${formatTimestamp()}.svg`);
   }
 
   // Export the whole viz container snapshot to PNG. Returns a Promise.
   function exportVizContainerAsPNG(filenamePrefix) {
-    return new Promise((resolve, reject) => {
-      const snapshot = buildVizContainerSnapshot();
-      if (!snapshot) {
-        console.warn('No viz-container snapshot available for PNG export');
-        return reject(new Error('No snapshot'));
-      }
-      const prefix = resolveVizExportPrefix(filenamePrefix);
-      const SCALE = 2;
-      const DPI = 300;
-      const canvas = document.createElement('canvas');
-      canvas.width = snapshot.width * SCALE;
-      canvas.height = snapshot.height * SCALE;
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      const svgDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(snapshot.svgString)}`;
-      try { img.crossOrigin = 'anonymous'; } catch (e) {}
-      img.onload = function() {
-        try {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          if (canvas.toBlob) {
-            canvas.toBlob((blob) => {
-              if (blob) {
-                addPngPhysChunk(blob, DPI).then(newBlob => {
-                  downloadBlob(newBlob, `${prefix}_${Date.now()}.png`);
-                  resolve();
-                }).catch(() => {
-                  downloadBlob(blob, `${prefix}_${Date.now()}.png`);
-                  resolve();
-                });
-              } else {
-                const dataUrl = canvas.toDataURL('image/png');
-                fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
-                  downloadBlob(newB, `${prefix}_${Date.now()}.png`);
-                  resolve();
-                }).catch(() => {
-                  const a = document.createElement('a');
-                  a.href = dataUrl;
-                  a.download = `${prefix}_${Date.now()}.png`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  resolve();
-                });
-              }
-            });
-          } else {
-            const dataUrl = canvas.toDataURL('image/png');
-            fetch(dataUrl).then(r => r.blob()).then(b2 => addPngPhysChunk(b2, DPI)).then(newB => {
-              downloadBlob(newB, `${prefix}_${Date.now()}.png`);
-              resolve();
-            }).catch(() => {
-              const a = document.createElement('a');
-              a.href = dataUrl;
-              a.download = `${prefix}_${Date.now()}.png`;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              resolve();
-            });
-          }
-        } catch (err) {
-          reject(err);
-        }
-      };
-      img.onerror = function() {
-        reject(new Error('Failed to render viz-container snapshot for PNG export'));
-      };
-      img.src = svgDataUrl;
+    const snapshot = buildVizContainerSnapshot();
+    if (!snapshot) {
+      console.warn('No viz-container snapshot available for PNG export');
+      return Promise.reject(new Error('No snapshot'));
+    }
+    const prefix = resolveVizExportPrefix(filenamePrefix);
+    return renderSnapshotToPNG(snapshot, prefix);
+  }
+
+  // Build a snapshot for a specific panel element (by panel id)
+  function buildPanelSnapshot(panelId) {
+    const panel = (typeof document !== 'undefined') ? document.getElementById(panelId) : null;
+    if (!panel) return null;
+    return buildSnapshot(panel, {
+      removeSelectors: [
+        '.panel-actions',
+        '.btn-back',
+        'button',
+        '.modal',
+        '.modal-backdrop',
+        '.modal-actions',
+        '[data-export-exclude="1"]'
+      ],
+      matchBackgroundFrom: panel
     });
+  }
+
+  function exportPanelAsSVG(panelId, filenamePrefix) {
+    const snapshot = buildPanelSnapshot(panelId);
+    if (!snapshot) {
+      console.warn('No panel snapshot available for export:', panelId);
+      return;
+    }
+    const prefix = filenamePrefix || (panelId || 'panel_export');
+    const blob = new Blob([snapshot.svgString], { type: 'image/svg+xml;charset=utf-8' });
+    downloadBlob(blob, `${prefix}_${formatTimestamp()}.svg`);
+  }
+
+  function exportPanelAsPNG(panelId, filenamePrefix) {
+    const snapshot = buildPanelSnapshot(panelId);
+    if (!snapshot) {
+      console.warn('No panel snapshot available for export:', panelId);
+      return Promise.reject(new Error('No snapshot'));
+    }
+    const prefix = filenamePrefix || (panelId || 'panel_export');
+    return renderSnapshotToPNG(snapshot, prefix);
   }
 
   if (typeof window !== 'undefined') {
@@ -585,5 +636,7 @@
     window.exportPNGForContainer = exportPNGForContainer;
     window.exportVizContainerAsSVG = exportVizContainerAsSVG;
     window.exportVizContainerAsPNG = exportVizContainerAsPNG;
+    window.exportPanelAsSVG = exportPanelAsSVG;
+    window.exportPanelAsPNG = exportPanelAsPNG;
   }
 })();

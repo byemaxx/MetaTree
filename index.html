@@ -985,6 +985,26 @@
         </div>
     </div>
 
+    <!-- 右键菜单 - 统一导出菜单：导出当前面板或全部面板 -->
+    <div id="panel-export-menu" class="context-menu" role="menu" aria-hidden="true">
+        <div class="context-menu-header" id="panel-export-menu-title">Export</div>
+        <div id="section-current-panel" class="context-menu-section">
+            <div class="context-menu-subtitle">Export Current Panel</div>
+            <div class="context-menu-actions">
+                <button id="panel-export-svg" class="context-menu-btn" title="Export current panel as framed SVG">SVG</button>
+                <button id="panel-export-png" class="context-menu-btn" title="Export current panel as framed PNG">PNG</button>
+            </div>
+        </div>
+        <div id="panel-export-divider" class="context-menu-divider"></div>
+        <div id="section-all-panels" class="context-menu-section">
+            <div class="context-menu-subtitle">Export All Panels</div>
+            <div class="context-menu-actions">
+                <button id="viz-export-svg-ctx" class="context-menu-btn" title="Export all visible panels as SVG">SVG</button>
+                <button id="viz-export-png-ctx" class="context-menu-btn" title="Export all visible panels as PNG">PNG</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript 模块 -->
     <script src="js/analysis/group-comparison.js"></script>
     <script src="js/components/legend-panel.js"></script>
@@ -994,5 +1014,6 @@
     <script src="js/renderers/comparison-renderer.js"></script>
     <script src="js/core/theme-manager.js"></script>
     <script src="js/core/ui-controls.js"></script>
+    <script src="js/core/panel-export-contextmenu.js"></script>
 </body>
 </html>

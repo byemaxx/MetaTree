@@ -6,11 +6,11 @@
 // 颜色方案类别标签：'sequential'（连续/顺序）、'diverging'（分歧，适合正负值）
 let colorSchemeCategory = 'sequential';
 // 将所选类别同步到全局，便于渲染端读取
-try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch(_) {}
+try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch (_) { }
 
 // 当叶节点数量超过此阈值时，默认不勾选叶层标签以避免性能问题
 const DEFAULT_LEAF_LABEL_THRESHOLD = 1000;
-try { if (typeof window !== 'undefined') window.DEFAULT_LEAF_LABEL_THRESHOLD = DEFAULT_LEAF_LABEL_THRESHOLD; } catch(_) {}
+try { if (typeof window !== 'undefined') window.DEFAULT_LEAF_LABEL_THRESHOLD = DEFAULT_LEAF_LABEL_THRESHOLD; } catch (_) { }
 
 // 每种模式的颜色与域设置（single/group 共用，comparison/matrix 共用）
 const MODE_COLOR_KEY_MAP = {
@@ -155,7 +155,7 @@ modeColorSettings.matrix = modeColorSettings.comparison;
 
 let __suspendModeColorPersistence = false;
 
-try { if (typeof window !== 'undefined') window.modeColorSettings = modeColorSettings; } catch(_) {}
+try { if (typeof window !== 'undefined') window.modeColorSettings = modeColorSettings; } catch (_) { }
 
 const manualColorDomainStore = (() => {
     try {
@@ -165,11 +165,11 @@ const manualColorDomainStore = (() => {
             if (!Object.prototype.hasOwnProperty.call(existing, 'comparison')) existing.comparison = null;
             return existing;
         }
-    } catch (_) {}
+    } catch (_) { }
     return { individual: null, comparison: null };
 })();
 
-try { if (typeof window !== 'undefined') window.manualColorDomainByMode = manualColorDomainStore; } catch(_) {}
+try { if (typeof window !== 'undefined') window.manualColorDomainByMode = manualColorDomainStore; } catch (_) { }
 
 function getComparisonStoreForUI() {
     if (typeof getComparisonRendererStore === 'function') {
@@ -248,9 +248,9 @@ function formatDomainValueForInput(value) {
 }
 
 function syncGlobalManualColorDomain(value) {
-    try { window.manualColorDomainValue = value; } catch(_) {}
+    try { window.manualColorDomainValue = value; } catch (_) { }
     if (typeof manualColorDomainValue !== 'undefined') {
-        try { manualColorDomainValue = value; } catch(_) {}
+        try { manualColorDomainValue = value; } catch (_) { }
     }
 }
 
@@ -370,7 +370,7 @@ function syncLayoutPanelInputsToSettings(settings) {
     if (layoutSelect && settings.layout && layoutSelect.value !== settings.layout) {
         layoutSelect.value = settings.layout;
         currentLayout = settings.layout;
-        try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) {}
+        try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) { }
     }
     const panelSlider = document.getElementById('panel-width-slider');
     const panelValue = document.getElementById('panel-width-value');
@@ -408,8 +408,8 @@ function handleRendererLayoutContextChange() {
     setActiveLayoutPanelContext(getActiveLayoutPanelContext(), { force: true });
 }
 
-try { if (typeof window !== 'undefined') window.getLayoutPanelSettingsForContext = getLayoutPanelSettingsForContext; } catch (_) {}
-try { if (typeof window !== 'undefined') window.requestLayoutPanelContextSync = handleRendererLayoutContextChange; } catch (_) {}
+try { if (typeof window !== 'undefined') window.getLayoutPanelSettingsForContext = getLayoutPanelSettingsForContext; } catch (_) { }
+try { if (typeof window !== 'undefined') window.requestLayoutPanelContextSync = handleRendererLayoutContextChange; } catch (_) { }
 function cloneColorSettings(colors) {
     if (!colors) return null;
     return {
@@ -432,7 +432,7 @@ function getDefaultDivergingPalette() {
             const keys = palettes ? Object.keys(palettes) : [];
             if (keys.length > 0) return keys[0];
         }
-    } catch (_) {}
+    } catch (_) { }
     return 'blueRed';
 }
 
@@ -505,7 +505,7 @@ function persistCurrentModeColorSettings(modeOverride) {
     if (!entry) return;
     entry.colors = cloneColorSettings(snapshotCurrentColorSettings());
     entry.domain = snapshotCurrentColorDomain(modeName);
-    try { if (typeof window !== 'undefined') window.modeColorSettings = modeColorSettings; } catch(_) {}
+    try { if (typeof window !== 'undefined') window.modeColorSettings = modeColorSettings; } catch (_) { }
 }
 
 function applyModeColorSettings(modeName) {
@@ -529,7 +529,7 @@ function applyColorSettingsSnapshot(colors, modeName) {
     const isComparisonMode = modeName === 'comparison' || modeName === 'matrix';
     const category = (colors && colors.category) ? colors.category : (isComparisonMode ? 'diverging' : 'sequential');
     colorSchemeCategory = category;
-    try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch(_) {}
+    try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch (_) { }
 
     const scheme = (category === 'custom')
         ? 'Custom'
@@ -537,37 +537,37 @@ function applyColorSettingsSnapshot(colors, modeName) {
     if (typeof colorScheme !== 'undefined') {
         colorScheme = scheme;
     }
-    try { if (typeof window !== 'undefined') window.colorScheme = colorScheme; } catch(_) {}
+    try { if (typeof window !== 'undefined') window.colorScheme = colorScheme; } catch (_) { }
 
     if (typeof colorSchemeReversed !== 'undefined') {
         colorSchemeReversed = !!(colors && Object.prototype.hasOwnProperty.call(colors, 'reversed') ? colors.reversed : colorSchemeReversed);
     }
-    try { if (typeof window !== 'undefined') window.colorSchemeReversed = colorSchemeReversed; } catch(_) {}
+    try { if (typeof window !== 'undefined') window.colorSchemeReversed = colorSchemeReversed; } catch (_) { }
 
     const palette = (colors && colors.divergingPalette) ? colors.divergingPalette : getDefaultDivergingPalette();
     if (typeof divergingPalette !== 'undefined') {
         divergingPalette = palette;
     }
-    try { if (typeof window !== 'undefined') window.divergingPalette = divergingPalette; } catch(_) {}
+    try { if (typeof window !== 'undefined') window.divergingPalette = divergingPalette; } catch (_) { }
 
     const stops = (colors && Array.isArray(colors.customStops) && colors.customStops.length >= 2)
         ? colors.customStops.slice()
         : (Array.isArray(customColorStops) ? customColorStops.slice() : [(typeof customColorStart !== 'undefined' ? customColorStart : '#70706B'), (typeof customColorEnd !== 'undefined' ? customColorEnd : '#08519c')]);
     if (typeof customColorStops !== 'undefined') {
         customColorStops = stops.slice();
-        try { if (typeof window !== 'undefined') window.customColorStops = customColorStops.slice(); } catch(_) {}
+        try { if (typeof window !== 'undefined') window.customColorStops = customColorStops.slice(); } catch (_) { }
     }
     if (typeof customColorStart !== 'undefined' && colors && colors.customStart) {
         customColorStart = colors.customStart;
-        try { if (typeof window !== 'undefined') window.customColorStart = customColorStart; } catch(_) {}
+        try { if (typeof window !== 'undefined') window.customColorStart = customColorStart; } catch (_) { }
     }
     if (typeof customColorEnd !== 'undefined' && colors && colors.customEnd) {
         customColorEnd = colors.customEnd;
-        try { if (typeof window !== 'undefined') window.customColorEnd = customColorEnd; } catch(_) {}
+        try { if (typeof window !== 'undefined') window.customColorEnd = customColorEnd; } catch (_) { }
     }
     if (typeof customColorMid !== 'undefined' && colors && colors.customMid) {
         customColorMid = colors.customMid;
-        try { if (typeof window !== 'undefined') window.customColorMid = customColorMid; } catch(_) {}
+        try { if (typeof window !== 'undefined') window.customColorMid = customColorMid; } catch (_) { }
     }
 
     updateCustomColorInputsFromStops(customColorStops);
@@ -575,7 +575,7 @@ function applyColorSettingsSnapshot(colors, modeName) {
         customZeroColor = (colors && Object.prototype.hasOwnProperty.call(colors, 'zeroColor'))
             ? (colors.zeroColor || null)
             : customZeroColor || null;
-        try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch(_) {}
+        try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) { }
     }
     updateZeroColorControl(customZeroColor);
 
@@ -641,7 +641,7 @@ function updateZeroColorControl(value) {
 
 function applyZeroColorValue(nextValue) {
     customZeroColor = nextValue;
-    try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) {}
+    try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) { }
     updateZeroColorControl(customZeroColor);
     if (zeroColorRedrawTimeout) clearTimeout(zeroColorRedrawTimeout);
     zeroColorRedrawTimeout = setTimeout(() => {
@@ -680,13 +680,13 @@ function applyDomainValueToUI(domainValue, modeName) {
     if (normalized != null) {
         if (isComparisonMode) {
             try { comparisonColorDomain = [-normalized, 0, normalized]; }
-            catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-normalized, 0, normalized]; }
+            catch (_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-normalized, 0, normalized]; }
         }
         if (input) input.value = formatDomainValueForInput(normalized);
     } else {
         if (isComparisonMode) {
             try { comparisonColorDomain = [-5, 0, 5]; }
-            catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5, 0, 5]; }
+            catch (_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5, 0, 5]; }
             if (input) input.value = 5;
         } else if (input) {
             input.value = '';
@@ -731,7 +731,7 @@ function rebuildTreeAfterTaxaDelimiterChange() {
 function initDataParameterControls() {
     const toggle = document.getElementById('data-params-toggle');
     if (toggle) {
-        toggle.addEventListener('click', function() {
+        toggle.addEventListener('click', function () {
             const content = document.getElementById('data-params-content');
             if (!content) return;
             const visible = window.getComputedStyle(content).display !== 'none';
@@ -913,35 +913,35 @@ function initEventListeners() {
     // 导入 meta 文件
     const metaInput = document.getElementById('meta-upload');
     if (metaInput) metaInput.addEventListener('change', handleMetaUpload);
-    
+
     // 布局选择
     document.getElementById('layout-select').addEventListener('change', handleLayoutChange);
-    
+
     // 丰度转换选择
     document.getElementById('abundance-transform').addEventListener('change', handleAbundanceTransformChange);
-    
+
     // 配色方案选择通过下方的可折叠预览条进行（点击预览切换）
-const previewsToggle = document.getElementById('color-previews-toggle');
-if (previewsToggle) {
-    const syncPreviewsToggleState = () => {
-        const wrap = document.getElementById('color-previews-wrapper');
-        if (!wrap) return;
-        const expanded = window.getComputedStyle(wrap).display !== 'none';
-        previewsToggle.classList.toggle('expanded', expanded);
-        previewsToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    };
+    const previewsToggle = document.getElementById('color-previews-toggle');
+    if (previewsToggle) {
+        const syncPreviewsToggleState = () => {
+            const wrap = document.getElementById('color-previews-wrapper');
+            if (!wrap) return;
+            const expanded = window.getComputedStyle(wrap).display !== 'none';
+            previewsToggle.classList.toggle('expanded', expanded);
+            previewsToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        };
 
-    previewsToggle.addEventListener('click', () => {
-        const wrap = document.getElementById('color-previews-wrapper');
-        if (!wrap) return;
-        const current = window.getComputedStyle(wrap).display;
-        const visible = current !== 'none';
-        wrap.style.display = visible ? 'none' : 'block';
+        previewsToggle.addEventListener('click', () => {
+            const wrap = document.getElementById('color-previews-wrapper');
+            if (!wrap) return;
+            const current = window.getComputedStyle(wrap).display;
+            const visible = current !== 'none';
+            wrap.style.display = visible ? 'none' : 'block';
+            syncPreviewsToggleState();
+        });
+
         syncPreviewsToggleState();
-    });
-
-    syncPreviewsToggleState();
-}
+    }
     // Removed deprecated diverging previews toggle; diverging palettes are now in Colors & Domain panel
     // 反转颜色复选框
     const rev = document.getElementById('color-reverse');
@@ -955,7 +955,7 @@ if (previewsToggle) {
             persistCurrentModeColorSettings();
         });
     }
-    
+
     // 自定义颜色选择（和自定义面板中的 Apply 按钮）
     const customStart = document.getElementById('custom-color-start');
     const customEnd = document.getElementById('custom-color-end');
@@ -989,7 +989,7 @@ if (previewsToggle) {
         // 应用即启用 Custom，并切换到 Custom 标签
         setColorScheme('Custom');
         colorSchemeCategory = 'custom';
-        try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch(_) {}
+        try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch (_) { }
         renderColorPreviews && renderColorPreviews();
         if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
     });
@@ -1011,7 +1011,7 @@ if (previewsToggle) {
             if (customArrowMid2) customArrowMid2.style.display = (v0 >= 4) ? 'inline-block' : 'none';
             if (customMid3) customMid3.style.display = (v0 >= 5) ? 'inline-block' : 'none';
             if (customArrowMid3) customArrowMid3.style.display = (v0 >= 5) ? 'inline-block' : 'none';
-        } catch(_) {}
+        } catch (_) { }
         stopsCount.addEventListener('change', () => {
             let v = parseInt(stopsCount.value);
             if (!isFinite(v)) v = 2;
@@ -1039,7 +1039,7 @@ if (previewsToggle) {
     // presets: load from localStorage
     function loadPresets() {
         let presets = [];
-        try { presets = JSON.parse(localStorage.getItem('treemap_custom_color_presets') || '[]'); } catch(e){ presets=[]; }
+        try { presets = JSON.parse(localStorage.getItem('treemap_custom_color_presets') || '[]'); } catch (e) { presets = []; }
         if (presetsSelect) {
             presetsSelect.innerHTML = '<option value="">-- none --</option>';
             presets.forEach((p, idx) => {
@@ -1060,7 +1060,7 @@ if (previewsToggle) {
             const p = presets[parseInt(idx)];
             if (!p) return;
             // apply preset
-            if (p.stops && p.stops.length>0) {
+            if (p.stops && p.stops.length > 0) {
                 customColorStops = p.stops.slice();
                 // set inputs
                 customStart.value = customColorStops[0];
@@ -1077,12 +1077,12 @@ if (previewsToggle) {
                 if (n >= 3 && customMid) customMid.value = customColorStops[1] || (customColorMid || '#ffd27f');
                 if (n >= 4 && customMid2) customMid2.value = customColorStops[2] || (customColorMid || '#ffd27f');
                 if (n >= 5 && customMid3) customMid3.value = customColorStops[3] || (customColorMid || '#ffd27f');
-                customEnd.value = customColorStops[customColorStops.length-1];
+                customEnd.value = customColorStops[customColorStops.length - 1];
                 renderColorPreviews && renderColorPreviews();
                 // 预设应用也切换到 Custom 标签
                 setColorScheme('Custom');
                 colorSchemeCategory = 'custom';
-                try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch(_) {}
+                try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch (_) { }
                 renderColorPreviews && renderColorPreviews();
                 if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
             }
@@ -1098,15 +1098,15 @@ if (previewsToggle) {
             }
             const stops = Array.isArray(customColorStops) ? customColorStops.slice() : [customStart.value, customEnd.value];
             let store = [];
-            try { store = JSON.parse(localStorage.getItem('treemap_custom_color_presets') || '[]'); } catch(e){ store = []; }
+            try { store = JSON.parse(localStorage.getItem('treemap_custom_color_presets') || '[]'); } catch (e) { store = []; }
             store.push({ name, stops });
-            try { localStorage.setItem('treemap_custom_color_presets', JSON.stringify(store)); } catch(e){ console.warn('Failed to save preset', e); }
+            try { localStorage.setItem('treemap_custom_color_presets', JSON.stringify(store)); } catch (e) { console.warn('Failed to save preset', e); }
             presetNameInput.value = '';
             loadPresets();
             alert('Preset saved');
         });
     }
-    
+
     // 高级参数控制
     // 注意：Show labels 控件已移除，标签显示由 "Levels (from leaf)" 的复选框控制
     document.getElementById('label-threshold').addEventListener('input', handleLabelThresholdChange);
@@ -1137,7 +1137,7 @@ if (previewsToggle) {
     document.getElementById('edge-width-multiplier').addEventListener('input', handleEdgeWidthMultiplierChange);
     const edgeOpacityInput = document.getElementById('edge-opacity');
     if (edgeOpacityInput) edgeOpacityInput.addEventListener('input', handleEdgeOpacityChange);
-    
+
     // 样本选择折叠
     document.getElementById('toggle-samples').addEventListener('click', handleToggleSamples);
     // 样本选择快捷操作：全选/全不选/反选
@@ -1250,7 +1250,7 @@ if (previewsToggle) {
     // 元数据筛选折叠
     const metaToggle = document.getElementById('meta-filters-toggle');
     if (metaToggle) {
-        metaToggle.addEventListener('click', function() {
+        metaToggle.addEventListener('click', function () {
             const content = document.getElementById('meta-filters-content');
             if (!content) return;
             const current = window.getComputedStyle(content).display;
@@ -1268,7 +1268,7 @@ if (previewsToggle) {
     const labelsPanel = document.getElementById('labels-panel');
     const labelsToggle = document.getElementById('labels-toggle');
     if (labelsToggle && labelsPanel) {
-        labelsToggle.addEventListener('click', function() {
+        labelsToggle.addEventListener('click', function () {
             const collapsed = labelsPanel.classList.toggle('collapsed');
             labelsToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
             labelsToggle.classList.toggle('expanded', !collapsed);
@@ -1279,7 +1279,7 @@ if (previewsToggle) {
     const colorsPanel = document.getElementById('colors-panel');
     const colorsToggle = document.getElementById('colors-toggle');
     if (colorsToggle && colorsPanel) {
-        colorsToggle.addEventListener('click', function() {
+        colorsToggle.addEventListener('click', function () {
             const collapsed = colorsPanel.classList.toggle('collapsed');
             colorsToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
             colorsToggle.classList.toggle('expanded', !collapsed);
@@ -1290,7 +1290,7 @@ if (previewsToggle) {
     const layoutPanel = document.getElementById('layout-panel');
     const layoutToggle = document.getElementById('layout-toggle');
     if (layoutToggle && layoutPanel) {
-        layoutToggle.addEventListener('click', function() {
+        layoutToggle.addEventListener('click', function () {
             const collapsed = layoutPanel.classList.toggle('collapsed');
             layoutToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
             layoutToggle.classList.toggle('expanded', !collapsed);
@@ -1301,7 +1301,7 @@ if (previewsToggle) {
     const themePanel = document.getElementById('theme-panel');
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle && themePanel) {
-        themeToggle.addEventListener('click', function() {
+        themeToggle.addEventListener('click', function () {
             const collapsed = themePanel.classList.toggle('collapsed');
             themeToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
             themeToggle.classList.toggle('expanded', !collapsed);
@@ -1345,11 +1345,11 @@ if (previewsToggle) {
         // 初始化：若不是 combined_long，整个显著性区域隐藏；否则根据复选框控制阈值行显示
         const isCombined = !!(typeof window !== 'undefined' && window.isCombinedLong);
         if (singleToggleRow) singleToggleRow.style.display = isCombined ? 'flex' : 'none';
-        try { singleThrRow.style.display = (isCombined && singleSigToggle.checked) ? 'flex' : 'none'; } catch(_) {}
+        try { singleThrRow.style.display = (isCombined && singleSigToggle.checked) ? 'flex' : 'none'; } catch (_) { }
         singleSigToggle.addEventListener('change', () => {
             const isCombinedNow = !!(typeof window !== 'undefined' && window.isCombinedLong);
             if (singleToggleRow) singleToggleRow.style.display = isCombinedNow ? 'flex' : 'none';
-            try { singleThrRow.style.display = (isCombinedNow && singleSigToggle.checked) ? 'flex' : 'none'; } catch(_) {}
+            try { singleThrRow.style.display = (isCombinedNow && singleSigToggle.checked) ? 'flex' : 'none'; } catch (_) { }
             // 勾选/取消时立即重绘（仅 single 模式受影响）
             if (visualizationMode === 'single') redrawCurrentViz();
         });
@@ -1359,12 +1359,12 @@ if (previewsToggle) {
     if (singleP) singleP.addEventListener('input', onSingleThrChange);
     if (singleQ) singleQ.addEventListener('input', onSingleThrChange);
     if (singleL) singleL.addEventListener('input', onSingleThrChange);
-    
+
     // 窗口大小调整
     let resizeTimeout;
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(function() {
+        resizeTimeout = setTimeout(function () {
             if (treeData) {
                 redrawCurrentViz();
             }
@@ -1430,7 +1430,7 @@ function loadDataFromText(text, options = {}) {
 
     // 加载新文件时刷新 Color domain：清除手动 M，输入框回到自动/默认
     resetManualDomainForAllModes();
-    try { comparisonColorDomain = [-5, 0, 5]; } catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5,0,5]; }
+    try { comparisonColorDomain = [-5, 0, 5]; } catch (_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5, 0, 5]; }
     const cdInput = document.getElementById('color-domain-abs');
     if (cdInput) cdInput.value = '';
 
@@ -1485,14 +1485,14 @@ function loadDataFromText(text, options = {}) {
 
     return treeData;
 }
-try { if (typeof window !== 'undefined') window.loadDataFromText = loadDataFromText; } catch (_) {}
+try { if (typeof window !== 'undefined') window.loadDataFromText = loadDataFromText; } catch (_) { }
 
 function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = function(event) {
+    reader.onload = function (event) {
         try {
             loadDataFromText(event.target.result, { label: file.name });
         } catch (error) {
@@ -1507,11 +1507,11 @@ function updateSampleCheckboxes() {
     const checkboxContainer = document.getElementById('sample-checkboxes');
     checkboxContainer.innerHTML = '';
     selectedSamples = [];
-    
+
     samples.forEach((sample, index) => {
         const checkboxItem = document.createElement('div');
         checkboxItem.className = 'checkbox-item';
-        
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.id = `sample-${sample}`;
@@ -1521,18 +1521,18 @@ function updateSampleCheckboxes() {
             checkbox.checked = true;
             selectedSamples.push(sample);
         }
-        
+
         checkbox.addEventListener('change', handleSampleCheckboxChange);
-        
+
         const label = document.createElement('label');
         label.htmlFor = `sample-${sample}`;
         label.textContent = sample;
-        
+
         checkboxItem.appendChild(checkbox);
         checkboxItem.appendChild(label);
         checkboxContainer.appendChild(checkboxItem);
     });
-    
+
     // 默认不展开样本选择面板（保持折叠）
     const panel = document.getElementById('sample-selection-panel');
     const btn = document.getElementById('toggle-samples');
@@ -1562,11 +1562,33 @@ function refreshSampleCheckboxesByMeta() {
             }
         }
     });
+
+    // 过滤样本后需要同步更新可视化，以保证 viz-container 中的面板与样本选择面板一致
+    try {
+        if (typeof initVisualization === 'function' && typeof drawAllTrees === 'function') {
+            // 重新初始化可视化面板并触发重绘（会自动只绘制通过 meta 过滤的样本）
+            initVisualization();
+            drawAllTrees();
+
+            // 更新统计信息（使用第一个通过过滤的活动样本，若没有则清空统计）
+            if (typeof getActiveSamples === 'function') {
+                const active = getActiveSamples();
+                const hierarchy = (typeof d3 !== 'undefined' && treeData) ? d3.hierarchy(treeData) : null;
+                if (hierarchy && active && active.length > 0) {
+                    updateStats(hierarchy, active[0]);
+                } else if (hierarchy) {
+                    updateStats(hierarchy, null);
+                }
+            }
+        }
+    } catch (err) {
+        console.warn('Error refreshing visualization after meta filter change', err);
+    }
 }
 
 function handleSampleCheckboxChange(e) {
     const sample = e.target.value;
-    
+
     if (e.target.checked) {
         if (!selectedSamples.includes(sample)) {
             selectedSamples.push(sample);
@@ -1574,11 +1596,11 @@ function handleSampleCheckboxChange(e) {
     } else {
         selectedSamples = selectedSamples.filter(s => s !== sample);
     }
-    
+
     // 重新绘制
     initVisualization();
     drawAllTrees();
-    
+
     // 更新统计信息
     if (selectedSamples.length > 0) {
         const hierarchy = d3.hierarchy(treeData);
@@ -1647,7 +1669,7 @@ function invertSampleSelection() {
 function handleLayoutChange(e) {
     const nextLayout = e.target.value;
     currentLayout = VALID_LAYOUT_OPTIONS.has(nextLayout) ? nextLayout : 'radial';
-    try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) {}
+    try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) { }
     const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
     setLayoutPanelSettingsForContext(ctx, { layout: currentLayout });
     if (typeof redrawCurrentViz === 'function') {
@@ -1698,7 +1720,7 @@ function setColorScheme(scheme) {
         // 当选中Custom方案时，自动切到Custom标签页
         if (scheme === 'Custom') {
             colorSchemeCategory = 'custom';
-            try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch(_) {}
+            try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch (_) { }
             customControls.style.display = 'flex';
         } else {
             if (colorSchemeCategory !== 'custom') customControls.style.display = 'none';
@@ -1733,7 +1755,7 @@ function renderColorPreviews() {
             b.style.padding = '4px 8px';
             b.addEventListener('click', () => {
                 colorSchemeCategory = value;
-                try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch(_) {}
+                try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch (_) { }
                 if (value === 'custom') {
                     // 切到自定义标签时，强制使用自定义方案
                     if (typeof setColorScheme === 'function') setColorScheme('Custom');
@@ -1757,7 +1779,7 @@ function renderColorPreviews() {
     const btnSeq = document.getElementById('color-tab-sequential');
     const btnDiv = document.getElementById('color-tab-diverging');
     const btnCus = document.getElementById('color-tab-custom');
-    [btnSeq, btnDiv, btnCus].forEach(b => { if (b) { b.classList.remove('selected'); b.style.fontWeight = '500'; }});
+    [btnSeq, btnDiv, btnCus].forEach(b => { if (b) { b.classList.remove('selected'); b.style.fontWeight = '500'; } });
     if (colorSchemeCategory === 'sequential' && btnSeq) { btnSeq.classList.add('selected'); btnSeq.style.fontWeight = '700'; }
     if (colorSchemeCategory === 'diverging' && btnDiv) { btnDiv.classList.add('selected'); btnDiv.style.fontWeight = '700'; }
     if (colorSchemeCategory === 'custom' && btnCus) { btnCus.classList.add('selected'); btnCus.style.fontWeight = '700'; }
@@ -1885,7 +1907,7 @@ function handleCustomColorChange(e) {
     } else if (e.target.id === 'custom-color-end') {
         customColorEnd = e.target.value;
     }
-    
+
     // 自定义颜色变化后按当前模式重绘（而非强制单样本）
     if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
 }
@@ -1897,7 +1919,7 @@ function handleLabelThresholdChange(e) {
 }
 
 // 动态生成“标签层级（多选，从叶）”选项
-window.updateLabelLevelsOptions = function(maxLeafHeight, hasFunctionLeaf, dynamicNamesFromLeaf, leafCount) {
+window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dynamicNamesFromLeaf, leafCount) {
     const container = document.getElementById('label-levels');
     if (!container) return;
 
@@ -1986,9 +2008,9 @@ window.updateLabelLevelsOptions = function(maxLeafHeight, hasFunctionLeaf, dynam
         cb.checked = defaultSelected.includes(k); // 默认仅勾选最外两层
 
         const text = document.createElement('span');
-    const name = namesFromLeaf[k] || `Level ${k}`;
-    // 与标题一致：显示“从叶的距离（k）”，0 表示叶，数值越大越靠近根
-    text.textContent = `${k} (${name})`;
+        const name = namesFromLeaf[k] || `Level ${k}`;
+        // 与标题一致：显示“从叶的距离（k）”，0 表示叶，数值越大越靠近根
+        text.textContent = `${k} (${name})`;
 
         wrapper.appendChild(cb);
         wrapper.appendChild(text);
@@ -2090,13 +2112,13 @@ function resetLabelsNodesToDefaults() {
 
         // 2) 字号
         const font = document.getElementById('label-font-size');
-    // 2.1) 标签最大长度与溢出
-    const maxLen = document.getElementById('label-max-length');
-    if (maxLen) maxLen.value = '15';
-    labelMaxLength = 15;
-    const overflowSel = document.getElementById('label-overflow');
-    if (overflowSel) overflowSel.value = 'ellipsis';
-    labelOverflowMode = 'ellipsis';
+        // 2.1) 标签最大长度与溢出
+        const maxLen = document.getElementById('label-max-length');
+        if (maxLen) maxLen.value = '15';
+        labelMaxLength = 15;
+        const overflowSel = document.getElementById('label-overflow');
+        if (overflowSel) overflowSel.value = 'ellipsis';
+        labelOverflowMode = 'ellipsis';
         if (font) {
             font.value = '9';
             document.getElementById('label-font-size-value').textContent = '9px';
@@ -2157,7 +2179,7 @@ function resetLabelsNodesToDefaults() {
 
             // 尝试获取当前 leafCount（优先使用 window.__leafCount，其次使用 container.dataset）
             let leafCount = undefined;
-            try { leafCount = (typeof window !== 'undefined' && typeof window.__leafCount === 'number') ? window.__leafCount : undefined; } catch(_) { leafCount = undefined; }
+            try { leafCount = (typeof window !== 'undefined' && typeof window.__leafCount === 'number') ? window.__leafCount : undefined; } catch (_) { leafCount = undefined; }
             try {
                 if (typeof leafCount !== 'number' && levelsWrap.dataset && levelsWrap.dataset.leafCount) {
                     const parsed = parseInt(levelsWrap.dataset.leafCount);
@@ -2165,7 +2187,7 @@ function resetLabelsNodesToDefaults() {
                 }
             } catch (_) { /* ignore */ }
 
-            
+
             const checked = [];
             // 仅当 leafCount 未定义或不超过阈值时才默认勾选叶标签
             if (typeof leafCount !== 'number' || leafCount <= DEFAULT_LEAF_LABEL_THRESHOLD) {
@@ -2228,7 +2250,7 @@ function handleNodeOpacityChange(e) {
 function handleToggleSamples() {
     const panel = document.getElementById('sample-selection-panel');
     const btn = document.getElementById('toggle-samples');
-    
+
     if (panel.classList.contains('expanded')) {
         panel.classList.remove('expanded');
         panel.style.display = 'none';
@@ -2250,7 +2272,7 @@ function handleVisualizationModeChange() {
         : visualizationMode;
     persistCurrentModeColorSettings(prevMode);
     visualizationMode = document.getElementById('viz-mode').value;
-    try { if (typeof window !== 'undefined') window.visualizationMode = visualizationMode; } catch(_) {}
+    try { if (typeof window !== 'undefined') window.visualizationMode = visualizationMode; } catch (_) { }
     applyModeColorSettings(visualizationMode);
     setActiveLayoutPanelContext(getActiveLayoutPanelContext(), { force: true });
 
@@ -2261,7 +2283,7 @@ function handleVisualizationModeChange() {
     const groupModeSettings = document.getElementById('group-mode-settings');
     const groupSelectionRow = document.getElementById('group-selection-row');
     const matrixGroupSelection = document.getElementById('matrix-group-selection');
-    
+
     if (visualizationMode === 'single') {
         // 单样本模式
         if (comparisonControls) comparisonControls.style.display = 'none';
@@ -2276,10 +2298,10 @@ function handleVisualizationModeChange() {
             const cb = document.getElementById('single-show-significance');
             if (rowToggle) rowToggle.style.display = isCombined ? 'flex' : 'none';
             if (rowThresh) rowThresh.style.display = (isCombined && cb && cb.checked) ? 'flex' : 'none';
-        } catch(_) {}
+        } catch (_) { }
         // 清理任何矩阵内联放大状态
-        try { delete window.currentInlineComparison; } catch(_) { window.currentInlineComparison = null; }
-        
+        try { delete window.currentInlineComparison; } catch (_) { window.currentInlineComparison = null; }
+
         // 重新绘制
         if (treeData && selectedSamples.length > 0) {
             initVisualization();
@@ -2291,7 +2313,7 @@ function handleVisualizationModeChange() {
         if (groupModeSettings) groupModeSettings.style.display = 'block';
         if (samplesToggle) samplesToggle.style.display = 'none';
         if (singleModeSettings) singleModeSettings.style.display = 'block';  // 显示single模式的设置
-        
+
         // 确保样本选择面板被折叠/隐藏
         const samplePanel = document.getElementById('sample-selection-panel');
         const toggleBtn = document.getElementById('toggle-samples');
@@ -2303,10 +2325,10 @@ function handleVisualizationModeChange() {
             toggleBtn.textContent = 'Expand ▼';
             toggleBtn.classList.remove('expanded');
         }
-        
+
         // 初始化group选项
         updateGroupMetaColumnOptions();
-        
+
         // 如果已经有选中的组,重新绘制
         if (treeData && selectedGroups.length > 0) {
             initVisualization();
@@ -2329,7 +2351,7 @@ function handleVisualizationModeChange() {
             toggleBtn.textContent = 'Expand ▼';
             toggleBtn.classList.remove('expanded');
         }
-        
+
         // 比较/矩阵模式：若未手动设定域，默认使用 5 并同步输入框
         const hasManual = getManualDomainForMode('comparison') != null;
         if (!hasManual) {
@@ -2346,7 +2368,7 @@ function handleVisualizationModeChange() {
         if (matrixGroupSelection) {
             matrixGroupSelection.style.display = visualizationMode === 'matrix' ? 'flex' : 'none';
         }
-        
+
         // 更新分组显示和组选择器
         updateGroupDefinitionsDisplay();
     }
@@ -2355,10 +2377,10 @@ function handleVisualizationModeChange() {
 function handleDefineGroupsClick() {
     const modal = document.getElementById('group-modal');
     modal.style.display = 'block';
-    
+
     // 更新样本列表
     updateSampleChecklistInModal();
-    
+
     // 更新已有分组列表
     updateExistingGroupsList();
 }
@@ -2400,7 +2422,7 @@ function handleVizExportRequest(format) {
         if (typeof window !== 'undefined' && typeof window.ensurePanelsRenderedForExport === 'function') {
             window.ensurePanelsRenderedForExport();
         }
-    } catch (_) {}
+    } catch (_) { }
 
     if (format === 'svg') {
         if (typeof window !== 'undefined' && typeof window.exportVizContainerAsSVG === 'function') {
@@ -2430,7 +2452,7 @@ function showVizExportMenu(clientX, clientY) {
     if (!menu) return;
     hideVizExportMenu();
     if (typeof hideLabelColorMenu === 'function') {
-        try { hideLabelColorMenu(); } catch (_) {}
+        try { hideLabelColorMenu(); } catch (_) { }
     }
     menu.style.display = 'block';
     menu.style.visibility = 'hidden';
@@ -2459,16 +2481,16 @@ try {
     if (typeof window !== 'undefined') {
         window.hideVizExportMenu = hideVizExportMenu;
     }
-} catch (_) {}
+} catch (_) { }
 
 function updateSampleChecklistInModal() {
     const checklist = document.getElementById('sample-checklist');
-    
+
     if (!samples || samples.length === 0) {
         checklist.innerHTML = '<em>No samples available. Please load a data file first.</em>';
         return;
     }
-    
+
     const passes = (s) => (typeof window.samplePassesMetaFilters === 'function') ? window.samplePassesMetaFilters(s) : true;
     const visibleSamples = samples.filter(s => passes(s));
     checklist.innerHTML = '';
@@ -2489,12 +2511,12 @@ function updateSampleChecklistInModal() {
 function updateExistingGroupsList() {
     const listContainer = document.getElementById('existing-groups-list');
     const groups = getAllGroups();
-    
+
     if (Object.keys(groups).length === 0) {
         listContainer.innerHTML = '<em style="color: #999;">No groups defined yet</em>';
         return;
     }
-    
+
     listContainer.innerHTML = '';
     const passes = (s) => (typeof window.samplePassesMetaFilters === 'function') ? window.samplePassesMetaFilters(s) : true;
     let shown = 0;
@@ -2517,10 +2539,10 @@ function updateExistingGroupsList() {
     if (shown === 0) {
         listContainer.innerHTML = '<em style="color:#999;">No groups available after current filter</em>';
     }
-    
+
     // 绑定删除按钮事件
     listContainer.querySelectorAll('.btn-group-delete').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const groupName = this.dataset.group;
             if (confirm(`Delete group "${groupName}"?`)) {
                 removeGroup(groupName);
@@ -2533,32 +2555,32 @@ function updateExistingGroupsList() {
 
 function handleSaveGroup() {
     const groupName = document.getElementById('group-name-input').value.trim();
-    
+
     if (!groupName) {
         alert('Please enter a group name.');
         return;
     }
-    
+
     const checkboxes = document.querySelectorAll('.sample-checkbox:checked');
     const selectedSamplesList = Array.from(checkboxes).map(cb => cb.value);
-    
+
     if (selectedSamplesList.length === 0) {
         alert('Please select at least one sample for this group.');
         return;
     }
-    
+
     // 保存分组
     if (defineGroup(groupName, selectedSamplesList)) {
         alert(`Group "${groupName}" saved with ${selectedSamplesList.length} samples.`);
-        
+
         // 清空输入
         document.getElementById('group-name-input').value = '';
         document.querySelectorAll('.sample-checkbox').forEach(cb => cb.checked = false);
-        
+
         // 更新显示
         updateExistingGroupsList();
         updateGroupDefinitionsDisplay();
-        
+
         // 如果是 Group samples 模式，也更新复选框列表
         const modeSelect = document.getElementById('viz-mode');
         if (modeSelect && modeSelect.value === 'group') {
@@ -2573,28 +2595,28 @@ function handleSaveGroup() {
 function updateGroupDefinitionsDisplay() {
     const displayDiv = document.getElementById('unified-group-display');
     const groups = getAllGroups();
-    
+
     if (Object.keys(groups).length === 0) {
         displayDiv.innerHTML = '<em style="color: rgba(255,255,255,0.7);">No groups defined</em>';
         // 清空组选择下拉框
         updateGroupSelectors();
         return;
     }
-    
+
     const passes = (s) => (typeof window.samplePassesMetaFilters === 'function') ? window.samplePassesMetaFilters(s) : true;
     const filteredNames = Object.keys(groups).filter(name => {
         const list = Array.isArray(groups[name]) ? groups[name] : [];
         return list.filter(s => passes(s)).length > 0;
     });
-    
+
     if (filteredNames.length === 0) {
         displayDiv.innerHTML = '<em style="color: rgba(255,255,255,0.7);">No groups available after current filter</em>';
         updateGroupSelectors();
         return;
     }
-    
+
     let html = '';
-    
+
     // 根据当前模式决定显示方式
     if (visualizationMode === 'matrix') {
         // Matrix 模式：显示为带复选框的列表，并添加快捷按钮
@@ -2608,21 +2630,21 @@ function updateGroupDefinitionsDisplay() {
             </div>
             <div class="p-6 bg-light-surface br-4 maxh-140 overflow-y-auto" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px;">
         `;
-        
+
         filteredNames.forEach(groupName => {
             const list = groups[groupName] || [];
             const filtered = list.filter(s => passes(s));
             const filteredCount = filtered.length;
             const totalCount = list.length;
-            
+
             html += `
                 <label class="flex ai-center gap-6" style="cursor: pointer;">
                     <input type="checkbox" class="matrix-group-checkbox" value="${groupName}" checked>
-                    <span title="${groupName}: ${filteredCount} samples${totalCount !== filteredCount ? ' ('+totalCount+' total)' : ''}">${groupName} (${filteredCount})</span>
+                    <span title="${groupName}: ${filteredCount} samples${totalCount !== filteredCount ? ' (' + totalCount + ' total)' : ''}">${groupName} (${filteredCount})</span>
                 </label>
             `;
         });
-        
+
         html += '</div>';
     } else {
         // Comparison 模式：只显示分组信息
@@ -2631,7 +2653,7 @@ function updateGroupDefinitionsDisplay() {
             const filtered = list.filter(s => passes(s));
             const filteredCount = filtered.length;
             const totalCount = list.length;
-            
+
             html += `
                 <div style="margin: 5px 0; padding: 8px; background: rgba(255,255,255,0.2); border-radius: 4px;">
                     <strong>${groupName}</strong>: ${filteredCount} ${totalCount !== filteredCount ? `(<span title="unfiltered total">${totalCount} total</span>)` : ''}
@@ -2639,34 +2661,34 @@ function updateGroupDefinitionsDisplay() {
             `;
         });
     }
-    
+
     displayDiv.innerHTML = html;
-    
+
     // 绑定 matrix 模式的快捷按钮事件
     if (visualizationMode === 'matrix') {
         const selectAllBtn = document.getElementById('select-all-groups');
         const selectNoneBtn = document.getElementById('select-none-groups');
         const invertBtn = document.getElementById('invert-groups');
-        
+
         if (selectAllBtn) {
-            selectAllBtn.addEventListener('click', function() {
+            selectAllBtn.addEventListener('click', function () {
                 document.querySelectorAll('.matrix-group-checkbox').forEach(cb => cb.checked = true);
             });
         }
-        
+
         if (selectNoneBtn) {
-            selectNoneBtn.addEventListener('click', function() {
+            selectNoneBtn.addEventListener('click', function () {
                 document.querySelectorAll('.matrix-group-checkbox').forEach(cb => cb.checked = false);
             });
         }
-        
+
         if (invertBtn) {
-            invertBtn.addEventListener('click', function() {
+            invertBtn.addEventListener('click', function () {
                 document.querySelectorAll('.matrix-group-checkbox').forEach(cb => cb.checked = !cb.checked);
             });
         }
     }
-    
+
     // 更新组选择下拉框
     updateGroupSelectors();
 }
@@ -2674,16 +2696,16 @@ function updateGroupDefinitionsDisplay() {
 function updateGroupSelectors() {
     const groups = getAllGroups();
     const groupNames = Object.keys(groups);
-    
+
     const select1 = document.getElementById('select-group1');
     const select2 = document.getElementById('select-group2');
-    
+
     if (!select1 || !select2) return;
-    
+
     // 保存当前选择
     const currentGroup1 = select1.value;
     const currentGroup2 = select2.value;
-    
+
     // 清空选项
     select1.innerHTML = '<option value="">-- Select Group 1 --</option>';
     select2.innerHTML = '<option value="">-- Select Group 2 --</option>';
@@ -2700,14 +2722,14 @@ function updateGroupSelectors() {
         option2.textContent = groupName;
         select2.appendChild(option2);
     });
-    
+
     // 恢复之前的选择（如果仍然有效）
     if (filteredNames.includes(currentGroup1)) {
         select1.value = currentGroup1;
     } else if (filteredNames.length > 0) {
         select1.value = filteredNames[0]; // 默认选择第一个组
     }
-    
+
     if (filteredNames.includes(currentGroup2)) {
         select2.value = currentGroup2;
     } else if (filteredNames.length > 1) {
@@ -2718,9 +2740,9 @@ function updateGroupSelectors() {
 function updateMatrixGroupCheckboxes(groupNames) {
     const container = document.getElementById('matrix-group-checkboxes');
     if (!container) return;
-    
+
     container.innerHTML = '';
-    
+
     if (groupNames.length === 0) {
         container.innerHTML = '<em style="color: #999; font-size: 12px;">No groups defined</em>';
         return;
@@ -2743,36 +2765,36 @@ function updateMatrixGroupCheckboxes(groupNames) {
 
 function handleRunComparison() {
     const groups = getAllGroups();
-    
+
     if (Object.keys(groups).length < 2) {
         alert('Please define at least 2 groups before running comparison.');
         return;
     }
-    
+
     if (!treeData) {
         alert('Please load data first.');
         return;
     }
-    
+
     // 根据模式获取要比较的组
     let selectedGroups;
-    
+
     if (visualizationMode === 'comparison') {
         // Comparison 模式：使用选择的两个组
         const selectedGroup1 = document.getElementById('select-group1').value;
         const selectedGroup2 = document.getElementById('select-group2').value;
-        
+
         // 验证选择
         if (!selectedGroup1 || !selectedGroup2) {
             alert('Please select both Group 1 and Group 2 for comparison.');
             return;
         }
-        
+
         if (selectedGroup1 === selectedGroup2) {
             alert('Group 1 and Group 2 must be different.');
             return;
         }
-        
+
         selectedGroups = {
             [selectedGroup1]: groups[selectedGroup1],
             [selectedGroup2]: groups[selectedGroup2]
@@ -2780,12 +2802,12 @@ function handleRunComparison() {
     } else if (visualizationMode === 'matrix') {
         // Matrix 模式：使用勾选的组
         const checkboxes = document.querySelectorAll('.matrix-group-checkbox:checked');
-        
+
         if (checkboxes.length < 2) {
             alert('Please select at least 2 groups for matrix comparison.');
             return;
         }
-        
+
         selectedGroups = {};
         checkboxes.forEach(cb => {
             const groupName = cb.value;
@@ -2795,16 +2817,16 @@ function handleRunComparison() {
         alert('Invalid visualization mode.');
         return;
     }
-    
+
     // 显示加载提示
     document.getElementById('viz-container').innerHTML = '<div style="text-align:center; padding:50px;"><h2>Running comparison analysis...</h2><p>This may take a moment...</p></div>';
-    
+
     // 获取参数
     comparisonMetric = document.getElementById('comparison-metric').value;
     // divergingPalette is now managed by clickable previews (setDivergingPalette)
     showOnlySignificant = document.getElementById('show-significance').checked;
     const comparisonTest = (document.getElementById('comparison-test') && document.getElementById('comparison-test').value) ? document.getElementById('comparison-test').value : 'wilcoxon';
-    
+
     // 使用单一域输入：M（默认5）；比较模式下为 [-M, 0, M]
     const domainInput = document.getElementById('color-domain-abs');
     let M = parseFloat(domainInput && domainInput.value);
@@ -2831,7 +2853,7 @@ function handleRunComparison() {
             groupsFiltered[name] = filtered;
         }
     });
-    
+
     // 延迟执行以显示加载提示
     setTimeout(() => {
         try {
@@ -2843,12 +2865,12 @@ function handleRunComparison() {
                 runTests: true,
                 test: comparisonTest
             });
-            
+
             // 验证结果
             if (!window.comparisonResults || window.comparisonResults.length === 0) {
                 throw new Error('No comparison results generated. Check if groups have valid samples.');
             }
-            
+
             // 验证统计数据
             window.comparisonResults.forEach((comp, idx) => {
                 // Validate stats; keep warnings/errors but remove verbose logs
@@ -2856,7 +2878,7 @@ function handleRunComparison() {
                     console.warn(`Warning: No statistics for comparison ${idx + 1}`);
                 }
             });
-            
+
             // 根据模式绘制（在运行比较前，确保组有效）
             if (visualizationMode === 'comparison') {
                 const [g1, g2] = Object.keys(groupsFiltered);
@@ -2878,10 +2900,10 @@ function handleRunComparison() {
                 }
                 drawComparisonMatrix(window.comparisonResults);
             }
-            
+
             // 显示导出按钮
             document.getElementById('export-comparison').style.display = 'inline-block';
-            
+
         } catch (error) {
             console.error('Comparison error:', error);
             console.error('Error stack:', error.stack);
@@ -3019,7 +3041,7 @@ function populateComparisonResultsModal() {
     // Simplified column set for preview table (keep it concise)
     // Preferred columns (in order): taxon_id, log2_median_ratio, log2_mean_ratio, median_1, median_2, mean_1, mean_2,
     // pvalue, FDR_q_value, test, effect_size, significant, n_samples_1, n_samples_2
-    const preferredSimple = ['taxon_id','log2_median_ratio','log2_mean_ratio','median_1','median_2','mean_1','mean_2','pvalue','FDR_q_value','test','effect_size','significant','n_samples_1','n_samples_2'];
+    const preferredSimple = ['taxon_id', 'log2_median_ratio', 'log2_mean_ratio', 'median_1', 'median_2', 'mean_1', 'mean_2', 'pvalue', 'FDR_q_value', 'test', 'effect_size', 'significant', 'n_samples_1', 'n_samples_2'];
     // Ensure we don't include internal group fields
     const finalCols = preferredSimple.slice();
 
@@ -3051,7 +3073,7 @@ function populateComparisonResultsModal() {
     html += '</tr></thead><tbody>';
 
     // Sorting rows: prefer qvalue -> pvalue if present, otherwise leave as-is
-    rows.sort((a,b) => {
+    rows.sort((a, b) => {
         const aq = (isFinite(a.qvalue) ? a.qvalue : (isFinite(a.FDR_q_value) ? a.FDR_q_value : Infinity));
         const bq = (isFinite(b.qvalue) ? b.qvalue : (isFinite(b.FDR_q_value) ? b.FDR_q_value : Infinity));
         if (aq !== bq) return aq - bq;
@@ -3129,13 +3151,13 @@ function populateComparisonResultsModal() {
                 th.style.cursor = 'pointer';
                 th.addEventListener('click', () => {
                     const dataCol = th.getAttribute('data-col') || th.textContent.trim();
-                    const numericCols = ['log2_median_ratio','log2_mean_ratio','median_1','median_2','mean_1','mean_2','pvalue','qvalue','FDR_q_value','fdr_q_value','effect_size','n_samples_1','n_samples_2'];
+                    const numericCols = ['log2_median_ratio', 'log2_mean_ratio', 'median_1', 'median_2', 'mean_1', 'mean_2', 'pvalue', 'qvalue', 'FDR_q_value', 'fdr_q_value', 'effect_size', 'n_samples_1', 'n_samples_2'];
                     const isNumeric = numericCols.includes(String(dataCol));
                     const type = isNumeric ? 'number' : 'string';
                     const tbody = table.tBodies[0];
                     const rows = Array.from(tbody.querySelectorAll('tr'));
                     const currentAsc = th.classList.contains('sorted-asc');
-                    ths.forEach(x => x.classList.remove('sorted-asc','sorted-desc'));
+                    ths.forEach(x => x.classList.remove('sorted-asc', 'sorted-desc'));
                     th.classList.add(currentAsc ? 'sorted-desc' : 'sorted-asc');
                     rows.sort(comparer(idx, !currentAsc, type));
                     rows.forEach(r => tbody.appendChild(r));
@@ -3212,7 +3234,7 @@ function handleComparisonMetricChange() {
 // removed deprecated renderDivergingPreviews; diverging palettes are previewed in renderColorPreviews
 
 function setDivergingPalette(key) {
-    try { divergingPalette = key; } catch(_) { if (typeof window !== 'undefined') window.divergingPalette = key; }
+    try { divergingPalette = key; } catch (_) { if (typeof window !== 'undefined') window.divergingPalette = key; }
     // 更新 Colors & Domain 面板下的预览
     if (typeof renderColorPreviews === 'function') renderColorPreviews();
     // 切换分歧色板后立即重绘
@@ -3223,7 +3245,7 @@ function setDivergingPalette(key) {
 function handleSignificanceChange() {
     const isChecked = document.getElementById('show-significance').checked;
     showOnlySignificant = isChecked;
-    
+
     // 显示/隐藏阈值设置行
     const thresholdsRow = document.getElementById('significance-thresholds-row');
     if (thresholdsRow) {
@@ -3266,7 +3288,7 @@ function handleSignificanceChange() {
             }
         } catch (_) { /* ignore warning errors */ }
     }
-    
+
     // 立即重绘比较视图
     if (visualizationMode === 'comparison' || visualizationMode === 'matrix') {
         redrawCurrentViz();
@@ -3298,7 +3320,7 @@ function handleColorDomainChange() {
     const normalized = setManualDomainForMode(modeKey, clamped);
     if (modeKey === 'comparison' && normalized != null) {
         try { comparisonColorDomain = [-normalized, 0, normalized]; }
-        catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-normalized, 0, normalized]; }
+        catch (_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-normalized, 0, normalized]; }
     }
     // 任何模式下修改域都应触发重绘
     if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
@@ -3336,9 +3358,9 @@ function initSidebarCollapseControl() {
 
     const persistState = (collapsed) => {
         try {
-    
+
             localStorage.setItem(storageKey, collapsed ? 'true' : 'false');
-        } catch (_) {}
+        } catch (_) { }
     };
 
     const applyState = (collapsed) => {
@@ -3353,7 +3375,7 @@ function initSidebarCollapseControl() {
             // wait for layout to settle before redrawing panels at new width
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    try { redrawCurrentViz(); } catch (_) {}
+                    try { redrawCurrentViz(); } catch (_) { }
                 });
             });
         }
@@ -3506,19 +3528,19 @@ function bootstrapMetaTreeFromWindowPayload() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initEventListeners();
     initSidebarCollapseControl();
     initSidebarToggleScrollProxy();
     initDataParameterControls();
     initFileFormatInfoModal();
-    
+
     // 初始化 taxon 筛选功能
     initTaxonFilters();
-    
+
     // 初始化统一标签颜色功能
     initUniformLabelColors();
-    
+
     // 添加比较模式事件监听
     document.getElementById('viz-mode').addEventListener('change', handleVisualizationModeChange);
     document.getElementById('define-groups').addEventListener('click', handleDefineGroupsClick);
@@ -3533,13 +3555,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (colorDomainAbs) colorDomainAbs.addEventListener('change', handleColorDomainChange);
     const colorDomainReset = document.getElementById('color-domain-reset');
     if (colorDomainReset) colorDomainReset.addEventListener('click', handleColorDomainReset);
-    
+
     // Group模式事件监听
     const groupMetaColSelect = document.getElementById('group-meta-column-select');
     const groupAggr = document.getElementById('group-aggregation');
     const defineGroupsForGroupMode = document.getElementById('define-groups-for-group-mode');
     const deleteAllGroupsGroupMode = document.getElementById('delete-all-groups-group-mode');
-    
+
     if (groupMetaColSelect) {
         groupMetaColSelect.addEventListener('change', (e) => {
             handleGroupMetaColumnChange(e.target.value);
@@ -3550,7 +3572,7 @@ document.addEventListener('DOMContentLoaded', function() {
         defineGroupsForGroupMode.addEventListener('click', handleDefineGroupsClick);
     }
     if (deleteAllGroupsGroupMode) {
-        deleteAllGroupsGroupMode.addEventListener('click', function() {
+        deleteAllGroupsGroupMode.addEventListener('click', function () {
             if (confirm('Delete all groups?')) {
                 clearAllGroups();
                 updateGroupCheckboxes();
@@ -3580,53 +3602,53 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pvalueThreshold) pvalueThreshold.addEventListener('input', handleThresholdChange);
     if (qvalueThreshold) qvalueThreshold.addEventListener('input', handleThresholdChange);
     if (logfcThreshold) logfcThreshold.addEventListener('input', handleThresholdChange);
-    
+
     // 组选择变化监听（可选：添加验证提示）
     const select1 = document.getElementById('select-group1');
     const select2 = document.getElementById('select-group2');
     if (select1 && select2) {
-        select1.addEventListener('change', function() {
+        select1.addEventListener('change', function () {
             if (select2.value && select1.value === select2.value) {
                 alert('Group 1 and Group 2 must be different. Please select another group.');
                 select1.value = '';
             }
         });
-        select2.addEventListener('change', function() {
+        select2.addEventListener('change', function () {
             if (select1.value && select1.value === select2.value) {
                 alert('Group 1 and Group 2 must be different. Please select another group.');
                 select2.value = '';
             }
         });
     }
-    
+
     const delAllBtn = document.getElementById('delete-all-groups');
-    if (delAllBtn) delAllBtn.addEventListener('click', function(){
+    if (delAllBtn) delAllBtn.addEventListener('click', function () {
         if (confirm('Delete all groups?')) {
             clearAllGroups();
             updateExistingGroupsList();
             updateGroupDefinitionsDisplay();
         }
     });
-    
-    document.addEventListener('keydown', function(e) {
+
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            try { hideVizExportMenu(); } catch (_) {}
+            try { hideVizExportMenu(); } catch (_) { }
             if (typeof hideLabelColorMenu === 'function') {
-                try { hideLabelColorMenu(); } catch (_) {}
+                try { hideLabelColorMenu(); } catch (_) { }
             }
         }
     });
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         hideVizExportMenu();
     });
-    window.addEventListener('scroll', function() {
+    window.addEventListener('scroll', function () {
         hideVizExportMenu();
     }, true);
-    
+
     // Matrix 组选择按钮现在由 updateGroupDefinitionsDisplay 动态绑定
-    
+
     // 点击模态框外部关闭
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event) {
         const modal = document.getElementById('group-modal');
         if (event.target === modal) {
             modal.style.display = 'none';
@@ -3635,46 +3657,46 @@ document.addEventListener('DOMContentLoaded', function() {
     // 不再自动加载示例数据；用户可手动点击“Load Example”或导入 meta
 
     // 同步一次初始模式可见性（默认 single），避免两个面板同时可见
-    try { handleVisualizationModeChange(); } catch (_) {}
+    try { handleVisualizationModeChange(); } catch (_) { }
 
     // 一次性自检：在布局重构后，核对关键 DOM 元素是否齐全，便于快速发现遗漏
-    (function verifyRequiredElements(){
+    (function verifyRequiredElements() {
         const requiredIds = [
             // 基础容器
-            'viz-container','stats-panel','total-nodes','leaf-nodes','max-depth',
+            'viz-container', 'stats-panel', 'total-nodes', 'leaf-nodes', 'max-depth',
             // 数据与元数据
-            'file-upload','meta-upload','load-example','filename-display','meta-file-display',
-            'data-params-toggle','data-params-content','data-delimiter-select','data-delimiter-custom',
-            'taxa-delimiter-select','taxa-delimiter-custom',
-            'meta-filters-toggle','meta-filters-content','meta-filters','meta-filters-clear','meta-filters-hint',
+            'file-upload', 'meta-upload', 'load-example', 'filename-display', 'meta-file-display',
+            'data-params-toggle', 'data-params-content', 'data-delimiter-select', 'data-delimiter-custom',
+            'taxa-delimiter-select', 'taxa-delimiter-custom',
+            'meta-filters-toggle', 'meta-filters-content', 'meta-filters', 'meta-filters-clear', 'meta-filters-hint',
             // 模式与样本
-            'viz-mode','samples-toggle-group','toggle-samples','sample-selection-panel','sample-checkboxes',
-            'select-all-samples','select-none-samples','invert-samples',
+            'viz-mode', 'samples-toggle-group', 'toggle-samples', 'sample-selection-panel', 'sample-checkboxes',
+            'select-all-samples', 'select-none-samples', 'invert-samples',
             // 单样本设置
-            'panel-width-slider','panel-width-value','panel-height-slider','panel-height-value','panel-lock-size',
-            'layout-select','abundance-transform','quantile-low','quantile-high','show-individual-legends',
+            'panel-width-slider', 'panel-width-value', 'panel-height-slider', 'panel-height-value', 'panel-lock-size',
+            'layout-select', 'abundance-transform', 'quantile-low', 'quantile-high', 'show-individual-legends',
             // 单样本显著性（combined_long）
-            'single-significance-toggle-row','single-significance-thresholds-row','single-show-significance',
-            'single-pvalue-threshold','single-qvalue-threshold','single-logfc-threshold',
+            'single-significance-toggle-row', 'single-significance-thresholds-row', 'single-show-significance',
+            'single-pvalue-threshold', 'single-qvalue-threshold', 'single-logfc-threshold',
             // 连续色板与自定义
-            'color-previews-toggle','color-previews-wrapper','color-previews','color-reverse',
-            'custom-color-controls','custom-color-start','custom-color-end','custom-stops-count','apply-custom-color',
-            'custom-presets','preset-name','save-preset',
+            'color-previews-toggle', 'color-previews-wrapper', 'color-previews', 'color-reverse',
+            'custom-color-controls', 'custom-color-start', 'custom-color-end', 'custom-stops-count', 'apply-custom-color',
+            'custom-presets', 'preset-name', 'save-preset',
             // 标签与节点
-            'labels-panel','labels-toggle','label-threshold','label-threshold-value','label-font-size','label-font-size-value',
-            'label-levels','labels-reset','node-size-multiplier','node-size-value','min-node-size','min-node-size-value',
-            'max-node-size','max-node-size-value','node-opacity','node-opacity-value','edge-width-multiplier','edge-width-value',
-            'edge-opacity','edge-opacity-value',
+            'labels-panel', 'labels-toggle', 'label-threshold', 'label-threshold-value', 'label-font-size', 'label-font-size-value',
+            'label-levels', 'labels-reset', 'node-size-multiplier', 'node-size-value', 'min-node-size', 'min-node-size-value',
+            'max-node-size', 'max-node-size-value', 'node-opacity', 'node-opacity-value', 'edge-width-multiplier', 'edge-width-value',
+            'edge-opacity', 'edge-opacity-value',
             // 新增：标签长度与溢出
-            'label-max-length','label-overflow',
+            'label-max-length', 'label-overflow',
             // 比较模式
-            'comparison-controls','meta-group-column','meta-status','unified-group-display',
-            'group-selection-row','select-group1','select-group2',
-            'show-significance','significance-thresholds-row','pvalue-threshold','qvalue-threshold','logfc-threshold',
+            'comparison-controls', 'meta-group-column', 'meta-status', 'unified-group-display',
+            'group-selection-row', 'select-group1', 'select-group2',
+            'show-significance', 'significance-thresholds-row', 'pvalue-threshold', 'qvalue-threshold', 'logfc-threshold',
             'comparison-metric',
-            'color-domain-abs','color-domain-reset','run-comparison','export-comparison','colors-toggle',
+            'color-domain-abs', 'color-domain-reset', 'run-comparison', 'export-comparison', 'colors-toggle',
             // 分组模态框
-            'group-modal','group-name-input','sample-checklist','existing-groups-list','save-group-btn','cancel-group-btn','close-group-modal',
+            'group-modal', 'group-name-input', 'sample-checklist', 'existing-groups-list', 'save-group-btn', 'cancel-group-btn', 'close-group-modal',
             // 组工具
             'delete-all-groups'
             // 注意：select-all-groups, select-none-groups, invert-groups 是动态生成的，不在初始验证列表中
@@ -3695,49 +3717,49 @@ async function handleLoadExampleClick() {
         // 显示加载提示
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = 'Loading example data...';
-        
-    // 加载示例 taxa.tsv（使用基于页面 base URI 的绝对 URL，兼容 GitHub Pages 子路径）
-    const taxaUrl = new URL('test/data/taxa.tsv', document.baseURI).href;
-    const taxaResp = await fetch(taxaUrl, { cache: 'no-store' });
-        
+
+        // 加载示例 taxa.tsv（使用基于页面 base URI 的绝对 URL，兼容 GitHub Pages 子路径）
+        const taxaUrl = new URL('test/data/taxa.tsv', document.baseURI).href;
+        const taxaResp = await fetch(taxaUrl, { cache: 'no-store' });
+
         if (!taxaResp.ok) {
             throw new Error(`HTTP error! status: ${taxaResp.status} - ${taxaResp.statusText}`);
         }
-        
-    const taxaText = await taxaResp.text();
-        
-    rawData = parseTSV(taxaText);
-    treeData = buildHierarchy(rawData);
 
-    // 加载示例数据时，同样刷新 Color domain：清除手动 M，并重置输入/默认比较域
-    resetManualDomainForAllModes();
-    try { comparisonColorDomain = [-5, 0, 5]; } catch(_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5,0,5]; }
-    const cdInput = document.getElementById('color-domain-abs');
-    if (cdInput) cdInput.value = '';
-        
+        const taxaText = await taxaResp.text();
+
+        rawData = parseTSV(taxaText);
+        treeData = buildHierarchy(rawData);
+
+        // 加载示例数据时，同样刷新 Color domain：清除手动 M，并重置输入/默认比较域
+        resetManualDomainForAllModes();
+        try { comparisonColorDomain = [-5, 0, 5]; } catch (_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5, 0, 5]; }
+        const cdInput = document.getElementById('color-domain-abs');
+        if (cdInput) cdInput.value = '';
+
         // 切换回单样本模式
         const modeSelect = document.getElementById('viz-mode');
         if (modeSelect && modeSelect.value !== 'single') {
             modeSelect.value = 'single';
             handleVisualizationModeChange();
         }
-        
+
         updateSampleCheckboxes();
         initVisualization();
         drawAllTrees();
-    filenameDisplay.textContent = 'Example: test/data/taxa.tsv';
+        filenameDisplay.textContent = 'Example: test/data/taxa.tsv';
 
         // 更新统计信息（以第一个选中样本为准）
         if (selectedSamples.length > 0) {
             const hierarchy = d3.hierarchy(treeData);
             updateStats(hierarchy, selectedSamples[0]);
         }
-        
+
         // 尝试加载示例 meta.tsv（注意与数据文件同目录，文件名小写）
         try {
             const metaUrl = new URL('test/data/meta.tsv', document.baseURI).href;
             const metaResp = await fetch(metaUrl, { cache: 'no-store' });
-            
+
             if (metaResp.ok) {
                 const metaText = await metaResp.text();
                 // 解析并处理 meta 数据
@@ -3745,12 +3767,12 @@ async function handleLoadExampleClick() {
                 window.metaData = parsedMeta;
                 // 过滤掉 Sample 列
                 window.metaColumns = parsedMeta.columns.filter(c => c !== 'Sample');
-                
+
                 populateMetaControls(true);
-                    // 更新 meta 文件名显示（与 data 文件的显示风格一致）
-                    const metaDisp = document.getElementById('meta-file-display');
-                    if (metaDisp) metaDisp.textContent = 'Example: test/data/meta.tsv';
-                
+                // 更新 meta 文件名显示（与 data 文件的显示风格一致）
+                const metaDisp = document.getElementById('meta-file-display');
+                if (metaDisp) metaDisp.textContent = 'Example: test/data/meta.tsv';
+
                 const metaStatus = document.getElementById('meta-status');
                 if (metaStatus) metaStatus.textContent = '(meta loaded)';
             } else {
@@ -3767,10 +3789,10 @@ async function handleLoadExampleClick() {
             message: err.message,
             stack: err.stack
         });
-        
+
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = 'Failed to load example';
-        
+
         let errorMsg = 'Failed to load example data: ' + err.message;
         if (err.message.includes('Failed to fetch')) {
             errorMsg += '\n\nPossible causes:\n';
@@ -3793,7 +3815,7 @@ function populateMetaControls(metaLoaded) {
         emptyOpt.value = '';
         emptyOpt.textContent = '-- Select column --';
         select.appendChild(emptyOpt);
-        
+
         // 填充可选列（排除 Sample）
         window.metaColumns.forEach(col => {
             const opt = document.createElement('option');
@@ -3835,11 +3857,11 @@ function handleMetaGroupColumnChange(col) {
         updateGroupDefinitionsDisplay();
         return;
     }
-    
+
     if (!window.metaData || !window.metaColumns || window.metaColumns.length === 0) {
         return;
     }
-    
+
     // 清除现有分组并根据选择的列自动创建新分组
     if (typeof clearAllGroups === 'function') clearAllGroups();
     const grouping = autoGroupByMetaColumn(window.metaData, col, 2);
@@ -3878,13 +3900,13 @@ function loadMetaFromText(text, options = {}) {
     }
     return meta;
 }
-try { if (typeof window !== 'undefined') window.loadMetaFromText = loadMetaFromText; } catch (_) {}
+try { if (typeof window !== 'undefined') window.loadMetaFromText = loadMetaFromText; } catch (_) { }
 
 function handleMetaUpload(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(evt) {
+    reader.onload = function (evt) {
         try {
             loadMetaFromText(evt.target.result, { label: file.name });
         } catch (err) {
@@ -3982,7 +4004,7 @@ function renderMetaFiltersPanel(noMeta) {
 
         // 行为：All / None / Invert
         const syncFromCheckboxes = () => {
-            const cbs = listDiv.querySelectorAll('input[type="checkbox"][data-column="'+col+'"]');
+            const cbs = listDiv.querySelectorAll('input[type="checkbox"][data-column="' + col + '"]');
             const selected = Array.from(cbs).filter(x => x.checked).map(x => x.value);
             if (!window.metaFilters) window.metaFilters = {};
             if (selected.length === list.length || selected.length === 0) {
@@ -3998,7 +4020,7 @@ function renderMetaFiltersPanel(noMeta) {
             if (!window.metaFilters) window.metaFilters = {};
             delete window.metaFilters[col];
             refreshSampleCheckboxesByMeta();
-            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) {}
+            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) { }
             redrawCurrentViz();
         };
         btnNone.onclick = () => {
@@ -4007,14 +4029,14 @@ function renderMetaFiltersPanel(noMeta) {
             if (!window.metaFilters) window.metaFilters = {};
             delete window.metaFilters[col];
             refreshSampleCheckboxesByMeta();
-            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) {}
+            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) { }
             redrawCurrentViz();
         };
         btnInv.onclick = () => {
             listDiv.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = !cb.checked);
             syncFromCheckboxes();
             refreshSampleCheckboxesByMeta();
-            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) {}
+            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) { }
             redrawCurrentViz();
         };
     });
@@ -4025,7 +4047,7 @@ function renderMetaFiltersPanel(noMeta) {
             renderMetaFiltersPanel();
             refreshSampleCheckboxesByMeta();
             // 重新渲染
-            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) {}
+            try { updateExistingGroupsList(); updateGroupDefinitionsDisplay(); } catch (_) { }
             redrawCurrentViz();
         };
     }
@@ -4046,14 +4068,14 @@ function onMetaFilterChanged(e) {
     try {
         updateExistingGroupsList();
         updateGroupDefinitionsDisplay();
-    } catch (_) {}
+    } catch (_) { }
     // 若分组定义模态框处于打开状态，同步刷新其中的样本清单（不显示被过滤样本）
     try {
         const modal = document.getElementById('group-modal');
         if (modal && modal.style.display !== 'none') {
             updateSampleChecklistInModal();
         }
-    } catch (_) {}
+    } catch (_) { }
     // 重新绘制（可用样本 = 用户勾选 ∩ 元过滤）
     redrawCurrentViz();
 }
@@ -4065,13 +4087,13 @@ function onMetaFilterChanged(e) {
 function updateGroupMetaColumnOptions() {
     const select = document.getElementById('group-meta-column-select');
     if (!select) return;
-    
+
     select.innerHTML = '<option value="">-- Select column --</option>';
-    
+
     if (!metaData || !metaColumns || metaColumns.length === 0) {
         return;
     }
-    
+
     metaColumns.forEach(col => {
         const option = document.createElement('option');
         option.value = col;
@@ -4094,11 +4116,11 @@ function handleGroupMetaColumnChange(col) {
         updateGroupCheckboxes();
         return;
     }
-    
+
     if (!window.metaData || !window.metaColumns || window.metaColumns.length === 0) {
         return;
     }
-    
+
     // 清除现有分组并根据选择的列自动创建新分组
     if (typeof clearAllGroups === 'function') clearAllGroups();
     const grouping = autoGroupByMetaColumn(window.metaData, col, 2);
@@ -4117,11 +4139,11 @@ function handleGroupMetaColumnChange(col) {
 function updateGroupCheckboxes() {
     const container = document.getElementById('group-checkboxes');
     if (!container) return;
-    
+
     const groups = getAllGroups();
-    
+
     console.log('updateGroupCheckboxes called, groups:', groups);
-    
+
     if (Object.keys(groups).length === 0) {
         container.innerHTML = '<em class="text-light">No groups defined</em>';
         // 清空可视化
@@ -4129,20 +4151,20 @@ function updateGroupCheckboxes() {
         if (vizContainer) vizContainer.innerHTML = '';
         return;
     }
-    
+
     const passes = (s) => (typeof window.samplePassesMetaFilters === 'function') ? window.samplePassesMetaFilters(s) : true;
     const filteredNames = Object.keys(groups).filter(name => {
         const list = Array.isArray(groups[name]) ? groups[name] : [];
         return list.filter(s => passes(s)).length > 0;
     });
-    
+
     if (filteredNames.length === 0) {
         container.innerHTML = '<em class="text-light">No groups available after current filter</em>';
         const vizContainer = document.getElementById('viz-container');
         if (vizContainer) vizContainer.innerHTML = '';
         return;
     }
-    
+
     // 使用与 matrix 模式完全相同的布局
     let html = `
         <div class="flex justify-between ai-center mb-8">
@@ -4153,7 +4175,7 @@ function updateGroupCheckboxes() {
             </div>
         </div>
     `;
-    
+
     // 默认选择前4个组
     filteredNames.forEach((groupName, index) => {
         const list = groups[groupName] || [];
@@ -4161,69 +4183,69 @@ function updateGroupCheckboxes() {
         const filteredCount = filtered.length;
         const totalCount = list.length;
         const isDefaultChecked = index < 4; // 默认前4个选中
-        
+
         html += `
             <div>
                 <label class="flex ai-center gap-6" style="cursor: pointer;">
                     <input type="checkbox" class="group-checkbox-item" value="${groupName}" ${isDefaultChecked ? 'checked' : ''}>
-                    <span title="${groupName}: ${filteredCount} samples${totalCount !== filteredCount ? ' ('+totalCount+' total)' : ''}">${groupName} (${filteredCount})</span>
+                    <span title="${groupName}: ${filteredCount} samples${totalCount !== filteredCount ? ' (' + totalCount + ' total)' : ''}">${groupName} (${filteredCount})</span>
                 </label>
             </div>
         `;
     });
-    
+
     container.innerHTML = html;
-    
+
     // 绑定复选框事件
     container.querySelectorAll('.group-checkbox-item').forEach(checkbox => {
         checkbox.addEventListener('change', handleGroupCheckboxChange);
     });
-    
+
     // 绑定快捷按钮事件
     const selectAllBtn = document.getElementById('select-all-groups');
     const selectNoneBtn = document.getElementById('select-none-groups');
     const invertBtn = document.getElementById('invert-groups');
-    
+
     if (selectAllBtn) {
-        selectAllBtn.addEventListener('click', function() {
+        selectAllBtn.addEventListener('click', function () {
             container.querySelectorAll('.group-checkbox-item').forEach(cb => {
                 cb.checked = true;
                 cb.dispatchEvent(new Event('change'));
             });
         });
     }
-    
+
     if (selectNoneBtn) {
-        selectNoneBtn.addEventListener('click', function() {
+        selectNoneBtn.addEventListener('click', function () {
             container.querySelectorAll('.group-checkbox-item').forEach(cb => {
                 cb.checked = false;
                 cb.dispatchEvent(new Event('change'));
             });
         });
     }
-    
+
     if (invertBtn) {
-        invertBtn.addEventListener('click', function() {
+        invertBtn.addEventListener('click', function () {
             container.querySelectorAll('.group-checkbox-item').forEach(cb => {
                 cb.checked = !cb.checked;
                 cb.dispatchEvent(new Event('change'));
             });
         });
     }
-    
+
     // 默认选中所有组后自动绘制
     if (treeData) {
         // 获取所有选中的组
         const checkedGroups = Array.from(container.querySelectorAll('.group-checkbox-item:checked'))
             .map(cb => cb.value);
-        
+
         console.log('updateGroupCheckboxes: checkedGroups =', checkedGroups);
-        
+
         if (checkedGroups.length > 0) {
             // 先设置全局变量（必须在调用 initVisualization 之前）
             activeSamples = checkedGroups;
             selectedGroups = checkedGroups;  // 直接设置全局变量
-            
+
             console.log('Calling initVisualization and drawAllTrees with', checkedGroups.length, 'groups');
             initVisualization();
             drawAllTrees();
@@ -4240,16 +4262,16 @@ function handleGroupCheckboxChange(e) {
     // 获取所有选中的组
     const container = document.getElementById('group-checkboxes');
     if (!container) return;
-    
+
     const checkedGroups = Array.from(container.querySelectorAll('.group-checkbox-item:checked'))
         .map(cb => cb.value);
-    
+
     console.log('handleGroupCheckboxChange: checkedGroups =', checkedGroups);
-    
+
     // 先设置全局变量（必须在调用绘图函数之前）
     activeSamples = checkedGroups;
     selectedGroups = checkedGroups;  // 直接设置全局变量
-    
+
     // 重新绘制
     if (treeData && checkedGroups.length > 0) {
         console.log('handleGroupCheckboxChange: Calling initVisualization and drawAllTrees');
@@ -4270,9 +4292,9 @@ function handleGroupCheckboxChange(e) {
 function handleGroupAggregationChange() {
     const select = document.getElementById('group-aggregation');
     if (!select) return;
-    
+
     groupAggregation = select.value;
-    
+
     // 如果已经有选中的组,重新计算并绘制
     if (treeData && selectedGroups.length > 0) {
         initVisualization();
@@ -4298,19 +4320,19 @@ function handleTaxonSearch() {
     const pattern = input.value.trim();
     const useRegex = document.getElementById('taxon-use-regex').checked;
     const caseSensitive = document.getElementById('taxon-case-sensitive').checked;
-    
+
     if (!pattern) {
         alert('Please enter a search pattern');
         return;
     }
-    
+
     if (!rawData || rawData.length === 0) {
         alert('Please load data first');
         return;
     }
-    
+
     taxonSearchResults.clear();
-    
+
     try {
         let matcher;
         if (useRegex) {
@@ -4321,14 +4343,14 @@ function handleTaxonSearch() {
             const flags = caseSensitive ? '' : 'i';
             matcher = new RegExp(escapedPattern, flags);
         }
-        
+
         // 搜索所有 taxa
         rawData.forEach(item => {
             if (matcher.test(item.taxon)) {
                 taxonSearchResults.add(item.taxon);
             }
         });
-        
+
         // 直接打开弹窗显示搜索结果
         openSearchResultsModal();
     } catch (err) {
@@ -4342,17 +4364,17 @@ function handleTaxonSearch() {
 function updateTaxonFilterList() {
     const container = document.getElementById('taxon-filter-list');
     const countSpan = document.getElementById('taxon-filter-count');
-    
+
     countSpan.textContent = taxonFilterSet.size;
-    
+
     if (taxonFilterSet.size === 0) {
         container.innerHTML = '<em class="text-muted">Empty</em>';
         return;
     }
-    
+
     const sorted = Array.from(taxonFilterSet).sort();
     container.innerHTML = '';
-    
+
     sorted.forEach(taxon => {
         const item = document.createElement('div');
         item.className = 'taxon-item';
@@ -4363,10 +4385,10 @@ function updateTaxonFilterList() {
         `;
         container.appendChild(item);
     });
-    
+
     // 绑定删除按钮
     container.querySelectorAll('.taxon-item-remove').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const taxon = this.dataset.taxon;
             taxonFilterSet.delete(taxon);
             updateTaxonFilterList();
@@ -4382,7 +4404,7 @@ function updateTaxonFilterList() {
                         const sampleForStats = (typeof selectedSamples !== 'undefined' && selectedSamples && selectedSamples.length > 0) ? selectedSamples[0] : null;
                         updateStats(hierarchy, sampleForStats);
                     }
-                } catch(_) {}
+                } catch (_) { }
             }
         });
     });
@@ -4393,7 +4415,7 @@ function updateTaxonFilterList() {
  */
 function handleClearFilterList() {
     if (taxonFilterSet.size === 0) return;
-    
+
     if (confirm(`Clear all ${taxonFilterSet.size} taxa from the filter list?`)) {
         taxonFilterSet.clear();
         updateTaxonFilterList();
@@ -4408,7 +4430,7 @@ function handleClearFilterList() {
                     const sampleForStats = (typeof selectedSamples !== 'undefined' && selectedSamples && selectedSamples.length > 0) ? selectedSamples[0] : null;
                     updateStats(hierarchy, sampleForStats);
                 }
-            } catch(_) {}
+            } catch (_) { }
         }
     }
 }
@@ -4419,7 +4441,7 @@ function handleClearFilterList() {
 function handleTaxonFilterModeChange() {
     const select = document.getElementById('taxon-filter-mode');
     taxonFilterMode = select.value;
-    
+
     // 重新构建层次结构并绘制（应用新的过滤模式）
     if (rawData && rawData.length > 0) {
         treeData = buildHierarchy(rawData);
@@ -4431,26 +4453,26 @@ function handleTaxonFilterModeChange() {
                 const sampleForStats = (typeof selectedSamples !== 'undefined' && selectedSamples && selectedSamples.length > 0) ? selectedSamples[0] : null;
                 updateStats(hierarchy, sampleForStats);
             }
-        } catch(_) {}
+        } catch (_) { }
     }
 }
 
 /**
  * 检查 taxon 是否应该被包含（用于过滤）
  */
-window.taxonPassesFilter = function(taxon) {
+window.taxonPassesFilter = function (taxon) {
     if (taxonFilterMode === 'none' || taxonFilterSet.size === 0) {
         return true;
     }
-    
+
     const inFilterSet = taxonFilterSet.has(taxon);
-    
+
     if (taxonFilterMode === 'include') {
         return inFilterSet;  // 只包含列表中的
     } else if (taxonFilterMode === 'exclude') {
         return !inFilterSet; // 排除列表中的
     }
-    
+
     return true;
 };
 
@@ -4463,7 +4485,7 @@ function initTaxonFilters() {
     if (searchBtn) {
         searchBtn.addEventListener('click', handleTaxonSearch);
     }
-    
+
     // 搜索框回车事件
     const searchInput = document.getElementById('taxon-search-input');
     if (searchInput) {
@@ -4473,19 +4495,19 @@ function initTaxonFilters() {
             }
         });
     }
-    
+
     // 清空过滤列表按钮
     const clearFilterBtn = document.getElementById('taxon-clear-filter-list');
     if (clearFilterBtn) {
         clearFilterBtn.addEventListener('click', handleClearFilterList);
     }
-    
+
     // 过滤模式选择
     const modeSelect = document.getElementById('taxon-filter-mode');
     if (modeSelect) {
         modeSelect.addEventListener('change', handleTaxonFilterModeChange);
     }
-    
+
     // 折叠按钮
     const toggle = document.getElementById('taxon-filters-toggle');
     if (toggle) {
@@ -4498,19 +4520,19 @@ function initTaxonFilters() {
             toggle.classList.toggle('expanded', !isVisible);
         });
     }
-    
+
     // 展开编辑过滤列表按钮
     const expandFilterBtn = document.getElementById('taxon-expand-filter');
     if (expandFilterBtn) {
         expandFilterBtn.addEventListener('click', openFilterListModal);
     }
-    
+
     // 弹窗关闭按钮
     const modalClose = document.getElementById('taxon-edit-modal-close');
     if (modalClose) {
         modalClose.addEventListener('click', closeModal);
     }
-    
+
     // 点击弹窗外部关闭
     const modal = document.getElementById('taxon-edit-modal');
     if (modal) {
@@ -4520,13 +4542,13 @@ function initTaxonFilters() {
             }
         });
     }
-    
+
     // 手动添加按钮
     const manualAddBtn = document.getElementById('taxon-manual-add-btn');
     if (manualAddBtn) {
         manualAddBtn.addEventListener('click', handleManualAddItem);
     }
-    
+
     const manualInput = document.getElementById('taxon-manual-input');
     if (manualInput) {
         manualInput.addEventListener('keypress', (e) => {
@@ -4535,19 +4557,19 @@ function initTaxonFilters() {
             }
         });
     }
-    
+
     // "Add to Filter List" 按钮
     const addToFilterBtn = document.getElementById('taxon-add-to-filter-btn');
     if (addToFilterBtn) {
         addToFilterBtn.addEventListener('click', handleAddSearchResultsToFilter);
     }
-    
+
     // "Cancel" 按钮
     const cancelBtn = document.getElementById('taxon-edit-cancel-btn');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', closeModal);
     }
-    
+
     // 初始隐藏内容
     const content = document.getElementById('taxon-filters-content');
     if (content) {
@@ -4566,10 +4588,10 @@ function openSearchResultsModal() {
     const modal = document.getElementById('taxon-edit-modal');
     const title = document.getElementById('taxon-edit-modal-title');
     const addBtn = document.getElementById('taxon-add-to-filter-btn');
-    
+
     title.textContent = 'Search Results';
     addBtn.style.display = 'inline-block';
-    
+
     updateModalContent();
     modal.style.display = 'block';
 }
@@ -4582,10 +4604,10 @@ function openFilterListModal() {
     const modal = document.getElementById('taxon-edit-modal');
     const title = document.getElementById('taxon-edit-modal-title');
     const addBtn = document.getElementById('taxon-add-to-filter-btn');
-    
+
     title.textContent = 'Edit Filter List';
     addBtn.style.display = 'none';  // 编辑模式下隐藏"添加到过滤列表"按钮
-    
+
     updateModalContent();
     modal.style.display = 'block';
 }
@@ -4596,7 +4618,7 @@ function openFilterListModal() {
 function closeModal() {
     const modal = document.getElementById('taxon-edit-modal');
     modal.style.display = 'none';
-    
+
     // 清空手动输入框
     const manualInput = document.getElementById('taxon-manual-input');
     if (manualInput) {
@@ -4610,18 +4632,18 @@ function closeModal() {
 function updateModalContent() {
     const container = document.getElementById('taxon-edit-list');
     const totalSpan = document.getElementById('taxon-edit-total');
-    
+
     const targetSet = currentModalMode === 'search' ? taxonSearchResults : taxonFilterSet;
     totalSpan.textContent = targetSet.size;
-    
+
     if (targetSet.size === 0) {
         container.innerHTML = '<em class="text-muted">No items</em>';
         return;
     }
-    
+
     const sorted = Array.from(targetSet).sort();
     container.innerHTML = '';
-    
+
     sorted.forEach(taxon => {
         const item = document.createElement('div');
         item.className = 'taxon-edit-item';
@@ -4632,14 +4654,14 @@ function updateModalContent() {
         `;
         container.appendChild(item);
     });
-    
+
     // 绑定删除按钮
     container.querySelectorAll('.taxon-edit-item-remove').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             const taxon = this.dataset.taxon;
             targetSet.delete(taxon);
             updateModalContent();
-            
+
             // 如果是编辑过滤列表,同时更新主界面
             if (currentModalMode === 'filter') {
                 updateTaxonFilterList();
@@ -4662,23 +4684,23 @@ function handleAddSearchResultsToFilter() {
         alert('No items to add');
         return;
     }
-    
+
     // 将搜索结果添加到过滤列表
     taxonSearchResults.forEach(taxon => taxonFilterSet.add(taxon));
-    
+
     // 更新主界面的过滤列表
     updateTaxonFilterList();
-    
+
     // 如果过滤模式已启用，重新构建并绘制
     if (taxonFilterMode !== 'none' && rawData && rawData.length > 0) {
         treeData = buildHierarchy(rawData);
         initVisualization();
         drawAllTrees();
     }
-    
+
     // 关闭弹窗
     closeModal();
-    
+
     alert(`Added ${taxonSearchResults.size} items to filter list`);
 }
 
@@ -4688,18 +4710,18 @@ function handleAddSearchResultsToFilter() {
 function handleManualAddItem() {
     const input = document.getElementById('taxon-manual-input');
     const taxon = input.value.trim();
-    
+
     if (!taxon) {
         alert('Please enter an item name');
         return;
     }
-    
+
     const targetSet = currentModalMode === 'search' ? taxonSearchResults : taxonFilterSet;
     targetSet.add(taxon);
-    
+
     input.value = '';
     updateModalContent();
-    
+
     // 如果是编辑过滤列表,同时更新主界面
     if (currentModalMode === 'filter') {
         updateTaxonFilterList();
@@ -4749,10 +4771,10 @@ function initUniformLabelColors() {
             }
         }
     }
-    
+
     const checkbox = document.getElementById('uniform-label-colors');
     if (checkbox) {
-        checkbox.addEventListener('change', function() {
+        checkbox.addEventListener('change', function () {
             uniformLabelColors = this.checked;
             if (uniformLabelColors) {
                 // 重置颜色映射,为所有标签重新分配颜色
@@ -4762,31 +4784,31 @@ function initUniformLabelColors() {
             redrawCurrentVisualization();
         });
     }
-    
+
     // 右键菜单事件
     const applyCurrentBtn = document.getElementById('label-color-apply-current');
     const applySameBtn = document.getElementById('label-color-apply-same');
     const applyAllBtn = document.getElementById('label-color-apply-all');
     const colorPicker = document.getElementById('label-color-picker');
-    
+
     console.log('Initializing label color menu buttons:', {
         applyCurrentBtn: !!applyCurrentBtn,
         applySameBtn: !!applySameBtn,
         applyAllBtn: !!applyAllBtn,
         colorPicker: !!colorPicker
     });
-    
+
     // Apply 按钮 - 仅应用到当前节点实例（使用唯一路径进行覆盖）
     if (applyCurrentBtn) {
-        applyCurrentBtn.addEventListener('click', function(e) {
+        applyCurrentBtn.addEventListener('click', function (e) {
             e.stopPropagation(); // 防止触发外部点击关闭
             const menu = document.getElementById('label-color-menu');
             const labelName = menu.dataset.labelName; // 同时作为节点覆盖的标签记录
             const nodePath = menu.dataset.nodePath;
             const color = colorPicker ? colorPicker.value : null;
-            
+
             console.log('Apply current clicked:', { labelName, nodePath, color });
-            
+
             if (nodePath && color) {
                 if (typeof window.setNodeColorOverride === 'function') {
                     window.setNodeColorOverride(nodePath, color, labelName);
@@ -4797,17 +4819,17 @@ function initUniformLabelColors() {
             hideLabelColorMenu();
         });
     }
-    
+
     // Apply Same 按钮 - 应用颜色到所有同名标签
     if (applySameBtn) {
-        applySameBtn.addEventListener('click', function(e) {
+        applySameBtn.addEventListener('click', function (e) {
             e.stopPropagation(); // 防止触发外部点击关闭
             const menu = document.getElementById('label-color-menu');
             const labelName = menu.dataset.labelName;
             const color = colorPicker ? colorPicker.value : null;
-            
+
             console.log('Apply same clicked:', { labelName, color });
-            
+
             if (labelName && color) {
                 // 先清理该标签的所有节点级覆盖，确保“Same”在所有同名标签上生效
                 if (typeof window.clearNodeOverridesByLabel === 'function') {
@@ -4820,39 +4842,39 @@ function initUniformLabelColors() {
             hideLabelColorMenu();
         });
     }
-    
+
     // Apply All 按钮 - 应用颜色到所有标签
     if (applyAllBtn) {
-        applyAllBtn.addEventListener('click', function(e) {
+        applyAllBtn.addEventListener('click', function (e) {
             e.stopPropagation(); // 防止触发外部点击关闭
             const color = colorPicker ? colorPicker.value : null;
-            
+
             console.log('Apply all clicked, color:', color);
-            
+
             if (color) {
                 // 为确保统一效果，先清除所有节点级覆盖
                 try {
                     if (typeof window.clearAllNodeColorOverrides === 'function') {
                         window.clearAllNodeColorOverrides();
                     }
-                } catch(_) {}
+                } catch (_) { }
                 // 获取所有标签名称
                 const allLabels = getAllLabelNames();
                 console.log('Applying color to all labels:', allLabels.size, 'labels');
-                
+
                 // 为所有标签设置相同颜色
                 allLabels.forEach(labelName => {
                     setCustomLabelColor(labelName, color);
                 });
-                
+
                 redrawCurrentVisualization();
             }
             hideLabelColorMenu();
         });
     }
-    
+
     // 点击其他地方关闭菜单
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const labelMenu = document.getElementById('label-color-menu');
         if (labelMenu && labelMenu.style.display === 'block') {
             const isClickInsideMenu = labelMenu.contains(event.target);
@@ -4868,25 +4890,25 @@ function initUniformLabelColors() {
             }
         }
     });
-    
+
     // 阻止菜单上的右键事件传播
     const menu = document.getElementById('label-color-menu');
     if (menu) {
-        menu.addEventListener('contextmenu', function(e) {
+        menu.addEventListener('contextmenu', function (e) {
             e.preventDefault();
         });
     }
     const exportMenuEl = document.getElementById('viz-export-menu');
     if (exportMenuEl) {
-        exportMenuEl.addEventListener('contextmenu', function(e) {
+        exportMenuEl.addEventListener('contextmenu', function (e) {
             e.preventDefault();
         });
     }
-    
+
     // 屏蔽 viz-container 的浏览器右键菜单
     const vizContainer = document.getElementById('viz-container');
     if (vizContainer) {
-        vizContainer.addEventListener('contextmenu', function(e) {
+        vizContainer.addEventListener('contextmenu', function (e) {
             const target = e.target;
             if (target && target.classList && target.classList.contains('node-label')) {
                 hideVizExportMenu();
@@ -4907,9 +4929,9 @@ function initUniformLabelColors() {
             showVizExportMenu(clientX, clientY);
         });
     }
-    
+
     // 同时屏蔽所有 SVG 元素的右键菜单(除了标签)
-    document.addEventListener('contextmenu', function(e) {
+    document.addEventListener('contextmenu', function (e) {
         const target = e.target;
         if (!target) return;
         if (target.closest && (target.closest('#viz-export-menu') || target.closest('#label-color-menu'))) {
@@ -4922,11 +4944,11 @@ function initUniformLabelColors() {
             e.preventDefault();
             return false;
         }
-        if ((target.tagName === 'svg' || 
-             target.tagName === 'circle' || 
-             target.tagName === 'path' || 
-             target.tagName === 'line' ||
-             (target.closest && target.closest('svg'))) && 
+        if ((target.tagName === 'svg' ||
+            target.tagName === 'circle' ||
+            target.tagName === 'path' ||
+            target.tagName === 'line' ||
+            (target.closest && target.closest('svg'))) &&
             !(target.classList && target.classList.contains('node-label'))) {
             e.preventDefault();
             return false;

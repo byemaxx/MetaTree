@@ -81,7 +81,8 @@
     root.eachAfter(node => {
       const isLeaf = !node.children || node.children.length === 0;
       if (isLeaf) {
-        const stats = comparisonStats ? comparisonStats[node.data.name] : null;
+        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+        const stats = comparisonStats ? comparisonStats[nodePath] : null;
         const passesFilter = !filterBySignificance || (
           stats &&
           (
@@ -172,7 +173,8 @@
       packRoot
         .sum(node => {
           const label = node && node.data ? node.data.name : null;
-          const stats = label ? comparisonStats[label] : undefined;
+          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : label;
+          const stats = nodePath ? comparisonStats[nodePath] : undefined;
           return computePackMetric(stats);
         })
         .sort((a, b) => (b.value || 0) - (a.value || 0));
@@ -432,7 +434,8 @@
         // 计算阈值（与后续标签过滤一致）
         const values = [];
         root.each(node => {
-          const st = comparisonStats[node.data.name];
+          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+          const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return;
           const v = Math.abs(st.comparison_value || 0);
           if (isFinite(v)) values.push(v);
@@ -452,7 +455,8 @@
         // 收集本次会显示的标签（使用完整名称）
         const visibleLabels = new Set();
         root.each(node => {
-          const st = comparisonStats[node.data.name];
+          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+          const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return;
           if (typeof showOnlySignificant !== 'undefined' && showOnlySignificant && !isSignificantByThresholds(st)) return;
           const depthFromLeaf = node.height;
@@ -560,7 +564,8 @@
       linkSelection
         .style('fill', 'none')
         .style('stroke', d => {
-          const stats = comparisonStats[d.target.data.name];
+          const targetPath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d.target) : (d && d.target && d.target.data ? d.target.data.name : null);
+          const stats = targetPath ? comparisonStats[targetPath] : undefined;
           if (!stats) return zeroLinkColor;
           const mean1 = stats.mean_1 || 0;
           const mean2 = stats.mean_2 || 0;
@@ -579,7 +584,8 @@
 
     // 节点大小（平均丰度）
     const avgAbundances = root.descendants().map(d => {
-      const stats = comparisonStats[d.data.name];
+      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const stats = nodePath ? comparisonStats[nodePath] : undefined;
       if (!stats) return 0;
       const m1 = stats.mean_1 || 0;
       const m2 = stats.mean_2 || 0;
@@ -591,7 +597,8 @@
       .range([minNodeSize * nodeSizeMultiplier, maxNodeSize * nodeSizeMultiplier * 0.3])
       .clamp(true);
     const computeNodeRadius = (d) => {
-      const stats = comparisonStats[d.data.name];
+      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const stats = nodePath ? comparisonStats[nodePath] : undefined;
       if (!stats) return minNodeSize * nodeSizeMultiplier * 0.5;
       const mean1 = stats.mean_1 || 0;
       const mean2 = stats.mean_2 || 0;
@@ -624,7 +631,8 @@
     nodeGroup.append('circle')
       .attr('r', d => computeVisualRadius(d))
       .style('fill', d => {
-        const stats = comparisonStats[d.data.name];
+        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+        const stats = nodePath ? comparisonStats[nodePath] : undefined;
         if (!stats) return zeroNodeColor;
         const mean1 = stats.mean_1 || 0;
         const mean2 = stats.mean_2 || 0;
@@ -664,7 +672,8 @@
     if (showLabels) {
       const values = [];
       root.each(node => {
-        const st = comparisonStats[node.data.name];
+        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+        const st = nodePath ? comparisonStats[nodePath] : undefined;
         if (!st) return;
         const v = Math.abs(st.comparison_value || 0);
         if (isFinite(v)) values.push(v);
@@ -682,7 +691,8 @@
       const minPackLabelRadius = Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9), 10);
       const labels = nodeGroup
         .filter(d => {
-          const st = comparisonStats[d.data.name];
+          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+          const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return false;
           if (showOnlySignificant && !isSignificantByThresholds(st)) return false;
           const depthFromLeaf = d.height;
@@ -743,7 +753,8 @@
 
     // 提示框
     const showTip = (event, d) => {
-      const st = comparisonStats[d.data.name] || {};
+      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const st = nodePath ? (comparisonStats[nodePath] || {}) : {};
       const fullLabel = getNodeFullLabel(d);
       const displayName = escapeHtml(d.data.name || '');
       const fullLabelHtml = fullLabel ? escapeHtml(fullLabel) : '';
@@ -1146,7 +1157,8 @@
       linkMini
         .style('fill', 'none')
         .style('stroke', d => {
-          const stats = comparisonStats[d.target.data.name];
+          const targetPath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d.target) : (d && d.target && d.target.data ? d.target.data.name : null);
+          const stats = targetPath ? comparisonStats[targetPath] : undefined;
           if (!stats) return zeroLinkColorMini;
           const mean1 = stats.mean_1 || 0;
           const mean2 = stats.mean_2 || 0;
@@ -1160,7 +1172,8 @@
     }
 
     const computeMiniRadius = (d) => {
-      const stats = comparisonStats[d.data.name];
+      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const stats = nodePath ? comparisonStats[nodePath] : undefined;
       if (!stats) return 1;
       const mean1 = stats.mean_1 || 0;
       const mean2 = stats.mean_2 || 0;
@@ -1185,7 +1198,8 @@
     nodeSel.append('circle')
       .attr('r', d => computeMiniVisualRadius(d))
       .style('fill', d => {
-        const stats = comparisonStats[d.data.name];
+        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+        const stats = nodePath ? comparisonStats[nodePath] : undefined;
         if (!stats) return zeroNodeColorMini;
         const mean1 = stats.mean_1 || 0;
         const mean2 = stats.mean_2 || 0;

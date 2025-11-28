@@ -1694,7 +1694,8 @@ function drawAllTrees() {
                     const threshold = labelThreshold * 5; // comparison 模式使用不同的阈值计算
                     hierarchy.descendants().forEach(node => {
                         if (node.data && node.data.name) {
-                            const st = comparisonStats[node.data.name];
+                            const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+                            const st = nodePath ? comparisonStats[nodePath] : undefined;
                             if (!st) return;
 
                             const depthFromLeaf = node.height;

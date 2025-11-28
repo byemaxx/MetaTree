@@ -462,8 +462,12 @@ function calculatePairwiseComparison(treeData, samples1, samples2, options) {
         const mean_difference = mean2 - mean1;
 
         // 存储结果
-        stats[nodeData.name] = {
-            taxon_id: nodeData.name,
+        // 使用节点的完整祖先路径作为 stats 的 key，以避免不同父节点下同名节点冲突
+        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : nodeData.name;
+        stats[nodePath] = {
+            // 唯一路径作为 taxon_id，保留短名用于显示或兼容
+            taxon_id: nodePath,
+            taxon_short_name: nodeData.name,
             log2_median_ratio: isFinite(log2MedianRatio) ? log2MedianRatio : 0,
             log2_mean_ratio: isFinite(log2MeanRatio) ? log2MeanRatio : 0,
             median_1: isFinite(median1) ? median1 : 0,

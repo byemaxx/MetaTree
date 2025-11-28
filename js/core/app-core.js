@@ -1950,7 +1950,7 @@ function drawTree(sample, globalDomain) {
     container.innerHTML = '';
 
     const size = (typeof getResponsiveTreePanelSize === 'function')
-        ? getResponsiveTreePanelSize(container, { heightVar: '--panel-svg-height' })
+        ? getResponsiveTreePanelSize(container, { heightVar: '--panel-svg-height', lockWidth: false })
         : null;
     const width = (size && typeof size.width === 'number') ? size.width : container.clientWidth;
     const height = (size && typeof size.height === 'number') ? size.height : container.clientHeight;

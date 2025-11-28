@@ -384,7 +384,8 @@
       ? getResponsiveTreePanelSize(container, {
         heightVar: '--comparison-panel-svg-height',
         autoHeight: !useModal,
-        applyHeight: !useModal
+        applyHeight: !useModal,
+        lockWidth: false
       })
       : null;
     const width = (size && typeof size.width === 'number') ? size.width : container.clientWidth;

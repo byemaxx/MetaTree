@@ -1436,29 +1436,60 @@ function buildTreeWithGroupData() {
         });
 
         if (node.isLeaf) {
-            // 叶节点:需要从groupedData中获取值
-            // 尝试多种匹配策略
-            for (const [taxonKey, item] of taxonDataMap.entries()) {
-                // 策略1: 检查taxonKey是否包含当前路径的所有部分
-                const matchesByParts = currentPath.every(part => taxonKey.includes(part));
+            // 叶节点:优先尝试使用完整路径精确匹配 taxonKey，避免宽松的 includes 检查导致不同分支的同名末端共享同一值
+            const delim = getTaxonRankDelimiter();
+            const pathStr = currentPath.join(delim);
 
-                // 策略2: 检查taxonKey是否以当前节点的fullName结尾
-                const matchesByEnd = node.fullName && taxonKey.endsWith(node.fullName);
+            // 优先使用完全相等的 key
+            let matchedKey = null;
 
-                // 策略3: 检查路径是否完全匹配
-                const pathStr = currentPath.join(getTaxonRankDelimiter());
-                const matchesByPath = taxonKey === pathStr || taxonKey.includes(pathStr);
-
-                if (matchesByParts || matchesByEnd || matchesByPath) {
-                    // 从groupedData获取聚合值
-                    selectedGroups.forEach(groupName => {
-                        if (groupedData[groupName] && groupedData[groupName][taxonKey] !== undefined) {
-                            node.abundances[groupName] = groupedData[groupName][taxonKey];
+            // 特殊处理 function 叶节点：原始 rawData 中 function 注释通常作为在 taxonomy 之后的空格 + '<...>' 一段
+            if (node.isFunction) {
+                const parentPathStr = parentPath.length > 0 ? parentPath.join(delim) : '';
+                const candidateWithSpace = parentPathStr ? (parentPathStr + ' ' + node.fullName) : node.fullName;
+                const candidateNoSpace = parentPathStr ? (parentPathStr + node.fullName) : node.fullName;
+                if (taxonDataMap.has(candidateWithSpace)) {
+                    matchedKey = candidateWithSpace;
+                } else if (taxonDataMap.has(candidateNoSpace)) {
+                    matchedKey = candidateNoSpace;
+                } else {
+                    // 作为回退，尝试后缀匹配但要求同时包含父路径的关键部分以减少误匹配
+                    for (const key of taxonDataMap.keys()) {
+                        if (parentPathStr && key.includes(parentPathStr) && key.endsWith(node.fullName)) {
+                            matchedKey = key;
+                            break;
                         }
-                    });
-
-                    break; // 找到匹配就停止
+                    }
                 }
+            }
+
+            // 通用匹配（非 function 或未匹配到 function 特殊 key）
+            if (!matchedKey) {
+                if (taxonDataMap.has(pathStr)) {
+                    matchedKey = pathStr;
+                } else {
+                    for (const key of taxonDataMap.keys()) {
+                        if (key === pathStr) { matchedKey = key; break; }
+                    }
+                }
+
+                if (!matchedKey) {
+                    for (const key of taxonDataMap.keys()) {
+                        if (node.fullName && (key.endsWith(delim + node.fullName) || key.endsWith(node.fullName) || key.endsWith(pathStr))) {
+                            matchedKey = key;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (matchedKey) {
+                // 从groupedData获取聚合值
+                selectedGroups.forEach(groupName => {
+                    if (groupedData[groupName] && groupedData[groupName][matchedKey] !== undefined) {
+                        node.abundances[groupName] = groupedData[groupName][matchedKey];
+                    }
+                });
             }
         } else {
             // 内部节点:先递归处理子节点

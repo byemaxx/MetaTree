@@ -43,4 +43,4 @@ jobs:
         uses: actions/deploy-pages@v4
         with:
           commit-message: >
-            Deploy site${{ inputs['release-note'] && format(' – {}', inputs['release-note']) }}
+            Deploy site${{ inputs['release-note'] && format(' - {}', inputs['release-note']) }}

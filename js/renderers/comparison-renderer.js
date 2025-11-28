@@ -775,7 +775,12 @@
           .style('top', (event.pageY - 15) + 'px');
       } catch (_) { }
     };
-    const hideTip = () => { try { tooltip.classed('show', false); } catch (_) { } };
+    const hideTip = () => {
+      try {
+        if (window._tooltipHideTimer) clearTimeout(window._tooltipHideTimer);
+        window._tooltipHideTimer = setTimeout(function () { try { tooltip.classed('show', false); } catch (_) { } window._tooltipHideTimer = null; }, 200);
+      } catch (_) { }
+    };
 
     nodeGroup
       .on('mouseover', function (event, d) {

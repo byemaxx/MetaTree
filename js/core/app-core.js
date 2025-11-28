@@ -1608,6 +1608,20 @@ function initVisualization() {
         tooltip = d3.select('body').append('div')
             .attr('class', 'tooltip')
             .attr('id', 'tooltip-global');
+        // tooltip 选中复制支持：使用一个小的延迟隐藏机制，
+        // 鼠标移入 tooltip 时清除隐藏计时器，移出时延迟隐藏。
+        try {
+            window._tooltipHideTimer = null;
+            tooltip.on('mouseover', function () {
+                try { if (window._tooltipHideTimer) { clearTimeout(window._tooltipHideTimer); window._tooltipHideTimer = null; } } catch (_) { }
+                try { tooltip.classed('show', true); } catch (_) { }
+            }).on('mouseout', function () {
+                try {
+                    if (window._tooltipHideTimer) clearTimeout(window._tooltipHideTimer);
+                    window._tooltipHideTimer = setTimeout(function () { try { tooltip.classed('show', false); } catch (_) { } window._tooltipHideTimer = null; }, 200);
+                } catch (_) { }
+            });
+        } catch (_) { }
     }
 }
 
@@ -3027,7 +3041,10 @@ function addInteractions(nodes, sample) {
                 });
             }
 
-            tooltip.classed('show', false);
+            try {
+                if (window._tooltipHideTimer) clearTimeout(window._tooltipHideTimer);
+                window._tooltipHideTimer = setTimeout(function () { try { tooltip.classed('show', false); } catch (_) { } window._tooltipHideTimer = null; }, 200);
+            } catch (_) { }
         })
         .on('mousemove', function (event) {
             tooltip

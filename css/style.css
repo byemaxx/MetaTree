@@ -1170,6 +1170,7 @@ button:disabled {
     cursor: pointer;
     position: relative;
     padding-right: 28px; /* 留出空间给箭头 */
+    -webkit-user-select: none; /* 支持 Safari / iOS Safari 3+ */
     user-select: none;
 }
 
@@ -1259,9 +1260,8 @@ button:disabled {
 }
 
 .tree-panel-header {
-    background: linear-gradient(135deg,
-        var(--tree-panel-header-start, var(--primary-color)) 0%,
-        var(--tree-panel-header-end, var(--secondary-color)) 100%);
+    /* 使用纯色背景，移除渐变 */
+    background: var(--tree-panel-header-start, var(--primary-color));
     color: var(--tree-panel-header-text, #ffffff);
     padding: 10px var(--spacing-lg);
     font-weight: 600;

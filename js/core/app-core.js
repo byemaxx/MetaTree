@@ -485,38 +485,51 @@ function parseTSV(text, delimiter) {
     const separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
         : getDataFileDelimiter();
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length === 0) return [];
-    const headers = lines[0].split(separator);
+    const d3api = (typeof window !== 'undefined' && window.d3) ? window.d3 : (typeof d3 !== 'undefined' ? d3 : null);
+    let rows = [];
+    let headers = [];
+    if (d3api && typeof d3api.dsvFormat === 'function') {
+        try {
+            const parser = d3api.dsvFormat(separator);
+            rows = parser.parse(text.trim());
+            headers = Array.isArray(rows.columns) ? rows.columns : (rows.length ? Object.keys(rows[0]) : []);
+        } catch (err) {
+            console.warn('d3.dsvFormat parse failed; falling back to naive split', err);
+        }
+    }
+    if (!rows || rows.length === 0) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length === 0) return [];
+        headers = lines[0].split(separator);
+        rows = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(separator);
+            const row = {};
+            headers.forEach((h, idx) => { row[h] = values[idx]; });
+            rows.push(row);
+        }
+    }
 
     // 提取样本列（除了第一列的 Taxon）
     samples = headers.slice(1);
 
     const data = [];
     let hasNegative = false;
-    for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(separator);
-        const taxonPath = values[0];
+    for (const r of rows) {
+        const taxonPath = (r[headers[0]] ?? '').trim();
         const abundances = {};
-
-        samples.forEach((sample, idx) => {
-            const v = parseFloat(values[idx + 1]);
+        samples.forEach((sample) => {
+            const v = parseFloat(r[sample]);
             const num = (v != null && !isNaN(v)) ? v : 0;
             abundances[sample] = num;
             if (num < 0) hasNegative = true;
         });
-
-        data.push({
-            taxon: taxonPath,
-            abundances: abundances
-        });
+        data.push({ taxon: taxonPath, abundances });
     }
-    // 标记全局“是否包含负数”
     dataHasNegatives = hasNegative;
     if (typeof window !== 'undefined') window.dataHasNegatives = dataHasNegatives;
     isCombinedLong = false;
     if (typeof window !== 'undefined') window.isCombinedLong = isCombinedLong;
-
     return data;
 }
 
@@ -525,9 +538,31 @@ function parseCombinedLongTSV(text, delimiter) {
     const separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
         : getDataFileDelimiter();
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length < 2) return [];
-    const header = lines[0].split(separator).map(h => h.trim());
+    const d3api = (typeof window !== 'undefined' && window.d3) ? window.d3 : (typeof d3 !== 'undefined' ? d3 : null);
+    let header = [];
+    let rows = [];
+    if (d3api && typeof d3api.dsvFormat === 'function') {
+        try {
+            const parser = d3api.dsvFormat(separator);
+            rows = parser.parse(text.trim());
+            header = Array.isArray(rows.columns) ? rows.columns.map(h => String(h).trim()) : (rows.length ? Object.keys(rows[0]).map(h => String(h).trim()) : []);
+        } catch (err) {
+            console.warn('d3.dsvFormat parse failed; falling back to naive split', err);
+        }
+    }
+    if (!rows || rows.length === 0) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) return [];
+        header = lines[0].split(separator).map(h => h.trim());
+        for (let i = 1; i < lines.length; i++) {
+            const vals = lines[i].split(separator);
+            const row = {};
+            for (let j = 0; j < header.length; j++) {
+                row[header[j]] = vals[j];
+            }
+            rows.push(row);
+        }
+    }
     const findCol = (name) => {
         const idx = header.findIndex(h => h.toLowerCase() === name.toLowerCase());
         return idx >= 0 ? idx : -1;
@@ -544,17 +579,15 @@ function parseCombinedLongTSV(text, delimiter) {
     const byTaxon = new Map();
     const condSet = new Set();
     let hasNeg = false;
-    for (let i = 1; i < lines.length; i++) {
-        const vals = lines[i].split(separator);
-        if (!vals || vals.length === 0) continue;
-        const taxon = (vals[idxItem] ?? '').trim();
-        const cond = (vals[idxCond] ?? '').trim();
+    for (const r of rows) {
+        const taxon = (r[header[idxItem]] ?? '').trim();
+        const cond = (r[header[idxCond]] ?? '').trim();
         if (!taxon || !cond) continue;
         condSet.add(cond);
-        const lfc = parseFloat(vals[idxLFC]);
+        const lfc = parseFloat(r[header[idxLFC]]);
         if (isFinite(lfc) && lfc < 0) hasNeg = true;
-        const qv = idxPadj >= 0 ? parseFloat(vals[idxPadj]) : undefined;
-        const pv = idxP >= 0 ? parseFloat(vals[idxP]) : undefined;
+        const qv = idxPadj >= 0 ? parseFloat(r[header[idxPadj]]) : undefined;
+        const pv = idxP >= 0 ? parseFloat(r[header[idxP]]) : undefined;
 
         if (!byTaxon.has(taxon)) {
             byTaxon.set(taxon, { taxon, abundances: {}, stats: {} });
@@ -584,37 +617,57 @@ function parseMetaTSV(text, delimiter) {
     const separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
         : getDataFileDelimiter();
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length < 2) return null;
-    const headers = lines[0].split(separator).map(h => h.trim());
+    const d3api = (typeof window !== 'undefined' && window.d3) ? window.d3 : (typeof d3 !== 'undefined' ? d3 : null);
+    let headers = [];
+    let parsedRows = [];
+    if (d3api && typeof d3api.dsvFormat === 'function') {
+        try {
+            const parser = d3api.dsvFormat(separator);
+            parsedRows = parser.parse(text.trim());
+            headers = Array.isArray(parsedRows.columns) ? parsedRows.columns.map(h => String(h).trim()) : (parsedRows.length ? Object.keys(parsedRows[0]).map(h => String(h).trim()) : []);
+        } catch (err) {
+            console.warn('d3.dsvFormat parse failed; falling back to naive split', err);
+        }
+    }
+    if (!parsedRows || parsedRows.length === 0) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length < 2) return null;
+        headers = lines[0].split(separator).map(h => h.trim());
+        for (let i = 1; i < lines.length; i++) {
+            const vals = lines[i].split(separator);
+            const row = {};
+            headers.forEach((h, idx) => { row[h] = (vals[idx] ?? '').trim(); });
+            parsedRows.push(row);
+        }
+    }
+    // 识别样本列名：如果 Sample 不存在，默认第一列为 Sample 并重命名为 Sample（保持原有行为）
     let sampleIdx = headers.indexOf('Sample');
-    let sampleColName = 'Sample';
-    if (sampleIdx === -1) {
-        // 若不存在 Sample 列，则默认将首列重命名为 Sample
-        sampleIdx = 0;
-        const originalFirst = headers[0];
-        headers[0] = 'Sample';
-        sampleColName = 'Sample';
-        console.warn('meta.tsv missing "Sample" column; renamed first column to "Sample" (was: ' + originalFirst + ')');
+    const originalFirst = headers[0];
+    const hasSampleHeader = sampleIdx !== -1;
+    if (!hasSampleHeader) {
+        console.warn('meta.tsv missing "Sample" column; using first column as Sample (was: ' + originalFirst + ')');
     }
     const rows = [];
     const bySample = {};
-    for (let i = 1; i < lines.length; i++) {
-        const vals = lines[i].split(separator);
-        if (!vals || vals.length === 0) continue;
+    for (const r of parsedRows) {
         const row = {};
-        headers.forEach((h, idx) => {
-            row[h] = (vals[idx] ?? '').trim();
+        headers.forEach((h) => {
+            // 当没有 Sample 表头时，保持原列名映射；稍后单独填充标准键 Sample
+            row[h] = (r[h] ?? '').trim();
         });
         // 统一设置标准键 Sample
-        const sampleValue = (row['Sample'] ?? '').trim();
+        const sampleValue = hasSampleHeader
+            ? ((r['Sample'] ?? '').trim())
+            : ((r[originalFirst] ?? '').trim());
         if (sampleValue) {
             row['Sample'] = sampleValue;
             rows.push(row);
             bySample[sampleValue] = row;
         }
     }
-    const columns = headers.slice();
+    const columns = hasSampleHeader
+        ? headers.slice()
+        : ['Sample', ...headers.slice(1)];
     metaData = { rows, bySample, columns };
     // 可用于分组的列：排除 Sample
     metaColumns = columns.filter(c => c !== 'Sample');

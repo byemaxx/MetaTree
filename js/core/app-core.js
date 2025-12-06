@@ -587,10 +587,15 @@ function parseMetaTSV(text, delimiter) {
     const lines = text.trim().split(/\r?\n/);
     if (lines.length < 2) return null;
     const headers = lines[0].split(separator).map(h => h.trim());
-    const sampleIdx = headers.indexOf('Sample');
+    let sampleIdx = headers.indexOf('Sample');
+    let sampleColName = 'Sample';
     if (sampleIdx === -1) {
-        console.warn('meta.tsv missing required column "Sample"');
-        return null;
+        // 若不存在 Sample 列，则默认将首列重命名为 Sample
+        sampleIdx = 0;
+        const originalFirst = headers[0];
+        headers[0] = 'Sample';
+        sampleColName = 'Sample';
+        console.warn('meta.tsv missing "Sample" column; renamed first column to "Sample" (was: ' + originalFirst + ')');
     }
     const rows = [];
     const bySample = {};
@@ -601,9 +606,12 @@ function parseMetaTSV(text, delimiter) {
         headers.forEach((h, idx) => {
             row[h] = (vals[idx] ?? '').trim();
         });
-        if (row['Sample']) {
+        // 统一设置标准键 Sample
+        const sampleValue = (row['Sample'] ?? '').trim();
+        if (sampleValue) {
+            row['Sample'] = sampleValue;
             rows.push(row);
-            bySample[row['Sample']] = row;
+            bySample[sampleValue] = row;
         }
     }
     const columns = headers.slice();

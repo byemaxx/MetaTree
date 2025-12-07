@@ -157,6 +157,14 @@ let __suspendModeColorPersistence = false;
 
 try { if (typeof window !== 'undefined') window.modeColorSettings = modeColorSettings; } catch (_) { }
 
+// Cache for raw data content to allow re-parsing when delimiter changes
+try {
+    if (typeof window !== 'undefined') {
+        window.cachedDataContent = null;
+        window.cachedDataLabel = null;
+    }
+} catch (_) { }
+
 const manualColorDomainStore = (() => {
     try {
         if (typeof window !== 'undefined' && window.manualColorDomainByMode && typeof window.manualColorDomainByMode === 'object') {
@@ -764,6 +772,24 @@ function initDataParameterControls() {
         if (typeof setDataFileDelimiter === 'function') {
             setDataFileDelimiter(value);
         }
+        
+        // Re-parse immediately if we have loaded data
+        if (typeof window !== 'undefined' && window.cachedDataContent) {
+            try {
+                // Ensure loadDataFromText is available
+                if (typeof loadDataFromText === 'function') {
+                    loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+                } else if (typeof window.loadDataFromText === 'function') {
+                    window.loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+                }
+                if (typeof showToast === 'function') {
+                    showToast('Data re-parsed with new delimiter: ' + (value === '\t' ? 'Tab' : value));
+                }
+            } catch (err) {
+                console.error('Failed to re-parse data with new delimiter', err);
+            }
+        }
+        
         syncDataControls();
     };
     const applyTaxaDelimiterValue = (value) => {
@@ -778,6 +804,9 @@ function initDataParameterControls() {
         }
         rebuildTreeAfterTaxaDelimiterChange();
         syncTaxaControls();
+        if (typeof showToast === 'function') {
+            showToast('Taxa separator updated: ' + (value === '|' ? 'Pipe' : value));
+        }
     };
     const applyDataCustom = () => {
         if (!dataCustom) return;
@@ -1415,6 +1444,12 @@ function redrawCurrentViz() {
 
 // ========== 事件处理函数 ==========
 function loadDataFromText(text, options = {}) {
+    // Update cache
+    if (typeof window !== 'undefined') {
+        window.cachedDataContent = text;
+        window.cachedDataLabel = options.label || null;
+    }
+
     if (typeof text !== 'string' || text.trim().length === 0) {
         throw new Error('Empty data content');
     }
@@ -4955,3 +4990,30 @@ function initUniformLabelColors() {
         }
     });
 }
+
+/**
+ * Show a toast notification
+ * @param {string} message 
+ * @param {number} duration 
+ */
+function showToast(message, duration = 3000) {
+    let toast = document.querySelector('.toast-notification');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    
+    // Force reflow
+    void toast.offsetWidth;
+    
+    toast.classList.add('show');
+    
+    if (toast._timeout) clearTimeout(toast._timeout);
+    
+    toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, duration);
+}
+try { if (typeof window !== 'undefined') window.showToast = showToast; } catch (_) { }

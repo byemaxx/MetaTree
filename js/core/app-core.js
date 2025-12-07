@@ -120,7 +120,7 @@ function generateDistinctColor(index) {
     return `hsl(${hue.toFixed(0)}, ${saturation}%, ${lightness}%)`;
 }
 // 是否在每个样本图中显示legend（individual samples模式）
-let showIndividualLegends = true; // 默认显示
+let showIndividualLegends = false; // 默认不显示
 // 同步缩放（多面板联动）：默认开启
 let syncZoomEnabled = true;
 let __isSyncingZoom = false; // 防止递归广播

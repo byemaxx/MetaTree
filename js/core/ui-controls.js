@@ -833,6 +833,7 @@ function initDataParameterControls() {
                 }
             } catch (err) {
                 console.error('Failed to re-parse data with new delimiter', err);
+                showToast('Failed to re-parse data with new delimiter: ' + err.message);
             }
         }
         

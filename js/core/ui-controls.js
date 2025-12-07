@@ -3763,32 +3763,8 @@ async function handleLoadExampleClick() {
 
         const taxaText = await taxaResp.text();
 
-        rawData = parseTSV(taxaText);
-        treeData = buildHierarchy(rawData);
-
-        // 加载示例数据时，同样刷新 Color domain：清除手动 M，并重置输入/默认比较域
-        resetManualDomainForAllModes();
-        try { comparisonColorDomain = [-5, 0, 5]; } catch (_) { if (typeof window !== 'undefined') window.comparisonColorDomain = [-5, 0, 5]; }
-        const cdInput = document.getElementById('color-domain-abs');
-        if (cdInput) cdInput.value = '';
-
-        // 切换回单样本模式
-        const modeSelect = document.getElementById('viz-mode');
-        if (modeSelect && modeSelect.value !== 'single') {
-            modeSelect.value = 'single';
-            handleVisualizationModeChange();
-        }
-
-        updateSampleCheckboxes();
-        initVisualization();
-        drawAllTrees();
-        filenameDisplay.textContent = 'Example: test/data/taxa.tsv';
-
-        // 更新统计信息（以第一个选中样本为准）
-        if (selectedSamples.length > 0) {
-            const hierarchy = d3.hierarchy(treeData);
-            updateStats(hierarchy, selectedSamples[0]);
-        }
+        // Use loadDataFromText to centralize logic and ensure caching (for re-parsing on delimiter change)
+        loadDataFromText(taxaText, { label: 'Example: test/data/taxa.tsv' });
 
         // 尝试加载示例 meta.tsv（注意与数据文件同目录，文件名小写）
         try {

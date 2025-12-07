@@ -2221,7 +2221,7 @@ function drawTree(sample, globalDomain) {
     if (abundanceTransform === 'log' || abundanceTransform === 'log2' || abundanceTransform === 'sqrt') {
         // 数据已变换，使用分位数域的幂映射，增强分辨率
         // 对于 log 变换，减小最大节点大小以避免节点过大
-        const logMaxSize = adjustedMaxSize * 0.6; // 降低到60%
+        const logMaxSize = adjustedMaxSize * 0.5; // 降低到50%
         sizeScale = d3.scalePow()
             .exponent(sizeExponent)
             .domain(dataHasNegatives ? [0, signedMax] : (globalDomain ? [globalDomain.low, globalDomain.high] : [0, maxAbundance]))
@@ -2231,14 +2231,14 @@ function drawTree(sample, globalDomain) {
         // 面积等比：半径 ~ sqrt(value)
         sizeScale = d3.scaleSqrt()
             .domain(dataHasNegatives ? [0, signedMax] : (globalDomain ? [globalDomain.low, globalDomain.high] : [0, maxAbundance]))
-            .range([adjustedMinSize, adjustedMaxSize * 0.8])
+            .range([adjustedMinSize, adjustedMaxSize * 0.5])
             .clamp(true);
     } else {
         // 无变换：半径线性随数值增长（不会进行面积校正）
         sizeScale = d3.scaleLinear()
             .domain(dataHasNegatives ? [0, signedMax] : (globalDomain ? [globalDomain.low, globalDomain.high] : [0, maxAbundance]))
-            // Transform = none 情况下整体略微减小节点尺寸（约 20%）
-            .range([adjustedMinSize, adjustedMaxSize * 0.8])
+            // Transform = none 情况下整体略微减小节点尺寸（约 50%）
+            .range([adjustedMinSize, adjustedMaxSize * 0.5])
             .clamp(true);
     }
 

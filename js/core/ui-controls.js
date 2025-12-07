@@ -736,6 +736,44 @@ function rebuildTreeAfterTaxaDelimiterChange() {
     }
 }
 
+// 获取当前元数据文件分隔符设置
+function getMetaFileDelimiter() {
+    const sel = document.getElementById('meta-delimiter-select');
+    // If element doesn't exist yet (e.g. old html cached), fallback to data delimiter or tab
+    if (!sel) return getDataFileDelimiter(); // Fallback to data setting if meta specific not found
+    if (sel.value === 'tab') return '\t';
+    if (sel.value === 'comma') return ',';
+    if (sel.value === 'custom') {
+        const inp = document.getElementById('meta-delimiter-custom');
+        return (inp && inp.value) ? inp.value : '\t';
+    }
+    return '\t';
+}
+
+function reparseCurrentData() {
+    if (typeof window.cachedDataContent === 'string') {
+        try {
+            console.log('Reparsing data with new delimiter...');
+            loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+        } catch (e) {
+            console.error('Reparse failed:', e);
+            alert('Failed to reparse data with new settings: ' + e.message);
+        }
+    }
+}
+
+function reparseCurrentMeta() {
+    if (typeof window.cachedMetaContent === 'string') {
+        try {
+            console.log('Reparsing meta with new delimiter...');
+            loadMetaFromText(window.cachedMetaContent, { label: window.cachedMetaLabel });
+        } catch (e) {
+            console.error('Reparse meta failed:', e);
+            // Optionally alert user
+        }
+    }
+}
+
 function initDataParameterControls() {
     const toggle = document.getElementById('data-params-toggle');
     if (toggle) {
@@ -925,7 +963,6 @@ function initDataParameterControls() {
         });
     }
     if (taxaCustom) {
-        taxaCustom.addEventListener('change', applyTaxaCustom);
         taxaCustom.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -933,9 +970,190 @@ function initDataParameterControls() {
             }
         });
     }
+    
+    // Meta Delimiter Controls
+    const metaSelect = document.getElementById('meta-delimiter-select');
+    const metaCustomInput = document.getElementById('meta-delimiter-custom');
+    
+    if (metaSelect) {
+        metaSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                if (metaCustomInput) {
+                    metaCustomInput.style.display = 'block';
+                    metaCustomInput.setAttribute('aria-hidden', 'false');
+                    metaCustomInput.focus();
+                }
+            } else {
+                if (metaCustomInput) {
+                    metaCustomInput.style.display = 'none';
+                    metaCustomInput.setAttribute('aria-hidden', 'true');
+                }
+                const delimName = e.target.value === 'tab' ? 'Tab' : 'Comma';
+                if (typeof showToast === 'function') showToast(`Meta delimiter set to ${delimName}`);
+                reparseCurrentMeta();
+            }
+        });
+    }
+
+    if (metaCustomInput) {
+        metaCustomInput.addEventListener('change', () => {
+             reparseCurrentMeta(); 
+        });
+    }
 
     syncDataControls();
     syncTaxaControls();
+}
+
+// ========== File Preview Logic ==========
+
+function renderPreviewTable(text, delimiter, containerId, context = 'data') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (!text) {
+        container.innerHTML = '<p class="text-muted">No content to preview.</p>';
+        return;
+    }
+
+    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0).slice(0, 20); // First 20 lines
+    if (lines.length === 0) {
+        container.innerHTML = '<p class="text-muted">File is empty.</p>';
+        return;
+    }
+
+    // Header with controls
+    const controlsHtml = `
+        <div class="preview-toolbar flex ai-center justify-between mb-12" style="background:#f8f9fa; padding:12px; border-radius:6px; border:1px solid #edf2f7;">
+            <div class="flex ai-center gap-12">
+                <span class="fw-600 fs-13" style="color:#2d3748; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${context === 'data' ? 'DATA FILE' : 'META FILE'}</span>
+                <label for="preview-delim-select" class="fw-500 fs-13 ml-8">Preview Delimiter:</label>
+                <select id="preview-delim-select" style="padding:4px 8px; border-radius:4px; border:1px solid #cbd5e0; background:white;">
+                    <option value="\t" ${delimiter === '\t' ? 'selected' : ''}>Tab (\\t)</option>
+                    <option value="," ${delimiter === ',' ? 'selected' : ''}>Comma (,)</option>
+                    <option value=";" ${delimiter === ';' ? 'selected' : ''}>Semicolon (;)</option>
+                    <option value="|" ${delimiter === '|' ? 'selected' : ''}>Pipe (|)</option>
+                </select>
+                <button id="apply-preview-delim" class="btn-small" title="Apply this delimiter to ${context==='data'?'Data':'Meta'} settings">Apply to Settings</button>
+            </div>
+            <div class="text-secondary fs-12">
+                Showing first <strong>${lines.length}</strong> rows
+            </div>
+        </div>
+    `;
+
+    let html = '<div style="overflow-x:auto; border:1px solid #e2e8f0; border-radius:6px;"><table class="info-sample-table" style="width:100%; font-size:12px; border-collapse: collapse;"><thead><tr style="background:#f5f7fa; border-bottom:1px solid #e2e8f0;">';
+    
+    // Header
+    const headers = lines[0].split(delimiter);
+    headers.forEach(h => {
+        html += `<th style="padding:8px 12px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${h}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    // Body
+    for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(delimiter);
+        html += '<tr style="border-bottom:1px solid #eee;">';
+        cols.forEach(c => {
+            html += `<td style="padding:6px 12px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
+        });
+        html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    
+    container.innerHTML = controlsHtml + html;
+
+    // Bind events
+    const sel = container.querySelector('#preview-delim-select');
+    if (sel) {
+        sel.addEventListener('change', (e) => {
+            renderPreviewTable(text, e.target.value, containerId, context);
+        });
+    }
+
+    const applyBtn = container.querySelector('#apply-preview-delim');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', () => {
+             const val = sel ? sel.value : delimiter;
+             // Determine target select ID based on context
+             const targetId = context === 'data' ? 'data-delimiter-select' : 'meta-delimiter-select';
+             const customId = context === 'data' ? 'data-delimiter-custom' : 'meta-delimiter-custom';
+             
+             const globalSel = document.getElementById(targetId);
+             
+             if (globalSel) {
+                 if (['tab','\t'].includes(val)) globalSel.value = 'tab';
+                 else if ([',','comma'].includes(val)) globalSel.value = 'comma';
+                 else {
+                     globalSel.value = 'custom';
+                     const customInput = document.getElementById(customId);
+                     if (customInput) {
+                         customInput.value = val;
+                         customInput.style.display = 'block';
+                         customInput.setAttribute('aria-hidden', 'false');
+                     }
+                 }
+                 // Trigger change to update parsing
+                 globalSel.dispatchEvent(new Event('change'));
+                 // Close modal
+                 const modal = document.getElementById('file-preview-modal');
+                 if (modal) {
+                     modal.style.display = 'none';
+                     modal.setAttribute('aria-hidden', 'true');
+                 }
+                 if (typeof showToast === 'function') 
+                    showToast(`${context === 'data' ? 'Data' : 'Meta'} delimiter set to ${val === '\t' ? 'Tab' : val}`);
+             } else {
+                 console.warn(`Target select ${targetId} not found`);
+             }
+        });
+    }
+}
+
+function handlePreviewDataClick() {
+    const text = (typeof window !== 'undefined') ? window.cachedDataContent : null;
+    if (!text) {
+        alert('No data file loaded.');
+        return;
+    }
+    const delim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
+    renderPreviewTable(text, delim, 'file-preview-modal-body', 'data');
+    const modal = document.getElementById('file-preview-modal');
+    if (modal) {
+        modal.style.display = 'block'; // Fallback
+        modal.setAttribute('aria-hidden', 'false');
+    }
+}
+
+function handlePreviewMetaClick() {
+    const text = (typeof window !== 'undefined') ? window.cachedMetaContent : null;
+    if (!text) {
+        alert('No meta file loaded.');
+        return;
+    }
+    const delim = (typeof getMetaFileDelimiter === 'function') ? getMetaFileDelimiter() : '\t';
+    renderPreviewTable(text, delim, 'file-preview-modal-body', 'meta');
+    const modal = document.getElementById('file-preview-modal');
+    if (modal) {
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden', 'false');
+    }
+}
+
+function initFilePreviewModal() {
+    const modal = document.getElementById('file-preview-modal');
+    const closeBtn = document.getElementById('file-preview-modal-close');
+    const overlay = modal ? modal.querySelector('.info-modal-overlay') : null;
+
+    const close = () => {
+        if (modal) {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+        }
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (overlay) overlay.addEventListener('click', close);
 }
 
 // ========== 初始化事件监听器 ==========
@@ -948,6 +1166,15 @@ function initEventListeners() {
     // 导入 meta 文件
     const metaInput = document.getElementById('meta-upload');
     if (metaInput) metaInput.addEventListener('change', handleMetaUpload);
+
+    // File Preview Buttons
+    const dataPreviewBtn = document.getElementById('preview-data-btn');
+    if (dataPreviewBtn) dataPreviewBtn.addEventListener('click', handlePreviewDataClick);
+
+    const metaPreviewBtn = document.getElementById('preview-meta-btn');
+    if (metaPreviewBtn) metaPreviewBtn.addEventListener('click', handlePreviewMetaClick);
+    
+    initFilePreviewModal();
 
     // 布局选择
     document.getElementById('layout-select').addEventListener('change', handleLayoutChange);
@@ -1481,6 +1708,9 @@ function loadDataFromText(text, options = {}) {
     const filenameDisplay = document.getElementById('filename-display');
     if (filenameDisplay) filenameDisplay.textContent = filenameLabel;
 
+    const previewBtn = document.getElementById('preview-data-btn');
+    if (previewBtn) previewBtn.style.display = 'inline-flex';
+
     // 切换回单样本模式
     const modeSelect = document.getElementById('viz-mode');
     if (modeSelect && modeSelect.value !== 'single') {
@@ -1532,12 +1762,23 @@ function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Immediately show preview button (even if parsing hasn't happened yet)
+    const previewBtn = document.getElementById('preview-data-btn');
+    if (previewBtn) previewBtn.style.display = 'inline-flex';
+    
     const reader = new FileReader();
     reader.onload = function (event) {
+        const text = event.target.result;
+        // Cache raw content immediately for preview
+        if (typeof window !== 'undefined') {
+            window.cachedDataContent = text;
+            window.cachedDataLabel = file.name;
+        }
+
         try {
-            loadDataFromText(event.target.result, { label: file.name });
+            loadDataFromText(text, { label: file.name });
         } catch (error) {
-            alert('Failed to parse data: ' + error.message);
+            alert('Failed to parse data: ' + error.message + '\n\nClick the "eye" icon to preview the raw file and check your delimiter settings.');
             console.error(error);
         }
     };
@@ -3770,7 +4011,17 @@ async function handleLoadExampleClick() {
         const taxaText = await taxaResp.text();
 
         // Use loadDataFromText to centralize logic and ensure caching (for re-parsing on delimiter change)
+        // Use loadDataFromText to centralize logic and ensure caching (for re-parsing on delimiter change)
         loadDataFromText(taxaText, { label: 'Example: test/data/taxa.tsv' });
+
+        // Update cached content for preview
+        if (typeof window !== 'undefined') {
+            window.cachedDataContent = taxaText;
+            window.cachedDataLabel = 'Example: test/data/taxa.tsv';
+            // Show preview button
+            const pBtn = document.getElementById('preview-data-btn');
+            if (pBtn) pBtn.style.display = 'inline-flex';
+        }
 
         // 尝试加载示例 meta.tsv（注意与数据文件同目录，文件名小写）
         try {
@@ -3779,19 +4030,19 @@ async function handleLoadExampleClick() {
 
             if (metaResp.ok) {
                 const metaText = await metaResp.text();
+                
+                // Cache meta content for preview
+                if (typeof window !== 'undefined') {
+                     window.cachedMetaContent = metaText;
+                     window.cachedMetaLabel = 'Example: test/data/meta.tsv';
+                     // Show meta preview button
+                     const mBtn = document.getElementById('preview-meta-btn');
+                     if (mBtn) mBtn.style.display = 'inline-flex';
+                }
+
                 // 解析并处理 meta 数据
-                const parsedMeta = parseMetaTSV(metaText);
-                window.metaData = parsedMeta;
-                // 过滤掉 Sample 列
-                window.metaColumns = parsedMeta.columns.filter(c => c !== 'Sample');
-
-                populateMetaControls(true);
-                // 更新 meta 文件名显示（与 data 文件的显示风格一致）
-                const metaDisp = document.getElementById('meta-file-display');
-                if (metaDisp) metaDisp.textContent = 'Example: test/data/meta.tsv';
-
-                const metaStatus = document.getElementById('meta-status');
-                if (metaStatus) metaStatus.textContent = '(meta loaded)';
+                // Now we use loadMetaFromText to ensure consistency with standard flow
+                loadMetaFromText(metaText, { label: 'Example: test/data/meta.tsv' });
             } else {
                 console.warn('Meta.tsv not found or not accessible');
             }
@@ -3894,6 +4145,11 @@ function handleMetaGroupColumnChange(col) {
 }
 
 function loadMetaFromText(text, options = {}) {
+    if (typeof window !== 'undefined') {
+        window.cachedMetaContent = text;
+        window.cachedMetaLabel = options.label || null;
+    }
+
     if (typeof text !== 'string' || text.trim().length === 0) {
         throw new Error('Empty meta content');
     }
@@ -3907,6 +4163,9 @@ function loadMetaFromText(text, options = {}) {
         : 'Inline meta';
     const disp = document.getElementById('meta-file-display');
     if (disp) disp.textContent = label;
+
+    const previewBtn = document.getElementById('preview-meta-btn');
+    if (previewBtn) previewBtn.style.display = 'inline-flex';
     if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
         window.dispatchEvent(new CustomEvent('metatree:meta-loaded', {
             detail: {
@@ -3922,12 +4181,25 @@ try { if (typeof window !== 'undefined') window.loadMetaFromText = loadMetaFromT
 function handleMetaUpload(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    
+    // Immediately show preview button
+    const previewBtn = document.getElementById('preview-meta-btn');
+    if (previewBtn) previewBtn.style.display = 'inline-flex';
+
     const reader = new FileReader();
     reader.onload = function (evt) {
+        const text = evt.target.result;
+        // Cache raw content immediately
+        if (typeof window !== 'undefined') {
+            window.cachedMetaContent = text;
+            window.cachedMetaLabel = file.name;
+        }
+
         try {
-            loadMetaFromText(evt.target.result, { label: file.name });
+            loadMetaFromText(text, { label: file.name });
         } catch (err) {
-            alert('Failed to parse meta file: ' + err.message);
+            // Even if it fails, allowing preview is crucial
+            alert('Failed to parse meta file: ' + err.message + '\n\nClick the "eye" icon to preview.');
             console.error(err);
         }
     };

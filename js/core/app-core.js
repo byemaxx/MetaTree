@@ -614,9 +614,19 @@ function parseCombinedLongTSV(text, delimiter) {
 
 // 解析元数据（meta.tsv），要求包含列 "Sample"
 function parseMetaTSV(text, delimiter) {
-    const separator = (typeof delimiter === 'string' && delimiter.length > 0)
+    let separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
-        : getDataFileDelimiter();
+        : null;
+        
+    if (!separator) {
+        if (typeof getMetaFileDelimiter === 'function') {
+            separator = getMetaFileDelimiter();
+        } else if (typeof getDataFileDelimiter === 'function') {
+            separator = getDataFileDelimiter();
+        } else {
+            separator = '\t';
+        }
+    }
     const d3api = (typeof window !== 'undefined' && window.d3) ? window.d3 : (typeof d3 !== 'undefined' ? d3 : null);
     let headers = [];
     let parsedRows = [];

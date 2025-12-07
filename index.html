@@ -49,7 +49,15 @@
                                 </button>
                             </div>
                             <input type="file" id="file-upload" accept=".tsv,.csv,.txt">
-                            <span class="filename-display" id="filename-display">No file selected</span>
+                            <div class="flex ai-center gap-8" style="margin-top: 4px;">
+                                <span class="filename-display" id="filename-display">No file selected</span>
+                                <button type="button" class="btn-icon" id="preview-data-btn" title="Preview data file" aria-label="Preview data file" style="display:none; min-width: 24px; height: 24px; padding: 2px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="control-group">
@@ -70,7 +78,15 @@
                                 </button>
                             </div>
                             <input type="file" id="meta-upload" accept=".tsv,.csv,.txt">
-                            <span id="meta-file-display" class="filename-display">No file selected</span>
+                            <div class="flex ai-center gap-8" style="margin-top: 4px;">
+                                <span id="meta-file-display" class="filename-display">No file selected</span>
+                                <button type="button" class="btn-icon" id="preview-meta-btn" title="Preview meta file" aria-label="Preview meta file" style="display:none; min-width: 24px; height: 24px; padding: 2px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="control-group ai-center">
@@ -98,7 +114,24 @@
                                     placeholder="Enter delimiter, e.g., ; or \t"
                                     aria-label="Custom data file delimiter"
                                 >
-                                <span class="text-muted fs-11">Applied when parsing data and metadata files.</span>
+                                <span class="text-muted fs-11">Applied when parsing the data file.</span>
+                            </div>
+
+                            <div class="control-group vertical" style="margin-top: 8px;">
+                                <label for="meta-delimiter-select">Meta file delimiter</label>
+                                <select id="meta-delimiter-select">
+                                    <option value="tab" selected>Tab (\t)</option>
+                                    <option value="comma">Comma (,)</option>
+                                    <option value="custom">Custom...</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    id="meta-delimiter-custom"
+                                    class="custom-delimiter-input"
+                                    placeholder="Enter delimiter, e.g., ;"
+                                    aria-label="Custom meta file delimiter"
+                                >
+                                <span class="text-muted fs-11">Applied when parsing the metadata file.</span>
                             </div>
 
                             <div class="control-group vertical">
@@ -1015,5 +1048,18 @@
     <script src="js/core/theme-manager.js"></script>
     <script src="js/core/ui-controls.js"></script>
     <script src="js/core/panel-export-contextmenu.js"></script>
+    <!-- File Preview Modal -->
+    <div id="file-preview-modal" class="info-modal" aria-hidden="true" role="dialog" aria-labelledby="file-preview-modal-title">
+        <div class="info-modal-overlay" data-info-modal-close></div>
+        <div class="info-modal-content" role="document" tabindex="-1">
+            <div class="info-modal-header">
+                <h3 id="file-preview-modal-title">File Preview</h3>
+                <button type="button" class="info-modal-close" id="file-preview-modal-close">&times;</button>
+            </div>
+            <div class="info-modal-body" id="file-preview-modal-body" style="overflow-x: auto; max-height: 60vh;">
+                <!-- Table will be injected here -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>

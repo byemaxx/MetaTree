@@ -1762,6 +1762,37 @@ function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Detect delimiter from extension
+    const name = file.name.toLowerCase();
+    const dataDelimSelect = document.getElementById('data-delimiter-select');
+    let autoDelim = null;
+    
+    if (name.endsWith('.csv')) {
+        autoDelim = 'comma';
+    } else if (name.endsWith('.tsv') || name.endsWith('.txt')) {
+        autoDelim = 'tab';
+    }
+
+    if (autoDelim && dataDelimSelect) {
+        // Only update if it's different to avoid unnecessary UI flicker or events
+        if (dataDelimSelect.value !== autoDelim) {
+            dataDelimSelect.value = autoDelim;
+            
+            // IMPORTANT: Apply the setting functionally so it's picked up by subsequent reads
+            if (typeof setDataFileDelimiter === 'function') {
+                setDataFileDelimiter(autoDelim === 'tab' ? '\t' : ',');
+            }
+
+            // Also need to update custom input visibility if switching away from custom
+            const customInput = document.getElementById('data-delimiter-custom');
+            if (customInput) {
+                customInput.style.display = 'none';
+                customInput.setAttribute('aria-hidden', 'true');
+            }
+            if (typeof showToast === 'function') showToast(`Auto-detected delimiter: ${autoDelim === 'tab' ? 'Tab' : 'Comma'}`);
+        }
+    }
+
     // Immediately show preview button (even if parsing hasn't happened yet)
     const previewBtn = document.getElementById('preview-data-btn');
     if (previewBtn) previewBtn.style.display = 'inline-flex';
@@ -1775,7 +1806,65 @@ function handleFileUpload(e) {
             window.cachedDataLabel = file.name;
         }
 
+        // Auto-detect taxa delimiter (Rank separator)
         try {
+            const fileDelim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
+            // Sample first 20 lines, skip header (index 0)
+            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0).slice(1, 21);
+            
+            if (lines.length > 0) {
+                 let pipeCount = 0;
+                 let semiCount = 0;
+                 
+                 lines.forEach(line => {
+                     // Basic split to get the first column (Taxon Name/ID)
+                     // Note: This naive split assumes the file delimiter isn't inside valid fields, which holds for typical abundance tables.
+                     const firstCol = line.split(fileDelim)[0];
+                     if (firstCol.includes('|')) pipeCount++;
+                     if (firstCol.includes(';')) semiCount++;
+                 });
+                 
+                 const threshold = Math.ceil(lines.length * 0.5); // at least 50% of lines
+                 let detectedTaxaDelim = null;
+                 
+                 // Predict based on counts
+                 if (pipeCount >= threshold && pipeCount >= semiCount) {
+                     detectedTaxaDelim = 'pipe';
+                 } else if (semiCount >= threshold) {
+                     detectedTaxaDelim = 'semicolon';
+                 }
+                 
+                 const taxaSel = document.getElementById('taxa-delimiter-select');
+                 if (detectedTaxaDelim) {
+                     // 1. Update UI if needed
+                     if (taxaSel && taxaSel.value !== detectedTaxaDelim) {
+                         taxaSel.value = detectedTaxaDelim;
+                     }
+                     
+                     // 2. IMPORTANT: Apply the setting functionally so parseTSV/buildHierarchy uses it
+                     if (typeof setTaxonRankDelimiter === 'function') {
+                         setTaxonRankDelimiter(detectedTaxaDelim === 'pipe' ? '|' : ';');
+                     }
+
+                     // Helper to manage custom input visibility
+                     const taxaCustom = document.getElementById('taxa-delimiter-custom');
+                     if (taxaCustom) {
+                         taxaCustom.style.display = 'none';
+                         taxaCustom.setAttribute('aria-hidden', 'true');
+                     }
+                     
+                     if (typeof showToast === 'function') {
+                        const symbol = detectedTaxaDelim === 'pipe' ? '|' : ';';
+                        showToast(`Auto-detected taxa separator: ${detectedTaxaDelim} (${symbol})`);
+                     }
+                 }
+            }
+        } catch (e) {
+            console.warn('Taxa separator auto-detection failed:', e);
+        }
+
+        try {
+            // Note: loadDataFromText will read the delimiter from the UI (which we just updated)
             loadDataFromText(text, { label: file.name });
         } catch (error) {
             alert('Failed to parse data: ' + error.message + '\n\nClick the "eye" icon to preview the raw file and check your delimiter settings.');
@@ -4182,6 +4271,29 @@ function handleMetaUpload(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     
+    // Detect delimiter from extension
+    const name = file.name.toLowerCase();
+    const metaDelimSelect = document.getElementById('meta-delimiter-select');
+    let autoDelim = null;
+
+    if (name.endsWith('.csv')) {
+        autoDelim = 'comma';
+    } else if (name.endsWith('.tsv') || name.endsWith('.txt')) {
+        autoDelim = 'tab';
+    }
+
+    if (autoDelim && metaDelimSelect) {
+        if (metaDelimSelect.value !== autoDelim) {
+            metaDelimSelect.value = autoDelim;
+            const customInput = document.getElementById('meta-delimiter-custom');
+            if (customInput) {
+                customInput.style.display = 'none';
+                customInput.setAttribute('aria-hidden', 'true');
+            }
+             if (typeof showToast === 'function') showToast(`Auto-detected meta delimiter: ${autoDelim === 'tab' ? 'Tab' : 'Comma'}`);
+        }
+    }
+
     // Immediately show preview button
     const previewBtn = document.getElementById('preview-meta-btn');
     if (previewBtn) previewBtn.style.display = 'inline-flex';

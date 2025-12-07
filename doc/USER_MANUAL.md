@@ -54,10 +54,10 @@ Best for pre-calculated statistical results (e.g., DESeq2 output).
 | d__Archaea\|p__Methanobacteriota\|... | Control_vs_Group_A | 1.37 | 0.0004 | 0.002 |
 | d__Bacteria\|p__Actinobacteriota\|... | Control_vs_Group_B | -0.85 | 0.013 | 0.040 |
 
-*   **Item_ID**: Must match a hierarchy node (taxon or taxa-function).
-*   **condition**: Labels distinguish contrasts (e.g., "Treat_vs_Ctrl").
-*   **log2FoldChange**, **pvalue**, **padj**: Drive coloring and significance filtering.
-*   Load the wide table, the long-format table, or both depending on your workflow.
+*   **Format Flexibility**:
+    *   **Wide Table**: Standard abundance matrix (Taxon rows x Sample columns).
+    *   **Long Table**: List of statistical results (one row per feature per comparison).
+*   **Column Mapping**: When loading a Long Format table, a **Column Mapping Modal** will appear, allowing you to manually map your file's columns to the required fields (`Taxon`, `Condition`, `Value`, `P-value`, `Q-value`). This means your column headers do not need to match specific hardcoded names.
 
 > **Tip**: Use the “Load Example” button to inspect a working template before uploading your own file.
 
@@ -95,11 +95,15 @@ The interface is divided into two main areas:
 
 ## 5. Using MetaTree
 
-### Step 1: Loading Data
+ ### Step 1: Loading Data
 1.  Go to the **Data & Metadata** panel.
-2.  Click **Load Data File** and select your abundance or statistics table.
-3.  (Optional) Click **Load Meta File** to upload sample metadata.
-4.  If your file uses a custom delimiter (not tab or comma), expand **Load parameters** to specify it.
+2.  **Select Data Format**:
+    *   **Wide Table (Standard)**: For standard abundance matrices.
+    *   **Long Table (Diff. Test)**: For statistical results (e.g., from DESeq2).
+3.  Click **Load Data File** and select your file.
+    *   **For Long Tables**: A **Column Mapping Modal** will appear. Select the columns from your file that correspond to *Taxon ID*, *Condition*, *Value* (e.g., Log2FC), *P-value*, and *Q-value*.
+4.  (Optional) Click **Load Meta File** to upload sample metadata.
+5.  If your file uses a custom delimiter (not tab or comma), expand **Load parameters** to specify it.
 
 ### Step 2: Choosing a Visualization Mode
 Navigate to the **Analysis Mode** panel and select a mode:

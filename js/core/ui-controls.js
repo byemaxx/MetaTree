@@ -754,7 +754,10 @@ function reparseCurrentData() {
     if (typeof window.cachedDataContent === 'string') {
         try {
             console.log('Reparsing data with new delimiter...');
-            loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+            const opts = (typeof window.cachedDataOptions === 'object' && window.cachedDataOptions)
+                ? window.cachedDataOptions
+                : { label: window.cachedDataLabel };
+            loadDataFromText(window.cachedDataContent, opts);
         } catch (e) {
             console.error('Reparse failed:', e);
             alert('Failed to reparse data with new settings: ' + e.message);
@@ -815,10 +818,13 @@ function initDataParameterControls() {
         if (typeof window !== 'undefined' && window.cachedDataContent) {
             try {
                 // Ensure loadDataFromText is available
+                const opts = (typeof window.cachedDataOptions === 'object' && window.cachedDataOptions)
+                    ? window.cachedDataOptions
+                    : { label: window.cachedDataLabel };
                 if (typeof loadDataFromText === 'function') {
-                    loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+                    loadDataFromText(window.cachedDataContent, opts);
                 } else if (typeof window.loadDataFromText === 'function') {
-                    window.loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+                    window.loadDataFromText(window.cachedDataContent, opts);
                 }
                 if (typeof showToast === 'function') {
                     // Display '\t' for tab character so it is visible, otherwise use raw value
@@ -1682,6 +1688,11 @@ function loadDataFromText(text, options = {}) {
     if (typeof window !== 'undefined') {
         window.cachedDataContent = text;
         window.cachedDataLabel = options.label || null;
+        // Persist format & mapping so re-parses (delimiter changes, etc.) stay consistent
+        const cachedOpts = { label: window.cachedDataLabel };
+        if (options.format) cachedOpts.format = options.format;
+        if (options.mapping) cachedOpts.mapping = options.mapping;
+        window.cachedDataOptions = cachedOpts;
     }
 
     if (typeof text !== 'string' || text.trim().length === 0) {

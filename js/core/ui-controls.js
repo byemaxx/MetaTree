@@ -783,7 +783,9 @@ function initDataParameterControls() {
                     window.loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
                 }
                 if (typeof showToast === 'function') {
-                    showToast('Data re-parsed with new delimiter: ' + (value === '\t' ? 'Tab' : value));
+                    // Display '\t' for tab character so it is visible, otherwise use raw value
+                    const displayValue = value === '\t' ? '\\t' : value;
+                    showToast('Data re-parsed with new delimiter: ' + displayValue);
                 }
             } catch (err) {
                 console.error('Failed to re-parse data with new delimiter', err);
@@ -792,6 +794,7 @@ function initDataParameterControls() {
         
         syncDataControls();
     };
+
     const applyTaxaDelimiterValue = (value) => {
         if (typeof value !== 'string' || value.length === 0) return;
         const current = readTaxaDelimiter();
@@ -805,15 +808,18 @@ function initDataParameterControls() {
         rebuildTreeAfterTaxaDelimiterChange();
         syncTaxaControls();
         if (typeof showToast === 'function') {
-            showToast('Taxa separator updated: ' + (value === '|' ? 'Pipe' : value));
+            const displayValue = value === '\t' ? '\\t' : value;
+            showToast('Taxa separator updated: ' + displayValue);
         }
     };
+
     const applyDataCustom = () => {
         if (!dataCustom) return;
         const value = dataCustom.value;
         if (typeof value !== 'string' || value.length === 0) return;
         applyDataDelimiterValue(value);
     };
+
     const applyTaxaCustom = () => {
         if (!taxaCustom) return;
         const value = taxaCustom.value;

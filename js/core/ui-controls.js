@@ -754,7 +754,10 @@ function reparseCurrentData() {
     if (typeof window.cachedDataContent === 'string') {
         try {
             console.log('Reparsing data with new delimiter...');
-            loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+            const opts = (typeof window.cachedDataOptions === 'object' && window.cachedDataOptions)
+                ? window.cachedDataOptions
+                : { label: window.cachedDataLabel };
+            loadDataFromText(window.cachedDataContent, opts);
         } catch (e) {
             console.error('Reparse failed:', e);
             alert('Failed to reparse data with new settings: ' + e.message);
@@ -815,10 +818,13 @@ function initDataParameterControls() {
         if (typeof window !== 'undefined' && window.cachedDataContent) {
             try {
                 // Ensure loadDataFromText is available
+                const opts = (typeof window.cachedDataOptions === 'object' && window.cachedDataOptions)
+                    ? window.cachedDataOptions
+                    : { label: window.cachedDataLabel };
                 if (typeof loadDataFromText === 'function') {
-                    loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+                    loadDataFromText(window.cachedDataContent, opts);
                 } else if (typeof window.loadDataFromText === 'function') {
-                    window.loadDataFromText(window.cachedDataContent, { label: window.cachedDataLabel });
+                    window.loadDataFromText(window.cachedDataContent, opts);
                 }
                 if (typeof showToast === 'function') {
                     // Display '\t' for tab character so it is visible, otherwise use raw value
@@ -827,6 +833,7 @@ function initDataParameterControls() {
                 }
             } catch (err) {
                 console.error('Failed to re-parse data with new delimiter', err);
+                showToast('Failed to re-parse data with new delimiter: ' + err.message);
             }
         }
         
@@ -1175,6 +1182,7 @@ function initEventListeners() {
     if (metaPreviewBtn) metaPreviewBtn.addEventListener('click', handlePreviewMetaClick);
     
     initFilePreviewModal();
+    initColumnMappingListeners();
 
     // 布局选择
     document.getElementById('layout-select').addEventListener('change', handleLayoutChange);
@@ -1681,17 +1689,29 @@ function loadDataFromText(text, options = {}) {
     if (typeof window !== 'undefined') {
         window.cachedDataContent = text;
         window.cachedDataLabel = options.label || null;
+        // Persist format & mapping so re-parses (delimiter changes, etc.) stay consistent
+        const cachedOpts = { label: window.cachedDataLabel };
+        if (options.format) cachedOpts.format = options.format;
+        if (options.mapping) cachedOpts.mapping = options.mapping;
+        window.cachedDataOptions = cachedOpts;
     }
 
     if (typeof text !== 'string' || text.trim().length === 0) {
         throw new Error('Empty data content');
     }
     const firstLine = text.split(/\r?\n/)[0] || '';
-    const low = firstLine.toLowerCase();
-    const looksCombinedLong = low.includes('item_id') && low.includes('condition') && low.includes('log2foldchange');
-    if (looksCombinedLong && typeof parseCombinedLongTSV === 'function') {
-        rawData = parseCombinedLongTSV(text);
+    
+    // Explicit format check from options, or presence of mapping object
+    if (options.format === 'long' || (options.mapping && typeof options.mapping === 'object')) {
+        if (typeof parseLongFormatTSV === 'function') {
+             rawData = parseLongFormatTSV(text, null, options.mapping);
+        } else {
+             // Fallback if not updated in time? Should be there.
+             console.error('parseLongFormatTSV not found');
+             rawData = parseTSV(text);
+        }
     } else {
+        // Default to Wide Table (standard matrix)
         rawData = parseTSV(text);
     }
     treeData = buildHierarchy(rawData);
@@ -1758,11 +1778,158 @@ function loadDataFromText(text, options = {}) {
 }
 try { if (typeof window !== 'undefined') window.loadDataFromText = loadDataFromText; } catch (_) { }
 
+// ========== Column Mapping Modal Logic ==========
+
+let cachedLongFormatText = null;
+let cachedLongFormatFilename = null;
+
+function renderColumnMappingPreview(text, delimiter) {
+    const container = document.getElementById('mapping-preview-container');
+    if (!container) return;
+    
+    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0).slice(0, 6); // Header + 5 rows
+    if (lines.length === 0) {
+        container.innerHTML = '<p class="text-muted">File is empty.</p>';
+        return;
+    }
+
+    // Header
+    const headers = lines[0].split(delimiter).map(h => h.trim());
+    
+    // Render Table
+    let html = '<table class="info-sample-table" style="width:100%; font-size:12px; border-collapse: collapse;"><thead><tr style="background:#f5f7fa; border-bottom:1px solid #e2e8f0;">';
+    headers.forEach((h, i) => {
+        html += `<th style="padding:6px 12px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">
+            <div style="margin-bottom:4px;">${h}</div>
+            <div class="text-muted" style="font-weight:normal; font-size:10px;">Col ${i+1}</div>
+        </th>`;
+    });
+    html += '</tr></thead><tbody>';
+    
+    for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(delimiter);
+        html += '<tr style="border-bottom:1px solid #eee;">';
+        cols.forEach(c => {
+             html += `<td style="padding:6px 12px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
+        });
+        html += '</tr>';
+    }
+    html += '</tbody></table>';
+    container.innerHTML = html;
+
+    // Populate Selects
+    const selects = document.querySelectorAll('.mapping-select');
+    selects.forEach(sel => {
+        sel.innerHTML = '<option value="">-- Select Column --</option>';
+        headers.forEach(h => {
+            const opt = document.createElement('option');
+            opt.value = h;
+            opt.textContent = h;
+            sel.appendChild(opt);
+        });
+    });
+
+    // Smart Auto-Select based on common names
+    const setSelect = (id, candidates) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const match = headers.find(h => candidates.some(c => h.toLowerCase() === c.toLowerCase()));
+        if (match) el.value = match;
+    };
+
+    setSelect('map-col-taxon', ['Item_ID', 'Taxon', 'OTU', 'Gene', 'Feature']);
+    setSelect('map-col-condition', ['condition', 'group', 'sample', 'treatment']);
+    setSelect('map-col-value', ['log2FoldChange', 'value', 'abundance', 'count', 'diff']);
+    setSelect('map-col-pvalue', ['pvalue', 'p-value', 'pval']);
+    setSelect('map-col-qvalue', ['padj', 'qvalue', 'fdr', 'q-value']);
+}
+
+function showColumnMappingModal(text, filename) {
+     const modal = document.getElementById('column-mapping-modal');
+     if(!modal) return;
+     
+     cachedLongFormatText = text;
+     cachedLongFormatFilename = filename;
+
+     // Use current delimiter setting
+     const delim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
+     
+     renderColumnMappingPreview(text, delim);
+     
+     modal.style.display = 'block';
+     modal.setAttribute('aria-hidden', 'false');
+}
+
+function hideColumnMappingModal() {
+    const modal = document.getElementById('column-mapping-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    // Clear cache? Maybe keep until new file.
+}
+
+function handleColumnMappingConfirm() {
+    if (!cachedLongFormatText) return;
+
+    const taxon = document.getElementById('map-col-taxon').value;
+    const condition = document.getElementById('map-col-condition').value;
+    const value = document.getElementById('map-col-value').value;
+    
+    // Optional
+    const pvalue = document.getElementById('map-col-pvalue').value;
+    const qvalue = document.getElementById('map-col-qvalue').value;
+
+    if (!taxon || !condition || !value) {
+        alert('Please select all required columns (Taxon, Condition, Value).');
+        return;
+    }
+
+    const mapping = { taxon, condition, value };
+    if (pvalue) mapping.pvalue = pvalue;
+    if (qvalue) mapping.qvalue = qvalue;
+
+    try {
+        loadDataFromText(cachedLongFormatText, { 
+            label: cachedLongFormatFilename,
+            format: 'long',
+            mapping: mapping
+        });
+        hideColumnMappingModal();
+        if (typeof showToast === 'function') showToast('Long format data loaded successfully');
+    } catch (e) {
+        alert('Failed to load data: ' + e.message);
+        console.error(e);
+    }
+}
+
+function initColumnMappingListeners() {
+    const confirmBtn = document.getElementById('column-mapping-confirm-btn');
+    if (confirmBtn) confirmBtn.addEventListener('click', handleColumnMappingConfirm);
+    
+    const closeBtn = document.getElementById('column-mapping-modal-close');
+    const modal = document.getElementById('column-mapping-modal');
+    const overlay = modal ? modal.querySelector('.info-modal-overlay') : null;
+    
+    const close = () => hideColumnMappingModal();
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (overlay) overlay.addEventListener('click', close);
+}
+
+// Call init immediately (safe if DOM not ready? usually this file runs after DOM)
+// Or call from initEventListeners
+// We will call it from initEventListeners later or add self-run check.
+// Better to add to initEventListeners.
+
 function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Detect delimiter from extension
+    // Detect format preference
+    const formatRadio = document.querySelector('input[name="data-format"]:checked');
+    const format = formatRadio ? formatRadio.value : 'wide';
+
+    // Detect delimiter from extension (auto-detect for both formats initially)
     const name = file.name.toLowerCase();
     const dataDelimSelect = document.getElementById('data-delimiter-select');
     let autoDelim = null;
@@ -1806,8 +1973,38 @@ function handleFileUpload(e) {
             window.cachedDataLabel = file.name;
         }
 
-        // Auto-detect taxa delimiter (Rank separator)
-        try {
+        // Check format
+        if (format === 'long') {
+             // For Long format, show mapping modal
+             // We still try to detect taxa delimiter because the user still needs to split the Item_ID column
+             
+             // Run auto-detect taxa delimiter
+             detectAndSetTaxaDelimiter(text);
+             
+             // Show modal
+             showColumnMappingModal(text, file.name);
+             
+        } else {
+             // Wide format (Standard)
+             
+             // Auto-detect taxa delimiter (Rank separator)
+             detectAndSetTaxaDelimiter(text);
+
+             try {
+                 // Format is 'wide' (default)
+                 loadDataFromText(text, { label: file.name, format: 'wide' });
+             } catch (error) {
+                 alert('Failed to parse data: ' + error.message + '\n\nClick the "eye" icon to preview the raw file or switch to "Long Table" format if appropriate.');
+                 console.error(error);
+             }
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Extracted Auto-detect logic
+function detectAndSetTaxaDelimiter(text) {
+     try {
             const fileDelim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
             // Sample first 20 lines, skip header (index 0)
             const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0).slice(1, 21);
@@ -1818,16 +2015,14 @@ function handleFileUpload(e) {
                  
                  lines.forEach(line => {
                      // Basic split to get the first column (Taxon Name/ID)
-                     // Note: This naive split assumes the file delimiter isn't inside valid fields, which holds for typical abundance tables.
                      const firstCol = line.split(fileDelim)[0];
                      if (firstCol.includes('|')) pipeCount++;
                      if (firstCol.includes(';')) semiCount++;
                  });
                  
-                 const threshold = Math.ceil(lines.length * 0.5); // at least 50% of lines
+                 const threshold = Math.ceil(lines.length * 0.5); // at least 50%
                  let detectedTaxaDelim = null;
                  
-                 // Predict based on counts
                  if (pipeCount >= threshold && pipeCount >= semiCount) {
                      detectedTaxaDelim = 'pipe';
                  } else if (semiCount >= threshold) {
@@ -1841,7 +2036,7 @@ function handleFileUpload(e) {
                          taxaSel.value = detectedTaxaDelim;
                      }
                      
-                     // 2. IMPORTANT: Apply the setting functionally so parseTSV/buildHierarchy uses it
+                     // 2. IMPORTANT: Apply the setting functionally
                      if (typeof setTaxonRankDelimiter === 'function') {
                          setTaxonRankDelimiter(detectedTaxaDelim === 'pipe' ? '|' : ';');
                      }
@@ -1862,16 +2057,6 @@ function handleFileUpload(e) {
         } catch (e) {
             console.warn('Taxa separator auto-detection failed:', e);
         }
-
-        try {
-            // Note: loadDataFromText will read the delimiter from the UI (which we just updated)
-            loadDataFromText(text, { label: file.name });
-        } catch (error) {
-            alert('Failed to parse data: ' + error.message + '\n\nClick the "eye" icon to preview the raw file and check your delimiter settings.');
-            console.error(error);
-        }
-    };
-    reader.readAsText(file);
 }
 
 function updateSampleCheckboxes() {

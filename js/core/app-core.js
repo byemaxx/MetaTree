@@ -533,8 +533,8 @@ function parseTSV(text, delimiter) {
     return data;
 }
 
-// 解析 combined_long.tsv：期望列包含 Item_ID, condition, log2FoldChange, 可选 padj, pvalue
-function parseCombinedLongTSV(text, delimiter) {
+// 解析 Long Format TSV：使用用户指定的列映射
+function parseLongFormatTSV(text, delimiter, mapping) {
     const separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
         : getDataFileDelimiter();
@@ -563,39 +563,49 @@ function parseCombinedLongTSV(text, delimiter) {
             rows.push(row);
         }
     }
-    const findCol = (name) => {
-        const idx = header.findIndex(h => h.toLowerCase() === name.toLowerCase());
-        return idx >= 0 ? idx : -1;
-    };
-    const idxItem = findCol('Item_ID');
-    const idxCond = findCol('condition');
-    const idxLFC = findCol('log2FoldChange');
-    const idxPadj = findCol('padj');
-    const idxP = findCol('pvalue');
-    if (idxItem === -1 || idxCond === -1 || idxLFC === -1) {
-        throw new Error('combined_long.tsv 缺少必要列：Item_ID / condition / log2FoldChange');
+
+    // Mapping: keys are 'taxon', 'condition', 'value', 'pvalue', 'qvalue'
+    // Values in mapping are column names (strings)
+    if (!mapping || !mapping.taxon || !mapping.condition || !mapping.value) {
+        throw new Error('Missing column mapping for long format parsing.');
     }
+
+    const colTaxon = mapping.taxon;
+    const colCond = mapping.condition;
+    const colValue = mapping.value;
+    const colP = mapping.pvalue;
+    const colQ = mapping.qvalue;
 
     const byTaxon = new Map();
     const condSet = new Set();
     let hasNeg = false;
+
+    // Check if columns exist
+    if (!header.includes(colTaxon) || !header.includes(colCond) || !header.includes(colValue)) {
+         throw new Error(`Required columns not found in header. Expected: ${colTaxon}, ${colCond}, ${colValue}`);
+    }
+
     for (const r of rows) {
-        const taxon = (r[header[idxItem]] ?? '').trim();
-        const cond = (r[header[idxCond]] ?? '').trim();
+        const taxon = (r[colTaxon] ?? '').trim();
+        const cond = (r[colCond] ?? '').trim();
         if (!taxon || !cond) continue;
+        
         condSet.add(cond);
-        const lfc = parseFloat(r[header[idxLFC]]);
-        if (isFinite(lfc) && lfc < 0) hasNeg = true;
-        const qv = idxPadj >= 0 ? parseFloat(r[header[idxPadj]]) : undefined;
-        const pv = idxP >= 0 ? parseFloat(r[header[idxP]]) : undefined;
+        const rawVal = parseFloat(r[colValue]);
+        const val = isFinite(rawVal) ? rawVal : 0;
+        
+        if (val < 0) hasNeg = true;
+        
+        const qv = (colQ && r[colQ] !== undefined) ? parseFloat(r[colQ]) : undefined;
+        const pv = (colP && r[colP] !== undefined) ? parseFloat(r[colP]) : undefined;
 
         if (!byTaxon.has(taxon)) {
             byTaxon.set(taxon, { taxon, abundances: {}, stats: {} });
         }
         const rec = byTaxon.get(taxon);
-        rec.abundances[cond] = isFinite(lfc) ? lfc : 0;
+        rec.abundances[cond] = val;
         rec.stats[cond] = {
-            value: isFinite(lfc) ? lfc : 0,
+            value: val,
             qvalue: isFinite(qv) ? qv : undefined,
             pvalue: isFinite(pv) ? pv : undefined
         };
@@ -603,7 +613,7 @@ function parseCombinedLongTSV(text, delimiter) {
 
     samples = Array.from(condSet);
     const data = Array.from(byTaxon.values());
-    dataHasNegatives = hasNeg || true; // LFC 视为有符号数据
+    dataHasNegatives = hasNeg || true; // Assume signed data for long format (e.g. LogFC)
     isCombinedLong = true;
     if (typeof window !== 'undefined') {
         window.dataHasNegatives = dataHasNegatives;

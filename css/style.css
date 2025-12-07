@@ -2661,3 +2661,11 @@ svg {
     inset: 0;
     z-index: -1;
 }
+/* Ensure modals have white background */
+.info-modal-body, .info-modal-container, .info-modal-content {
+    background-color: var(--bg-white, #fff);
+}
+#file-preview-modal .info-modal-container, 
+#column-mapping-modal .info-modal-container {
+    background-color: var(--bg-white, #fff);
+}

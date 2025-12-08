@@ -1486,7 +1486,10 @@ button:disabled {
 .tooltip {
     position: absolute;
     padding: var(--spacing-md) var(--spacing-lg);
-    background: rgba(0, 0, 0, 0.92);
+    /* Slightly translucent black for a softer, modern look */
+    background: rgba(0, 0, 0, 0.65);
+    /* soft border helps tooltips stand out over varying backgrounds */
+    border: 1px solid rgba(255, 255, 255, 0.06);
     color: white;
     border-radius: var(--radius-lg);
     /* allow pointer events so text can be selected; visibility is managed in JS to avoid flicker */

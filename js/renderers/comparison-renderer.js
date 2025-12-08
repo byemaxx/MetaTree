@@ -754,6 +754,9 @@
 
     // 提示框
     const showTip = (event, d) => {
+      try {
+        if (window._tooltipHideTimer) { clearTimeout(window._tooltipHideTimer); window._tooltipHideTimer = null; }
+      } catch (_) { }
       const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
       const st = nodePath ? (comparisonStats[nodePath] || {}) : {};
       const fullLabel = getNodeFullLabel(d);
@@ -783,14 +786,14 @@
     };
 
     nodeGroup
-      .on('mouseover', function (event, d) {
+      .on('mouseenter', function (event, d) {
         showTip(event, d);
         try {
           d3.select(this).select('.node-hover-ring').style('opacity', 1);
         } catch (_) { }
       })
       .on('mousemove', function (event) { try { tooltip.style('left', (event.pageX + 15) + 'px').style('top', (event.pageY - 15) + 'px'); } catch (_) { } })
-      .on('mouseout', function () {
+      .on('mouseleave', function () {
         hideTip();
         try {
           d3.select(this).select('.node-hover-ring').style('opacity', 0);

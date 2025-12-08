@@ -3062,6 +3062,9 @@ function addInteractions(nodes, sample) {
                 }
             }
 
+            try {
+                if (window._tooltipHideTimer) { clearTimeout(window._tooltipHideTimer); window._tooltipHideTimer = null; }
+            } catch (_) { }
             tooltip
                 .html(tooltipHtml)
                 .classed('show', true)

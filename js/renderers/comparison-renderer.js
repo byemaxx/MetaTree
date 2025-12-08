@@ -759,17 +759,28 @@
       } catch (_) { }
       const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
       const st = nodePath ? (comparisonStats[nodePath] || {}) : {};
-      const fullLabel = getNodeFullLabel(d);
-      // 标题为节点全名（fullLabel），如果没有则回退为短名
-      const displayName = escapeHtml(fullLabel || (d && d.data ? d.data.name : '') || '');
+      // Use getNodeFullLabel to get the full name (including prefixes like s__, g__)
+      let labelRaw = getNodeFullLabel(d);
+      // For function nodes (formatted as <Name>), strip the outer brackets
+      if (typeof labelRaw === 'string' && labelRaw.startsWith('<') && labelRaw.endsWith('>')) {
+        labelRaw = labelRaw.slice(1, -1);
+      }
+      const displayName = escapeHtml(labelRaw || (d && d.data ? d.data.name : '') || '');
       // 显示节点的全路径；根据项目分隔符在分隔处插入换行点 (<wbr>)
       const delim = (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
       let fullPathHtml = '';
       if (nodePath) {
         try {
           const parts = String(nodePath).split(delim);
-          // 对每段进行 HTML 转义，然后用分隔符 + <wbr> 连接，允许浏览器在分隔处换行
-          fullPathHtml = parts.map(p => escapeHtml(p)).join(escapeHtml(delim) + '<wbr>');
+          // Custom join: if a part is a function <...>, use space separator instead of delim
+          fullPathHtml = parts.map(p => escapeHtml(p)).reduce((acc, curr, idx) => {
+            if (idx === 0) return curr;
+            const originalPart = parts[idx];
+            if (originalPart.startsWith('<') && originalPart.endsWith('>')) {
+              return acc + ' ' + curr;
+            }
+            return acc + escapeHtml(delim) + '<wbr>' + curr;
+          }, '');
         } catch (_) {
           fullPathHtml = escapeHtml(nodePath);
         }

@@ -1486,6 +1486,8 @@ function buildTreeWithGroupData() {
             depth: node.depth,
             isLeaf: node.isLeaf,
             isFunction: node.isFunction,
+            __collapsed: node.__collapsed,
+            __originalNode: node,
             abundances: {},  // 不复制原有abundances,从头构建
             children: node.children ? node.children.map(cloneTree) : []
         };
@@ -3091,6 +3093,12 @@ function addInteractions(nodes, sample) {
                     window._collapsedHistory.push(d.data);
                 }
                 d.data.__collapsed = newState;
+                
+                // 如果存在原始节点引用（Group模式），同步状态
+                if (d.data.__originalNode) {
+                    d.data.__originalNode.__collapsed = newState;
+                }
+
                 // 重新渲染所有样本以保持一致
                 initVisualization();
                 drawAllTrees();
@@ -3313,6 +3321,10 @@ function restoreLastCollapsed() {
             const data = hist.pop();
             if (data && data.__collapsed) {
                 data.__collapsed = false;
+                // Sync to original node if it exists
+                if (data.__originalNode) {
+                    data.__originalNode.__collapsed = false;
+                }
                 restored = true;
                 dataRestored = data;
                 break;

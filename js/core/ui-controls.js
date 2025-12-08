@@ -1022,7 +1022,11 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         return;
     }
 
-    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0).slice(0, 20); // First 20 lines
+    const allLines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+    // Do not count the header row in totals or preview counts
+    const totalRows = Math.max(0, allLines.length - 1);
+    const headerLine = allLines.length > 0 ? allLines[0] : '';
+    const lines = allLines.slice(1, 1 + 20); // First 20 data rows (exclude header)
     if (lines.length === 0) {
         container.innerHTML = '<p class="text-muted">File is empty.</p>';
         return;
@@ -1043,22 +1047,22 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
                 <button id="apply-preview-delim" class="btn-small" title="Apply this delimiter to ${context==='data'?'Data':'Meta'} settings">Apply to Settings</button>
             </div>
             <div class="text-secondary fs-12">
-                Showing first <strong>${lines.length}</strong> rows
+                Showing first <strong>${lines.length}</strong> rows (Total ${totalRows})
             </div>
         </div>
     `;
 
     let html = '<div style="overflow-x:auto; border:1px solid #e2e8f0; border-radius:6px;"><table class="info-sample-table" style="width:100%; font-size:12px; border-collapse: collapse;"><thead><tr style="background:#f5f7fa; border-bottom:1px solid #e2e8f0;">';
-    
-    // Header
-    const headers = lines[0].split(delimiter);
+
+    // Header (first non-empty line)
+    const headers = (headerLine && typeof headerLine === 'string') ? headerLine.split(delimiter) : [];
     headers.forEach(h => {
         html += `<th style="padding:8px 12px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${h}</th>`;
     });
     html += '</tr></thead><tbody>';
 
-    // Body
-    for (let i = 1; i < lines.length; i++) {
+    // Body (data rows only)
+    for (let i = 0; i < lines.length; i++) {
         const cols = lines[i].split(delimiter);
         html += '<tr style="border-bottom:1px solid #eee;">';
         cols.forEach(c => {

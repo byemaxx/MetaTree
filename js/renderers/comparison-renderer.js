@@ -459,7 +459,11 @@
           const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return;
-          if (typeof showOnlySignificant !== 'undefined' && showOnlySignificant && !isSignificantByThresholds(st)) return;
+          
+          // 如果用户明确选择了层级，则忽略显著性过滤（只要节点可见）
+          // 否则，如果启用了仅显示显著，则过滤非显著节点
+          if (!selectedSet && typeof showOnlySignificant !== 'undefined' && showOnlySignificant && !isSignificantByThresholds(st)) return;
+          
           const depthFromLeaf = node.height;
           const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
           const mag = Math.abs(st.comparison_value || 0);
@@ -690,12 +694,17 @@
       const selectedSet = Array.isArray(labelLevelsSelected) && labelLevelsSelected.length > 0 ? new Set(labelLevelsSelected) : null;
 
       const minPackLabelRadius = Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9), 10);
-      const labels = nodeGroup
-        .filter(d => {
+      
+      // 1. 筛选候选节点
+      const candidates = nodesForRender.filter(d => {
           const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return false;
-          if (showOnlySignificant && !isSignificantByThresholds(st)) return false;
+          
+          // 如果用户明确选择了层级，则忽略显著性过滤（只要节点可见）
+          // 否则，如果启用了仅显示显著，则过滤非显著节点
+          if (!selectedSet && showOnlySignificant && !isSignificantByThresholds(st)) return false;
+
           const depthFromLeaf = d.height;
           const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
           const mag = Math.abs(st.comparison_value || 0);
@@ -708,7 +717,77 @@
             return typeof d.r === 'number' ? d.r >= minRadius : false;
           }
           return true;
-        })
+      });
+
+      // 2. 应用 Smart Culling
+      // 尝试从 DOM 获取状态，因为 comparison-renderer 可能无法访问 app-core 的变量
+      const smartCullingCheckbox = document.getElementById('smart-label-culling');
+      const useSmartCulling = smartCullingCheckbox ? smartCullingCheckbox.checked : (typeof smartLabelCulling !== 'undefined' ? smartLabelCulling : true);
+
+      let visibleNodesSet = null;
+      if (useSmartCulling && layoutConfig.mode !== 'packing') {
+          visibleNodesSet = new Set();
+          const nodesByDepth = {};
+          candidates.forEach(d => {
+              const depth = d.depth || 0;
+              if (!nodesByDepth[depth]) nodesByDepth[depth] = [];
+              nodesByDepth[depth].push(d);
+          });
+
+          const minArcLength = (labelFontSize || 10) * 1.0; 
+          
+          Object.keys(nodesByDepth).forEach(depthKey => {
+              const depthNodes = nodesByDepth[depthKey];
+              
+              if (layoutConfig.mode === 'radial') {
+                  // Radial: sort by angle (x), check arc length
+                  depthNodes.sort((a, b) => a.x - b.x);
+                  let lastAngle = -100;
+                  const minRadiusForLabel = 10;
+                  depthNodes.forEach(d => {
+                      const radius = d.y;
+                      if (radius < minRadiusForLabel) return;
+                      const currentAngle = d.x;
+                      if (radius * (currentAngle - lastAngle) >= minArcLength) {
+                          visibleNodesSet.add(d);
+                          lastAngle = currentAngle;
+                      }
+                  });
+              } else if (layoutConfig.mode === 'tree') {
+                  // Tree: sort by vertical position (x), check vertical distance
+                  depthNodes.sort((a, b) => a.x - b.x);
+                  let lastPos = -1000;
+                  const minVerticalDist = (labelFontSize || 10);
+                  depthNodes.forEach(d => {
+                      if ((d.x - lastPos) >= minVerticalDist) {
+                          visibleNodesSet.add(d);
+                          lastPos = d.x;
+                      }
+                  });
+              } else {
+                  // Fallback for other modes if any
+                  depthNodes.forEach(d => visibleNodesSet.add(d));
+              }
+          });
+      } else {
+          visibleNodesSet = new Set(candidates);
+      }
+
+      // 更新 UI 计数器
+      const elCount = document.getElementById('label-visible-count');
+      if (elCount) {
+          const totalVis = visibleNodesSet ? visibleNodesSet.size : 0;
+          const totalCand = candidates.length;
+          if (totalCand > 0) {
+              const pct = Math.round(totalVis / totalCand * 100);
+              elCount.textContent = `Showing ${totalVis.toLocaleString()} / ${totalCand.toLocaleString()} (${pct}%)`;
+          } else {
+              elCount.textContent = '';
+          }
+      }
+
+      const labels = nodeGroup
+        .filter(d => visibleNodesSet.has(d))
         .append('text')
         .attr('class', 'node-label')
         .attr('dy', layoutConfig.mode === 'packing' ? '0.35em' : '0.31em');

@@ -1,23 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MetaTree Hierarchical Taxonomy Visualization</title>
     <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
-    
+
     <!-- D3.js 库 (本地版本) -->
     <script src="js/vendor/d3.v7.min.js"></script>
-    
+
     <!-- 样式文件 -->
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/comparison.css">
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <div class="title-row">
-                <a class="title-link" href="https://github.com/byemaxx/MetaTree" target="_blank" rel="noopener noreferrer" aria-label="MetaTree project homepage">
+                <a class="title-link" href="https://github.com/byemaxx/MetaTree" target="_blank"
+                    rel="noopener noreferrer" aria-label="MetaTree project homepage">
                     <img src="assets/icons/icon.svg" alt="" class="site-icon" width="40" height="40" aria-hidden="true">
                     <h1>MetaTree</h1>
                 </a>
@@ -34,16 +37,12 @@
                         <div class="control-group">
                             <div class="label-with-help">
                                 <label for="file-upload" class="file-upload-label">Load Data File</label>
-                                <button
-                                    type="button"
-                                    class="info-icon-btn"
-                                    id="data-file-info-btn"
-                                    aria-label="Show data file format help"
-                                    title="View supported data file formats"
-                                >
+                                <button type="button" class="info-icon-btn" id="data-file-info-btn"
+                                    aria-label="Show data file format help" title="View supported data file formats">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
-                                        <path d="M12 16v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                        <path d="M12 16v-4" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round"></path>
                                         <circle cx="12" cy="8" r="1.2" fill="currentColor"></circle>
                                     </svg>
                                 </button>
@@ -51,8 +50,11 @@
                             <input type="file" id="file-upload" accept=".tsv,.csv,.txt">
                             <div class="flex ai-center gap-8" style="margin-top: 4px;">
                                 <span class="filename-display" id="filename-display">No file selected</span>
-                                <button type="button" class="btn-icon" id="preview-data-btn" title="Preview data file" aria-label="Preview data file" style="display:none; min-width: 24px; height: 24px; padding: 2px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <button type="button" class="btn-icon" id="preview-data-btn" title="Preview data file"
+                                    aria-label="Preview data file"
+                                    style="display:none; min-width: 24px; height: 24px; padding: 2px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
@@ -63,16 +65,12 @@
                         <div class="control-group">
                             <div class="label-with-help">
                                 <label for="meta-upload" class="file-upload-label">Load Meta File</label>
-                                <button
-                                    type="button"
-                                    class="info-icon-btn"
-                                    id="meta-file-info-btn"
-                                    aria-label="Show metadata file format help"
-                                    title="View supported metadata formats"
-                                >
+                                <button type="button" class="info-icon-btn" id="meta-file-info-btn"
+                                    aria-label="Show metadata file format help" title="View supported metadata formats">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
-                                        <path d="M12 16v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                                        <path d="M12 16v-4" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round"></path>
                                         <circle cx="12" cy="8" r="1.2" fill="currentColor"></circle>
                                     </svg>
                                 </button>
@@ -80,8 +78,11 @@
                             <input type="file" id="meta-upload" accept=".tsv,.csv,.txt">
                             <div class="flex ai-center gap-8" style="margin-top: 4px;">
                                 <span id="meta-file-display" class="filename-display">No file selected</span>
-                                <button type="button" class="btn-icon" id="preview-meta-btn" title="Preview meta file" aria-label="Preview meta file" style="display:none; min-width: 24px; height: 24px; padding: 2px;">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <button type="button" class="btn-icon" id="preview-meta-btn" title="Preview meta file"
+                                    aria-label="Preview meta file"
+                                    style="display:none; min-width: 24px; height: 24px; padding: 2px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
@@ -112,7 +113,8 @@
                                         Long Table
                                     </label>
                                 </div>
-                                <span class="text-muted fs-11 mt-4">Wide: Taxon rows × Sample columns. Long: Item+Condition+Stats columns.</span>
+                                <span class="text-muted fs-11 mt-4">Wide: Taxon rows × Sample columns. Long:
+                                    Item+Condition+Stats columns.</span>
                             </div>
 
                             <div class="control-group vertical" style="margin-top: 12px;">
@@ -122,13 +124,9 @@
                                     <option value="comma">Comma (,)</option>
                                     <option value="custom">Custom...</option>
                                 </select>
-                                <input
-                                    type="text"
-                                    id="data-delimiter-custom"
-                                    class="custom-delimiter-input"
+                                <input type="text" id="data-delimiter-custom" class="custom-delimiter-input"
                                     placeholder="Enter delimiter, e.g., ; or \t"
-                                    aria-label="Custom data file delimiter"
-                                >
+                                    aria-label="Custom data file delimiter">
                                 <span class="text-muted fs-11">Applied when parsing the data file.</span>
                             </div>
 
@@ -139,13 +137,8 @@
                                     <option value="comma">Comma (,)</option>
                                     <option value="custom">Custom...</option>
                                 </select>
-                                <input
-                                    type="text"
-                                    id="meta-delimiter-custom"
-                                    class="custom-delimiter-input"
-                                    placeholder="Enter delimiter, e.g., ;"
-                                    aria-label="Custom meta file delimiter"
-                                >
+                                <input type="text" id="meta-delimiter-custom" class="custom-delimiter-input"
+                                    placeholder="Enter delimiter, e.g., ;" aria-label="Custom meta file delimiter">
                                 <span class="text-muted fs-11">Applied when parsing the metadata file.</span>
                             </div>
 
@@ -157,13 +150,8 @@
                                     <option value="semicolon">Semicolon (;)</option>
                                     <option value="custom">Custom...</option>
                                 </select>
-                                <input
-                                    type="text"
-                                    id="taxa-delimiter-custom"
-                                    class="custom-delimiter-input"
-                                    placeholder="Enter separator, e.g., ; or ::"
-                                    aria-label="Custom taxa separator"
-                                >
+                                <input type="text" id="taxa-delimiter-custom" class="custom-delimiter-input"
+                                    placeholder="Enter separator, e.g., ; or ::" aria-label="Custom taxa separator">
                                 <span class="text-muted fs-11">Changes take effect immediately for loaded data.</span>
                             </div>
                         </div>
@@ -178,7 +166,8 @@
                             <div id="meta-filters" class="flex flex-wrap gap-12"></div>
                             <div class="mt-6 flex gap-8 ai-center">
                                 <button id="meta-filters-clear">Clear filters</button>
-                                <span id="meta-filters-hint" class="text-muted fs-12">Load a meta file to enable filters.</span>
+                                <span id="meta-filters-hint" class="text-muted fs-12">Load a meta file to enable
+                                    filters.</span>
                             </div>
                         </div>
                     </div>
@@ -192,7 +181,8 @@
                             <div class="control-row">
                                 <div class="control-group flex-1">
                                     <label for="taxon-search-input">Search pattern:</label>
-                                    <input type="text" id="taxon-search-input" placeholder="e.g., Bacteroides or ^k__Bacteria">
+                                    <input type="text" id="taxon-search-input"
+                                        placeholder="e.g., Bacteroides or ^k__Bacteria">
                                 </div>
                             </div>
                             <div class="control-row gap-8 ai-center">
@@ -214,7 +204,8 @@
                                 <div class="control-group flex-1">
                                     <label>
                                         Filter list (<span id="taxon-filter-count">0</span>):
-                                        <button id="taxon-expand-filter" class="taxon-filter-expand-btn" title="Expand to edit">⤢</button>
+                                        <button id="taxon-expand-filter" class="taxon-filter-expand-btn"
+                                            title="Expand to edit">⤢</button>
                                     </label>
                                     <div id="taxon-filter-list" class="taxon-filter-box filter-list">
                                         <em class="text-muted">Empty</em>
@@ -233,7 +224,9 @@
                                 <button id="taxon-clear-filter-list" class="btn-secondary">Clear list</button>
                             </div>
                             <div class="mt-6">
-                                <span class="text-muted fs-11">Tip: Search for items in the popup, then add them to the filter list. Choose to include only those items or exclude them from visualization.</span>
+                                <span class="text-muted fs-11">Tip: Search for items in the popup, then add them to the
+                                    filter list. Choose to include only those items or exclude them from
+                                    visualization.</span>
                             </div>
                         </div>
                     </div>
@@ -251,46 +244,54 @@
                                 <option value="comparison">Group comparison</option>
                                 <option value="matrix">Comparison matrix</option>
                             </select>
-                            <span class="help-icon" title="Single: view each sample separately. Group: aggregate samples by metadata. Comparison: compare two groups. Matrix: compare all group pairs.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                            <span class="help-icon"
+                                title="Single: view each sample separately. Group: aggregate samples by metadata. Comparison: compare two groups. Matrix: compare all group pairs.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
                         </div>
 
 
-                    <!-- 单样本模式：当加载 combined_long.tsv 时显示显著性过滤控件 -->
-                    <div class="control-row" id="single-significance-toggle-row">
-                        <div class="control-group">
-                            <label>
-                                <input type="checkbox" id="single-show-significance">
-                                Filter by significance
-                            </label>
-                            <span class="help-icon" title="Only show items significant by p/q-value and |log2FC| thresholds (for combined_long.tsv)">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
-                                </svg>
-                            </span>
+                        <!-- 单样本模式：当加载 combined_long.tsv 时显示显著性过滤控件 -->
+                        <div class="control-row" id="single-significance-toggle-row">
+                            <div class="control-group">
+                                <label>
+                                    <input type="checkbox" id="single-show-significance">
+                                    Filter by significance
+                                </label>
+                                <span class="help-icon"
+                                    title="Only show items significant by p/q-value and |log2FC| thresholds (for combined_long.tsv)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="control-row" id="single-significance-thresholds-row">
-                        <div class="control-group">
-                            <label for="single-pvalue-threshold">P-value ≤</label>
-                            <input type="number" id="single-pvalue-threshold" value="0.05" step="0.01" min="0" max="1" class="w-65">
+                        <div class="control-row" id="single-significance-thresholds-row">
+                            <div class="control-group">
+                                <label for="single-pvalue-threshold">P-value ≤</label>
+                                <input type="number" id="single-pvalue-threshold" value="0.05" step="0.01" min="0"
+                                    max="1" class="w-65">
+                            </div>
+                            <div class="control-group">
+                                <label for="single-qvalue-threshold">Q-value ≤</label>
+                                <input type="number" id="single-qvalue-threshold" value="0.05" step="0.01" min="0"
+                                    max="1" class="w-65">
+                            </div>
+                            <div class="control-group">
+                                <label for="single-logfc-threshold">|Log2FC| ≥</label>
+                                <input type="number" id="single-logfc-threshold" value="1" step="0.1" min="0"
+                                    class="w-65">
+                            </div>
                         </div>
-                        <div class="control-group">
-                            <label for="single-qvalue-threshold">Q-value ≤</label>
-                            <input type="number" id="single-qvalue-threshold" value="0.05" step="0.01" min="0" max="1" class="w-65">
-                        </div>
-                        <div class="control-group">
-                            <label for="single-logfc-threshold">|Log2FC| ≥</label>
-                            <input type="number" id="single-logfc-threshold" value="1" step="0.1" min="0" class="w-65">
-                        </div>
-                    </div>
                         <!-- Samples 折叠按钮（仅在 single 模式下显示） -->
                         <div class="control-group" id="samples-toggle-group">
                             <label for="sample-select">Samples:</label>
@@ -327,10 +328,12 @@
                                     <option value="sum">Sum</option>
                                 </select>
                                 <span class="help-icon" title="How to aggregate values across samples in each group">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -342,10 +345,12 @@
                                 <select id="group-meta-column-select" class="minw-160"></select>
                                 <span id="group-meta-status" class="ml-8 text-muted fs-12"></span>
                                 <span class="help-icon" title="Select a metadata column to automatically create groups">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -354,13 +359,20 @@
                         <div class="control-row">
                             <div class="control-group">
                                 <label>Groups:</label>
-                                <button id="define-groups-for-group-mode" class="btn-secondary">Define groups...</button>
-                                <button id="delete-all-groups-group-mode" class="btn-icon btn-icon-danger" title="Delete all groups" aria-label="Delete all groups">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <button id="define-groups-for-group-mode" class="btn-secondary">Define
+                                    groups...</button>
+                                <button id="delete-all-groups-group-mode" class="btn-icon btn-icon-danger"
+                                    title="Delete all groups" aria-label="Delete all groups">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path d="M3 6h18" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" />
+                                        <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" />
+                                        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
                                     </svg>
                                 </button>
                             </div>
@@ -381,17 +393,21 @@
                         <div class="control-row">
                             <div class="control-group">
                                 <label for="abundance-transform">Transform:</label>
-                                <select id="abundance-transform" title="Choose a data transform. Log is recommended for wide-range values.">
+                                <select id="abundance-transform"
+                                    title="Choose a data transform. Log is recommended for wide-range values.">
                                     <option value="none" selected>none</option>
                                     <option value="area">Area</option>
                                     <option value="log2">log2</option>
                                     <option value="sqrt">Square root</option>
                                 </select>
-                                <span class="help-icon" title="Log: good for wide-range data (1-1e6). Sqrt: moderate compression. Area: metacoder-style. Linear: narrow-range data.">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                <span class="help-icon"
+                                    title="Log: good for wide-range data (1-1e6). Sqrt: moderate compression. Area: metacoder-style. Linear: narrow-range data.">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -409,14 +425,18 @@
                         <div class="control-row">
                             <div class="control-group">
                                 <label>Quantile range:</label>
-                                <input type="number" id="quantile-low" min="0" max="99.99" step="0.5" value="0" class="w-60" aria-label="Quantile low (%)">
+                                <input type="number" id="quantile-low" min="0" max="99.99" step="0.5" value="0"
+                                    class="w-60" aria-label="Quantile low (%)">
                                 <span>–</span>
-                                <input type="number" id="quantile-high" min="0.5" max="100" step="0.5" value="100" class="w-60" aria-label="Quantile high (%)">%
+                                <input type="number" id="quantile-high" min="0.5" max="100" step="0.5" value="100"
+                                    class="w-60" aria-label="Quantile high (%)">%
                                 <span class="help-icon" title="Ignore extreme values. Typical: 2%–98%. Step: 0.5%">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -427,16 +447,18 @@
                                     Show legends
                                 </label>
                                 <span class="help-icon" title="Display color scale legend in each sample panel">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
                         </div>
 
-                        
+
                     </div>
 
                     <!-- 比较模式分组控制 -->
@@ -447,11 +469,14 @@
                                 <label for="meta-group-column">Auto-group by meta:</label>
                                 <select id="meta-group-column" class="minw-160"></select>
                                 <span id="meta-status" class="ml-8 text-muted fs-12"></span>
-                                <span class="help-icon" title="Select a metadata column to automatically create groups for comparison">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                <span class="help-icon"
+                                    title="Select a metadata column to automatically create groups for comparison">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -461,17 +486,23 @@
                             <div class="control-group">
                                 <label>Groups:</label>
                                 <button id="define-groups" class="btn-secondary">Define groups...</button>
-                                <button id="delete-all-groups" class="btn-icon btn-icon-danger" title="Delete all groups" aria-label="Delete all groups">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <button id="delete-all-groups" class="btn-icon btn-icon-danger"
+                                    title="Delete all groups" aria-label="Delete all groups">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path d="M3 6h18" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" />
+                                        <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" />
+                                        <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
                                     </svg>
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- 统一的分组显示与选择区域 -->
                         <div id="unified-group-display" class="group-display">
                             <em class="text-light">No groups defined</em>
@@ -484,10 +515,12 @@
                                     <option value="">-- Select Group 1 --</option>
                                 </select>
                                 <span class="help-icon" title="Select the first group for comparison (baseline)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -498,18 +531,20 @@
                                     <option value="">-- Select Group 2 --</option>
                                 </select>
                                 <span class="help-icon" title="Select the second group for comparison (vs Group 1)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
                         </div>
 
-                        
 
-                        
+
+
                         <div class="control-row">
                             <div class="control-group">
                                 <label for="comparison-test">Test:</label>
@@ -519,12 +554,12 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="control-row">
                             <button id="run-comparison" class="btn-run-comparison">Run comparison</button>
                             <button id="export-comparison" class="btn-export-comparison">View results</button>
                         </div>
-                        
+
                         <div class="control-row">
                             <div class="control-group">
                                 <label for="comparison-metric">Metric:</label>
@@ -536,18 +571,21 @@
                                 </select>
                             </div>
                         </div>
-                        
+
                         <div class="control-row" id="significance-toggle-row">
                             <div class="control-group">
                                 <label>
                                     <input type="checkbox" id="show-significance">
                                     Filter by significance
                                 </label>
-                                <span class="help-icon" title="Filter to show only statistically significant differences">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                <span class="help-icon"
+                                    title="Filter to show only statistically significant differences">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -556,22 +594,26 @@
                         <div class="control-row" id="significance-thresholds-row">
                             <div class="control-group">
                                 <label for="pvalue-threshold">P-value ≤</label>
-                                <input type="number" id="pvalue-threshold" value="0.05" step="0.01" min="0" max="1" class="w-65">
+                                <input type="number" id="pvalue-threshold" value="0.05" step="0.01" min="0" max="1"
+                                    class="w-65">
                             </div>
 
                             <div class="control-group">
                                 <label for="qvalue-threshold">Q-value ≤</label>
-                                <input type="number" id="qvalue-threshold" value="0.05" step="0.01" min="0" max="1" class="w-65">
+                                <input type="number" id="qvalue-threshold" value="0.05" step="0.01" min="0" max="1"
+                                    class="w-65">
                             </div>
 
                             <div class="control-group">
                                 <label for="logfc-threshold">|Log2FC| ≥</label>
                                 <input type="number" id="logfc-threshold" value="1" step="0.1" min="0" class="w-65">
                                 <span class="help-icon" title="Minimum absolute log2 fold change threshold">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                     </svg>
                                 </span>
                             </div>
@@ -599,13 +641,15 @@
                     <div class="control-row">
                         <div class="control-group">
                             <label for="panel-width-slider">Panel width:</label>
-                            <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="600" class="w-180 ml-8">
+                            <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="600"
+                                class="w-180 ml-8">
                             <span id="panel-width-value" class="ml-8">600px</span>
                         </div>
 
                         <div class="control-group">
                             <label for="panel-height-slider">Panel height:</label>
-                            <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600" class="w-180 ml-8">
+                            <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600"
+                                class="w-180 ml-8">
                             <span id="panel-height-value" class="ml-8">600px</span>
                         </div>
 
@@ -628,7 +672,8 @@
                         <div class="control-group">
                             <label class="fw-500 flex ai-center gap-8">
                                 Color scheme:
-                                <button id="color-previews-toggle" class="toggle-btn ml-8" type="button" aria-controls="color-previews-wrapper" aria-expanded="false">Schemes</button>
+                                <button id="color-previews-toggle" class="toggle-btn ml-8" type="button"
+                                    aria-controls="color-previews-wrapper" aria-expanded="false">Schemes</button>
                             </label>
                             <label class="ml-10 fw-500 flex ai-center gap-6">
                                 <input type="checkbox" id="color-reverse">
@@ -638,15 +683,20 @@
                                 <div id="color-previews" class="flex gap-8 flex-wrap"></div>
                                 <div id="custom-color-controls" class="mt-8 gap-8 ai-center flex">
                                     <label class="fw-500">Custom gradient:</label>
-                                    <input type="color" id="custom-color-start" value="#70706B" aria-label="Custom gradient start color">
+                                    <input type="color" id="custom-color-start" value="#70706B"
+                                        aria-label="Custom gradient start color">
                                     <span class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid" value="#ffd27f" aria-label="Custom gradient midpoint color">
+                                    <input type="color" id="custom-color-mid" value="#ffd27f"
+                                        aria-label="Custom gradient midpoint color">
                                     <span id="custom-arrow-mid" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid2" value="#ffd27f" aria-label="Custom gradient midpoint color 2">
+                                    <input type="color" id="custom-color-mid2" value="#ffd27f"
+                                        aria-label="Custom gradient midpoint color 2">
                                     <span id="custom-arrow-mid2" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid3" value="#ffd27f" aria-label="Custom gradient midpoint color 3">
+                                    <input type="color" id="custom-color-mid3" value="#ffd27f"
+                                        aria-label="Custom gradient midpoint color 3">
                                     <span id="custom-arrow-mid3" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-end" value="#08519c" aria-label="Custom gradient end color">
+                                    <input type="color" id="custom-color-end" value="#08519c"
+                                        aria-label="Custom gradient end color">
                                     <label class="ml-8 flex ai-center gap-6" for="custom-stops-count">
                                         <span class="fs-12">Stops</span>
                                         <select id="custom-stops-count">
@@ -663,7 +713,9 @@
                                             <input type="checkbox" id="zero-color-toggle">
                                             <span class="fs-12">Zero value</span>
                                         </label>
-                                        <input type="color" id="zero-color-input" value="#d6dce6" aria-label="Zero value color" disabled class="zero-color-input inline-input">
+                                        <input type="color" id="zero-color-input" value="#d6dce6"
+                                            aria-label="Zero value color" disabled
+                                            class="zero-color-input inline-input">
                                     </div>
 
                                     <label class="ml-12 fs-12" for="custom-presets">Presets</label>
@@ -675,22 +727,30 @@
                         </div>
                     </div>
 
-                    
+
 
                     <div class="control-row">
                         <div class="control-group">
                             <label for="color-domain-abs">Color domain:</label>
-                            <input type="number" id="color-domain-abs" step="1" value="5" class="flex-1 minw-160" aria-label="Color domain absolute value">
-                            <button id="color-domain-reset" type="button" class="btn-icon ml-8" title="Reset to auto domain" aria-label="Reset color domain">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <input type="number" id="color-domain-abs" step="1" value="5" class="flex-1 minw-160"
+                                aria-label="Color domain absolute value">
+                            <button id="color-domain-reset" type="button" class="btn-icon ml-8"
+                                title="Reset to auto domain" aria-label="Reset color domain">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path
+                                        d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
                                 </svg>
                             </button>
-                            <span class="help-icon" title="Set a single magnitude M. In abundance modes: [0, M]. In log2FC modes: [-M, M].">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                            <span class="help-icon"
+                                title="Set a single magnitude M. In abundance modes: [0, M]. In log2FC modes: [-M, M].">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
                         </div>
@@ -701,23 +761,31 @@
                 <div id="labels-panel" class="control-panel card-panel collapsed">
                     <div class="panel-title">Labels & Sizing
                         <button id="labels-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
-                        <button id="labels-reset" class="btn-icon btn-icon-primary ml-auto" title="Reset Labels & Sizing" aria-label="Reset Labels & Sizing">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <button id="labels-reset" class="btn-icon btn-icon-primary ml-auto"
+                            title="Reset Labels & Sizing" aria-label="Reset Labels & Sizing">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path
+                                    d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
                         </button>
                     </div>
-                    
+
                     <div class="control-row">
                         <div class="control-group">
                             <label for="label-threshold">Amount:</label>
-                            <input type="range" id="label-threshold" min="0" max="100" value="100" step="1" class="w-140">
+                            <input type="range" id="label-threshold" min="0" max="100" value="100" step="1"
+                                class="w-140">
                             <span id="label-threshold-value">100%</span>
-                            <span class="help-icon" title="Percentage of labels to show. In comparison mode, based on effect size.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                            <span class="help-icon"
+                                title="Percentage of labels to show. In comparison mode, based on effect size.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
                         </div>
@@ -730,7 +798,8 @@
 
                         <div class="control-group">
                             <label for="label-max-length">Max length:</label>
-                            <input type="number" id="label-max-length" min="4" max="80" step="1" value="15" class="w-70">
+                            <input type="number" id="label-max-length" min="4" max="80" step="1" value="15"
+                                class="w-70">
                         </div>
 
                         <div class="control-group">
@@ -746,13 +815,32 @@
                                 <input type="checkbox" id="uniform-label-colors">
                                 Uniform label colors
                             </label>
-                            <span class="help-icon" title="Assign same color to all nodes with the same label name. Right-click a label to customize color.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                            <span class="help-icon"
+                                title="Assign same color to all nodes with the same label name. Right-click a label to customize color.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
+                        </div>
+
+                        <div class="control-group" style="flex-wrap: wrap;">
+                            <label class="flex ai-center gap-8">
+                                <input type="checkbox" id="smart-label-culling" checked>
+                                Smart culling
+                            </label>
+                            <span class="help-icon" title="Automatically hide overlapping labels to prevent clutter">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                </svg>
+                            </span>
+                            <span id="label-visible-count"
+                                style="display: block; width: 100%; margin-left: 24px; margin-top: 4px; font-size: 11px; color: #666;"></span>
                         </div>
                     </div>
 
@@ -760,11 +848,13 @@
                         <div class="control-group full-width" id="label-levels-group">
                             <label>Levels (from leaf):</label>
                             <div id="label-levels" class="flex flex-wrap gap-8"></div>
-                            <span class="help-icon" title="Select levels by distance from leaf. 0=leaf (species/function), 1=genus, 2=family, etc. Applies to all modes.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                            <span class="help-icon"
+                                title="Select levels by distance from leaf. 0=leaf (species/function), 1=genus, 2=family, etc. Applies to all modes.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
                         </div>
@@ -773,7 +863,8 @@
                     <div class="control-row">
                         <div class="control-group">
                             <label for="node-size-multiplier">Node size:</label>
-                            <input type="range" id="node-size-multiplier" min="0.1" max="5" value="1" step="0.1" class="w-140">
+                            <input type="range" id="node-size-multiplier" min="0.1" max="5" value="1" step="0.1"
+                                class="w-140">
                             <span id="node-size-value">1.0x</span>
                         </div>
 
@@ -793,10 +884,11 @@
                             <input type="range" id="node-opacity" min="0" max="1" value="1" step="0.05" class="w-140">
                             <span id="node-opacity-value">100%</span>
                             <span class="help-icon" title="Adjust opacity (0–1.0)">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
                         </div>
@@ -805,13 +897,15 @@
                     <div class="control-row">
                         <div class="control-group">
                             <label for="edge-width-multiplier">Edge width:</label>
-                            <input type="range" id="edge-width-multiplier" min="0.1" max="5" value="1" step="0.1" class="w-140">
+                            <input type="range" id="edge-width-multiplier" min="0.1" max="5" value="1" step="0.1"
+                                class="w-140">
                             <span id="edge-width-value">1.0x</span>
                             <span class="help-icon" title="Adjust the width of connecting lines between nodes">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
                         </div>
@@ -820,10 +914,11 @@
                             <input type="range" id="edge-opacity" min="0.1" max="1" value="1" step="0.05" class="w-140">
                             <span id="edge-opacity-value">100%</span>
                             <span class="help-icon" title="Adjust the opacity of edges (0.1–1.0)">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
                                 </svg>
                             </span>
                         </div>
@@ -836,7 +931,8 @@
                     </div>
                     <div class="theme-panel-body">
                         <p class="theme-panel-text">
-                            Choose a soft preset or fine tune primary, surface, and tree panel hues. Changes apply instantly and persist locally.
+                            Choose a soft preset or fine tune primary, surface, and tree panel hues. Changes apply
+                            instantly and persist locally.
                         </p>
                         <div id="theme-preset-list" class="theme-preset-list" role="listbox" aria-label="Theme presets">
                             <!-- populated by JS -->
@@ -879,11 +975,14 @@
                                         <input type="checkbox" id="zero-color-theme-toggle">
                                         <span>Zero value</span>
                                     </label>
-                                    <input type="color" id="zero-color-theme-input" value="#d6dce6" disabled class="zero-color-input inline-input" title="Zero value color" aria-label="Zero value color">
+                                    <input type="color" id="zero-color-theme-input" value="#d6dce6" disabled
+                                        class="zero-color-input inline-input" title="Zero value color"
+                                        aria-label="Zero value color">
                                 </div>
                             </div>
                             <div class="custom-theme-actions">
-                                <button id="apply-custom-theme" class="btn-primary" type="button">Apply custom colors</button>
+                                <button id="apply-custom-theme" class="btn-primary" type="button">Apply custom
+                                    colors</button>
                                 <button id="reset-theme" class="btn-secondary" type="button">Reset to default</button>
                             </div>
                         </div>
@@ -891,7 +990,8 @@
                 </div>
             </aside>
 
-            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar" aria-label="Collapse sidebar" title="Collapse sidebar">
+            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-expanded="true"
+                aria-controls="sidebar" aria-label="Collapse sidebar" title="Collapse sidebar">
                 <span class="toggle-icon" aria-hidden="true">&lsaquo;</span>
             </button>
 
@@ -922,12 +1022,8 @@
                 <p class="about-text">
                     <!-- <strong>MetaTree</strong> is an open-source toolkit for quick heat-tree comparisons across multi-sample and custom visualizations. -->
                     For documentation, questions, or to report issues, visit the
-                    <a
-                        class="about-inline-link"
-                        href="https://github.com/byemaxx/MetaTree"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
+                    <a class="about-inline-link" href="https://github.com/byemaxx/MetaTree" target="_blank"
+                        rel="noopener noreferrer">
                         Project homepage
                     </a>
                 </p>
@@ -936,12 +1032,14 @@
     </div>
 
     <!-- 分组定义模态框 -->
-    <div id="file-format-modal" class="info-modal" aria-hidden="true" role="dialog" aria-labelledby="file-format-modal-title">
+    <div id="file-format-modal" class="info-modal" aria-hidden="true" role="dialog"
+        aria-labelledby="file-format-modal-title">
         <div class="info-modal-overlay" data-info-modal-close></div>
         <div class="info-modal-content" role="document" tabindex="-1">
             <div class="info-modal-header">
                 <h3 id="file-format-modal-title">File format help</h3>
-                <button type="button" class="info-modal-close" id="file-format-modal-close" aria-label="Close format help">&times;</button>
+                <button type="button" class="info-modal-close" id="file-format-modal-close"
+                    aria-label="Close format help">&times;</button>
             </div>
             <div class="info-modal-body" id="file-format-modal-body">
                 <p class="text-muted">Click the info icons next to the upload buttons to view supported formats.</p>
@@ -953,24 +1051,24 @@
         <div class="group-modal-content">
             <span class="group-modal-close" id="close-group-modal">&times;</span>
             <div class="group-modal-header">Define Sample Groups</div>
-            
+
             <div class="group-form-field">
                 <label for="group-name-input">Group name:</label>
                 <input type="text" id="group-name-input" placeholder="e.g., Treatment_A, Control, etc.">
             </div>
-            
+
             <div class="group-form-field">
                 <label>Select samples:</label>
                 <div class="sample-checklist" id="sample-checklist">
                     <em>Please load a data file first</em>
                 </div>
             </div>
-            
+
             <div class="group-form-actions">
                 <button class="btn-modal btn-modal-cancel" id="cancel-group-btn">Cancel</button>
                 <button class="btn-modal btn-modal-save" id="save-group-btn">Save Group</button>
             </div>
-            
+
             <div class="section-divider">
                 <div class="section-title">Existing Groups:</div>
                 <div id="existing-groups-list">
@@ -995,7 +1093,8 @@
                     <em class="text-muted">No results</em>
                 </div>
                 <div class="taxon-manual-add">
-                    <input type="text" id="taxon-manual-input" placeholder="Manually add item (e.g., k__Bacteria|p__Firmicutes)">
+                    <input type="text" id="taxon-manual-input"
+                        placeholder="Manually add item (e.g., k__Bacteria|p__Firmicutes)">
                     <button id="taxon-manual-add-btn">Add</button>
                 </div>
                 <div class="taxon-edit-actions">
@@ -1019,7 +1118,8 @@
         </div>
         <div class="context-menu-divider"></div>
         <div class="context-menu-actions">
-            <button id="label-color-apply-current" class="context-menu-btn" title="Apply to this label only">Apply</button>
+            <button id="label-color-apply-current" class="context-menu-btn"
+                title="Apply to this label only">Apply</button>
             <button id="label-color-apply-same" class="context-menu-btn" title="Apply to all same labels">Same</button>
             <button id="label-color-apply-all" class="context-menu-btn" title="Apply to all labels">All</button>
         </div>
@@ -1028,8 +1128,10 @@
     <div id="viz-export-menu" class="context-menu">
         <div class="context-menu-header">Export All Visualization</div>
         <div class="context-menu-actions">
-            <button id="viz-export-svg" class="context-menu-btn" title="Export all visible panels as SVG">Export SVG</button>
-            <button id="viz-export-png" class="context-menu-btn" title="Export all visible panels as PNG">Export PNG</button>
+            <button id="viz-export-svg" class="context-menu-btn" title="Export all visible panels as SVG">Export
+                SVG</button>
+            <button id="viz-export-png" class="context-menu-btn" title="Export all visible panels as PNG">Export
+                PNG</button>
         </div>
     </div>
 
@@ -1039,16 +1141,20 @@
         <div id="section-current-panel" class="context-menu-section">
             <div class="context-menu-subtitle">Export Current Panel</div>
             <div class="context-menu-actions">
-                <button id="panel-export-svg" class="context-menu-btn" title="Export current panel as framed SVG">SVG</button>
-                <button id="panel-export-png" class="context-menu-btn" title="Export current panel as framed PNG">PNG</button>
+                <button id="panel-export-svg" class="context-menu-btn"
+                    title="Export current panel as framed SVG">SVG</button>
+                <button id="panel-export-png" class="context-menu-btn"
+                    title="Export current panel as framed PNG">PNG</button>
             </div>
         </div>
         <div id="panel-export-divider" class="context-menu-divider"></div>
         <div id="section-all-panels" class="context-menu-section">
             <div class="context-menu-subtitle">Export All Panels</div>
             <div class="context-menu-actions">
-                <button id="viz-export-svg-ctx" class="context-menu-btn" title="Export all visible panels as SVG">SVG</button>
-                <button id="viz-export-png-ctx" class="context-menu-btn" title="Export all visible panels as PNG">PNG</button>
+                <button id="viz-export-svg-ctx" class="context-menu-btn"
+                    title="Export all visible panels as SVG">SVG</button>
+                <button id="viz-export-png-ctx" class="context-menu-btn"
+                    title="Export all visible panels as PNG">PNG</button>
             </div>
         </div>
     </div>
@@ -1068,11 +1174,13 @@
     <!-- File Preview Modal -->
     <div id="file-preview-modal" class="info-modal" aria-hidden="true" style="display: none;">
         <div class="info-modal-overlay" tabindex="-1"></div>
-        <div class="info-modal-container" role="dialog" aria-modal="true" aria-labelledby="file-preview-modal-title" style="max-width: 1200px; width: 90vw;">
+        <div class="info-modal-container" role="dialog" aria-modal="true" aria-labelledby="file-preview-modal-title"
+            style="max-width: 1200px; width: 90vw;">
             <div class="info-modal-header">
                 <h3 id="file-preview-modal-title" class="info-modal-title">File Preview</h3>
                 <button type="button" class="info-modal-close" id="file-preview-modal-close" aria-label="Close modal">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 1l12 12M13 1L1 13"></path>
                     </svg>
                 </button>
@@ -1086,35 +1194,42 @@
     <!-- Long Format Column Mapping Modal -->
     <div id="column-mapping-modal" class="info-modal" aria-hidden="true" style="display: none;">
         <div class="info-modal-overlay" tabindex="-1"></div>
-        <div class="info-modal-container" role="dialog" aria-modal="true" aria-labelledby="column-mapping-modal-title" style="max-width: 1200px; width: 90vw;">
+        <div class="info-modal-container" role="dialog" aria-modal="true" aria-labelledby="column-mapping-modal-title"
+            style="max-width: 1200px; width: 90vw;">
             <div class="info-modal-header">
                 <h3 id="column-mapping-modal-title" class="info-modal-title">Map Columns (Long Format)</h3>
                 <button type="button" class="info-modal-close" id="column-mapping-modal-close" aria-label="Close modal">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 1l12 12M13 1L1 13"></path>
                     </svg>
                 </button>
             </div>
             <div class="info-modal-body">
                 <p class="text-muted mb-12">Please specify which columns correspond to the required fields.</p>
-                
-                <div id="mapping-preview-container" class="mb-16" style="overflow-x: auto; max-height: 200px; border: 1px solid #e2e8f0; border-radius: 4px;">
+
+                <div id="mapping-preview-container" class="mb-16"
+                    style="overflow-x: auto; max-height: 200px; border: 1px solid #e2e8f0; border-radius: 4px;">
                     <!-- Preview table will be inserted here -->
                 </div>
 
-                <div class="mapping-controls grid gap-12" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <div class="mapping-controls grid gap-12"
+                    style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
                     <div class="control-group vertical">
-                        <label for="map-col-taxon" class="fw-600">Taxon / Item ID <span class="text-danger">*</span></label>
+                        <label for="map-col-taxon" class="fw-600">Taxon / Item ID <span
+                                class="text-danger">*</span></label>
                         <select id="map-col-taxon" class="mapping-select"></select>
                         <span class="text-muted fs-11">e.g., "Item_ID", "Taxon"</span>
                     </div>
                     <div class="control-group vertical">
-                        <label for="map-col-condition" class="fw-600">Condition / Group <span class="text-danger">*</span></label>
+                        <label for="map-col-condition" class="fw-600">Condition / Group <span
+                                class="text-danger">*</span></label>
                         <select id="map-col-condition" class="mapping-select"></select>
                         <span class="text-muted fs-11">e.g., "condition", "group"</span>
                     </div>
                     <div class="control-group vertical">
-                        <label for="map-col-value" class="fw-600">Value / Log2FC <span class="text-danger">*</span></label>
+                        <label for="map-col-value" class="fw-600">Value / Log2FC <span
+                                class="text-danger">*</span></label>
                         <select id="map-col-value" class="mapping-select"></select>
                         <span class="text-muted fs-11">e.g., "log2FoldChange", "diff"</span>
                     </div>
@@ -1131,12 +1246,13 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="mt-16 text-right">
-                     <button id="column-mapping-confirm-btn" class="btn-primary">Load Data</button>
+                    <button id="column-mapping-confirm-btn" class="btn-primary">Load Data</button>
                 </div>
             </div>
         </div>
     </div>
 </body>
+
 </html>

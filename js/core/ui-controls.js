@@ -8,9 +8,7 @@ let colorSchemeCategory = 'sequential';
 // 将所选类别同步到全局，便于渲染端读取
 try { if (typeof window !== 'undefined') window.colorSchemeCategory = colorSchemeCategory; } catch (_) { }
 
-// 当叶节点数量超过此阈值时，默认不勾选叶层标签以避免性能问题
-const DEFAULT_LEAF_LABEL_THRESHOLD = 1000;
-try { if (typeof window !== 'undefined') window.DEFAULT_LEAF_LABEL_THRESHOLD = DEFAULT_LEAF_LABEL_THRESHOLD; } catch (_) { }
+
 
 // 每种模式的颜色与域设置（single/group 共用，comparison/matrix 共用）
 const MODE_COLOR_KEY_MAP = {
@@ -813,7 +811,7 @@ function initDataParameterControls() {
         if (typeof setDataFileDelimiter === 'function') {
             setDataFileDelimiter(value);
         }
-        
+
         // Re-parse immediately if we have loaded data
         if (typeof window !== 'undefined' && window.cachedDataContent) {
             try {
@@ -836,7 +834,7 @@ function initDataParameterControls() {
                 showToast('Failed to re-parse data with new delimiter: ' + err.message);
             }
         }
-        
+
         syncDataControls();
     };
 
@@ -977,11 +975,11 @@ function initDataParameterControls() {
             }
         });
     }
-    
+
     // Meta Delimiter Controls
     const metaSelect = document.getElementById('meta-delimiter-select');
     const metaCustomInput = document.getElementById('meta-delimiter-custom');
-    
+
     if (metaSelect) {
         metaSelect.addEventListener('change', (e) => {
             if (e.target.value === 'custom') {
@@ -1004,7 +1002,7 @@ function initDataParameterControls() {
 
     if (metaCustomInput) {
         metaCustomInput.addEventListener('change', () => {
-             reparseCurrentMeta(); 
+            reparseCurrentMeta();
         });
     }
 
@@ -1044,7 +1042,7 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
                     <option value=";" ${delimiter === ';' ? 'selected' : ''}>Semicolon (;)</option>
                     <option value="|" ${delimiter === '|' ? 'selected' : ''}>Pipe (|)</option>
                 </select>
-                <button id="apply-preview-delim" class="btn-small" title="Apply this delimiter to ${context==='data'?'Data':'Meta'} settings">Apply to Settings</button>
+                <button id="apply-preview-delim" class="btn-small" title="Apply this delimiter to ${context === 'data' ? 'Data' : 'Meta'} settings">Apply to Settings</button>
             </div>
             <div class="text-secondary fs-12">
                 Showing first <strong>${lines.length}</strong> rows (Total ${totalRows})
@@ -1071,7 +1069,7 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         html += '</tr>';
     }
     html += '</tbody></table></div>';
-    
+
     container.innerHTML = controlsHtml + html;
 
     // Bind events
@@ -1085,38 +1083,38 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
     const applyBtn = container.querySelector('#apply-preview-delim');
     if (applyBtn) {
         applyBtn.addEventListener('click', () => {
-             const val = sel ? sel.value : delimiter;
-             // Determine target select ID based on context
-             const targetId = context === 'data' ? 'data-delimiter-select' : 'meta-delimiter-select';
-             const customId = context === 'data' ? 'data-delimiter-custom' : 'meta-delimiter-custom';
-             
-             const globalSel = document.getElementById(targetId);
-             
-             if (globalSel) {
-                 if (['tab','\t'].includes(val)) globalSel.value = 'tab';
-                 else if ([',','comma'].includes(val)) globalSel.value = 'comma';
-                 else {
-                     globalSel.value = 'custom';
-                     const customInput = document.getElementById(customId);
-                     if (customInput) {
-                         customInput.value = val;
-                         customInput.style.display = 'block';
-                         customInput.setAttribute('aria-hidden', 'false');
-                     }
-                 }
-                 // Trigger change to update parsing
-                 globalSel.dispatchEvent(new Event('change'));
-                 // Close modal
-                 const modal = document.getElementById('file-preview-modal');
-                 if (modal) {
-                     modal.style.display = 'none';
-                     modal.setAttribute('aria-hidden', 'true');
-                 }
-                 if (typeof showToast === 'function') 
+            const val = sel ? sel.value : delimiter;
+            // Determine target select ID based on context
+            const targetId = context === 'data' ? 'data-delimiter-select' : 'meta-delimiter-select';
+            const customId = context === 'data' ? 'data-delimiter-custom' : 'meta-delimiter-custom';
+
+            const globalSel = document.getElementById(targetId);
+
+            if (globalSel) {
+                if (['tab', '\t'].includes(val)) globalSel.value = 'tab';
+                else if ([',', 'comma'].includes(val)) globalSel.value = 'comma';
+                else {
+                    globalSel.value = 'custom';
+                    const customInput = document.getElementById(customId);
+                    if (customInput) {
+                        customInput.value = val;
+                        customInput.style.display = 'block';
+                        customInput.setAttribute('aria-hidden', 'false');
+                    }
+                }
+                // Trigger change to update parsing
+                globalSel.dispatchEvent(new Event('change'));
+                // Close modal
+                const modal = document.getElementById('file-preview-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.setAttribute('aria-hidden', 'true');
+                }
+                if (typeof showToast === 'function')
                     showToast(`${context === 'data' ? 'Data' : 'Meta'} delimiter set to ${val === '\t' ? 'Tab' : val}`);
-             } else {
-                 console.warn(`Target select ${targetId} not found`);
-             }
+            } else {
+                console.warn(`Target select ${targetId} not found`);
+            }
         });
     }
 }
@@ -1184,7 +1182,7 @@ function initEventListeners() {
 
     const metaPreviewBtn = document.getElementById('preview-meta-btn');
     if (metaPreviewBtn) metaPreviewBtn.addEventListener('click', handlePreviewMetaClick);
-    
+
     initFilePreviewModal();
     initColumnMappingListeners();
 
@@ -1704,15 +1702,15 @@ function loadDataFromText(text, options = {}) {
         throw new Error('Empty data content');
     }
     const firstLine = text.split(/\r?\n/)[0] || '';
-    
+
     // Explicit format check from options, or presence of mapping object
     if (options.format === 'long' || (options.mapping && typeof options.mapping === 'object')) {
         if (typeof parseLongFormatTSV === 'function') {
-             rawData = parseLongFormatTSV(text, null, options.mapping);
+            rawData = parseLongFormatTSV(text, null, options.mapping);
         } else {
-             // Fallback if not updated in time? Should be there.
-             console.error('parseLongFormatTSV not found');
-             rawData = parseTSV(text);
+            // Fallback if not updated in time? Should be there.
+            console.error('parseLongFormatTSV not found');
+            rawData = parseTSV(text);
         }
     } else {
         // Default to Wide Table (standard matrix)
@@ -1790,7 +1788,7 @@ let cachedLongFormatFilename = null;
 function renderColumnMappingPreview(text, delimiter) {
     const container = document.getElementById('mapping-preview-container');
     if (!container) return;
-    
+
     const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0).slice(0, 6); // Header + 5 rows
     if (lines.length === 0) {
         container.innerHTML = '<p class="text-muted">File is empty.</p>';
@@ -1799,22 +1797,22 @@ function renderColumnMappingPreview(text, delimiter) {
 
     // Header
     const headers = lines[0].split(delimiter).map(h => h.trim());
-    
+
     // Render Table
     let html = '<table class="info-sample-table" style="width:100%; font-size:12px; border-collapse: collapse;"><thead><tr style="background:#f5f7fa; border-bottom:1px solid #e2e8f0;">';
     headers.forEach((h, i) => {
         html += `<th style="padding:6px 12px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">
             <div style="margin-bottom:4px;">${h}</div>
-            <div class="text-muted" style="font-weight:normal; font-size:10px;">Col ${i+1}</div>
+            <div class="text-muted" style="font-weight:normal; font-size:10px;">Col ${i + 1}</div>
         </th>`;
     });
     html += '</tr></thead><tbody>';
-    
+
     for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(delimiter);
         html += '<tr style="border-bottom:1px solid #eee;">';
         cols.forEach(c => {
-             html += `<td style="padding:6px 12px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
+            html += `<td style="padding:6px 12px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
         });
         html += '</tr>';
     }
@@ -1849,19 +1847,19 @@ function renderColumnMappingPreview(text, delimiter) {
 }
 
 function showColumnMappingModal(text, filename) {
-     const modal = document.getElementById('column-mapping-modal');
-     if(!modal) return;
-     
-     cachedLongFormatText = text;
-     cachedLongFormatFilename = filename;
+    const modal = document.getElementById('column-mapping-modal');
+    if (!modal) return;
 
-     // Use current delimiter setting
-     const delim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
-     
-     renderColumnMappingPreview(text, delim);
-     
-     modal.style.display = 'block';
-     modal.setAttribute('aria-hidden', 'false');
+    cachedLongFormatText = text;
+    cachedLongFormatFilename = filename;
+
+    // Use current delimiter setting
+    const delim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
+
+    renderColumnMappingPreview(text, delim);
+
+    modal.style.display = 'block';
+    modal.setAttribute('aria-hidden', 'false');
 }
 
 function hideColumnMappingModal() {
@@ -1879,7 +1877,7 @@ function handleColumnMappingConfirm() {
     const taxon = document.getElementById('map-col-taxon').value;
     const condition = document.getElementById('map-col-condition').value;
     const value = document.getElementById('map-col-value').value;
-    
+
     // Optional
     const pvalue = document.getElementById('map-col-pvalue').value;
     const qvalue = document.getElementById('map-col-qvalue').value;
@@ -1894,7 +1892,7 @@ function handleColumnMappingConfirm() {
     if (qvalue) mapping.qvalue = qvalue;
 
     try {
-        loadDataFromText(cachedLongFormatText, { 
+        loadDataFromText(cachedLongFormatText, {
             label: cachedLongFormatFilename,
             format: 'long',
             mapping: mapping
@@ -1910,11 +1908,11 @@ function handleColumnMappingConfirm() {
 function initColumnMappingListeners() {
     const confirmBtn = document.getElementById('column-mapping-confirm-btn');
     if (confirmBtn) confirmBtn.addEventListener('click', handleColumnMappingConfirm);
-    
+
     const closeBtn = document.getElementById('column-mapping-modal-close');
     const modal = document.getElementById('column-mapping-modal');
     const overlay = modal ? modal.querySelector('.info-modal-overlay') : null;
-    
+
     const close = () => hideColumnMappingModal();
     if (closeBtn) closeBtn.addEventListener('click', close);
     if (overlay) overlay.addEventListener('click', close);
@@ -1937,7 +1935,7 @@ function handleFileUpload(e) {
     const name = file.name.toLowerCase();
     const dataDelimSelect = document.getElementById('data-delimiter-select');
     let autoDelim = null;
-    
+
     if (name.endsWith('.csv')) {
         autoDelim = 'comma';
     } else if (name.endsWith('.tsv') || name.endsWith('.txt')) {
@@ -1948,7 +1946,7 @@ function handleFileUpload(e) {
         // Only update if it's different to avoid unnecessary UI flicker or events
         if (dataDelimSelect.value !== autoDelim) {
             dataDelimSelect.value = autoDelim;
-            
+
             // IMPORTANT: Apply the setting functionally so it's picked up by subsequent reads
             if (typeof setDataFileDelimiter === 'function') {
                 setDataFileDelimiter(autoDelim === 'tab' ? '\t' : ',');
@@ -1967,7 +1965,7 @@ function handleFileUpload(e) {
     // Immediately show preview button (even if parsing hasn't happened yet)
     const previewBtn = document.getElementById('preview-data-btn');
     if (previewBtn) previewBtn.style.display = 'inline-flex';
-    
+
     const reader = new FileReader();
     reader.onload = function (event) {
         const text = event.target.result;
@@ -1979,28 +1977,28 @@ function handleFileUpload(e) {
 
         // Check format
         if (format === 'long') {
-             // For Long format, show mapping modal
-             // We still try to detect taxa delimiter because the user still needs to split the Item_ID column
-             
-             // Run auto-detect taxa delimiter
-             detectAndSetTaxaDelimiter(text);
-             
-             // Show modal
-             showColumnMappingModal(text, file.name);
-             
-        } else {
-             // Wide format (Standard)
-             
-             // Auto-detect taxa delimiter (Rank separator)
-             detectAndSetTaxaDelimiter(text);
+            // For Long format, show mapping modal
+            // We still try to detect taxa delimiter because the user still needs to split the Item_ID column
 
-             try {
-                 // Format is 'wide' (default)
-                 loadDataFromText(text, { label: file.name, format: 'wide' });
-             } catch (error) {
-                 alert('Failed to parse data: ' + error.message + '\n\nClick the "eye" icon to preview the raw file or switch to "Long Table" format if appropriate.');
-                 console.error(error);
-             }
+            // Run auto-detect taxa delimiter
+            detectAndSetTaxaDelimiter(text);
+
+            // Show modal
+            showColumnMappingModal(text, file.name);
+
+        } else {
+            // Wide format (Standard)
+
+            // Auto-detect taxa delimiter (Rank separator)
+            detectAndSetTaxaDelimiter(text);
+
+            try {
+                // Format is 'wide' (default)
+                loadDataFromText(text, { label: file.name, format: 'wide' });
+            } catch (error) {
+                alert('Failed to parse data: ' + error.message + '\n\nClick the "eye" icon to preview the raw file or switch to "Long Table" format if appropriate.');
+                console.error(error);
+            }
         }
     };
     reader.readAsText(file);
@@ -2008,59 +2006,59 @@ function handleFileUpload(e) {
 
 // Extracted Auto-detect logic
 function detectAndSetTaxaDelimiter(text) {
-     try {
-            const fileDelim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
-            // Sample first 20 lines, skip header (index 0)
-            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0).slice(1, 21);
-            
-            if (lines.length > 0) {
-                 let pipeCount = 0;
-                 let semiCount = 0;
-                 
-                 lines.forEach(line => {
-                     // Basic split to get the first column (Taxon Name/ID)
-                     const firstCol = line.split(fileDelim)[0];
-                     if (firstCol.includes('|')) pipeCount++;
-                     if (firstCol.includes(';')) semiCount++;
-                 });
-                 
-                 const threshold = Math.ceil(lines.length * 0.5); // at least 50%
-                 let detectedTaxaDelim = null;
-                 
-                 if (pipeCount >= threshold && pipeCount >= semiCount) {
-                     detectedTaxaDelim = 'pipe';
-                 } else if (semiCount >= threshold) {
-                     detectedTaxaDelim = 'semicolon';
-                 }
-                 
-                 const taxaSel = document.getElementById('taxa-delimiter-select');
-                 if (detectedTaxaDelim) {
-                     // 1. Update UI if needed
-                     if (taxaSel && taxaSel.value !== detectedTaxaDelim) {
-                         taxaSel.value = detectedTaxaDelim;
-                     }
-                     
-                     // 2. IMPORTANT: Apply the setting functionally
-                     if (typeof setTaxonRankDelimiter === 'function') {
-                         setTaxonRankDelimiter(detectedTaxaDelim === 'pipe' ? '|' : ';');
-                     }
+    try {
+        const fileDelim = (typeof getDataFileDelimiter === 'function') ? getDataFileDelimiter() : '\t';
+        // Sample first 20 lines, skip header (index 0)
+        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0).slice(1, 21);
 
-                     // Helper to manage custom input visibility
-                     const taxaCustom = document.getElementById('taxa-delimiter-custom');
-                     if (taxaCustom) {
-                         taxaCustom.style.display = 'none';
-                         taxaCustom.setAttribute('aria-hidden', 'true');
-                     }
-                     
-                     if (typeof showToast === 'function') {
-                        const symbol = detectedTaxaDelim === 'pipe' ? '|' : ';';
-                        showToast(`Auto-detected taxa separator: ${detectedTaxaDelim} (${symbol})`);
-                     }
-                 }
+        if (lines.length > 0) {
+            let pipeCount = 0;
+            let semiCount = 0;
+
+            lines.forEach(line => {
+                // Basic split to get the first column (Taxon Name/ID)
+                const firstCol = line.split(fileDelim)[0];
+                if (firstCol.includes('|')) pipeCount++;
+                if (firstCol.includes(';')) semiCount++;
+            });
+
+            const threshold = Math.ceil(lines.length * 0.5); // at least 50%
+            let detectedTaxaDelim = null;
+
+            if (pipeCount >= threshold && pipeCount >= semiCount) {
+                detectedTaxaDelim = 'pipe';
+            } else if (semiCount >= threshold) {
+                detectedTaxaDelim = 'semicolon';
             }
-        } catch (e) {
-            console.warn('Taxa separator auto-detection failed:', e);
+
+            const taxaSel = document.getElementById('taxa-delimiter-select');
+            if (detectedTaxaDelim) {
+                // 1. Update UI if needed
+                if (taxaSel && taxaSel.value !== detectedTaxaDelim) {
+                    taxaSel.value = detectedTaxaDelim;
+                }
+
+                // 2. IMPORTANT: Apply the setting functionally
+                if (typeof setTaxonRankDelimiter === 'function') {
+                    setTaxonRankDelimiter(detectedTaxaDelim === 'pipe' ? '|' : ';');
+                }
+
+                // Helper to manage custom input visibility
+                const taxaCustom = document.getElementById('taxa-delimiter-custom');
+                if (taxaCustom) {
+                    taxaCustom.style.display = 'none';
+                    taxaCustom.setAttribute('aria-hidden', 'true');
+                }
+
+                if (typeof showToast === 'function') {
+                    const symbol = detectedTaxaDelim === 'pipe' ? '|' : ';';
+                    showToast(`Auto-detected taxa separator: ${detectedTaxaDelim} (${symbol})`);
+                }
+            }
         }
+    } catch (e) {
+        console.warn('Taxa separator auto-detection failed:', e);
+    }
 }
 
 function updateSampleCheckboxes() {
@@ -2512,15 +2510,9 @@ window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dyna
         : fallbackNames;
 
     // 默认勾选“最外两层”（从叶：0和1）；若层级较少，做边界处理
-    // 性能保护：当叶子节点数量过多（>1000）时，默认不勾选任何标签以避免初始渲染卡顿
     const defaultSelected = [];
-    if (typeof leafCount === 'number' && leafCount > DEFAULT_LEAF_LABEL_THRESHOLD) {
-        // 不勾选任何级别，用户可手动启用需要的层级
-        // leave defaultSelected empty
-    } else {
-        if (maxLeafHeight >= 0) defaultSelected.push(0);
-        // if (maxLeafHeight >= 1) defaultSelected.push(1);
-    }
+    if (maxLeafHeight >= 0) defaultSelected.push(0);
+    // if (maxLeafHeight >= 1) defaultSelected.push(1);
     labelLevelsSelected = defaultSelected.slice();
     // 根据默认选中项决定初始 showLabels（空数组 => 不显示）
     if (Array.isArray(labelLevelsSelected)) {
@@ -2541,16 +2533,9 @@ window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dyna
             container.parentElement.insertBefore(hintEl, container);
         }
         if (hintEl) {
-            // 显式控制显示/隐藏，避免只清空文本但元素仍在 DOM 中占位
-            if (typeof leafCount === 'number' && leafCount > DEFAULT_LEAF_LABEL_THRESHOLD) {
-                hintEl.textContent = `Detected ${leafCount.toLocaleString()} leaf nodes — labels are disabled by default for performance. You can enable selective levels manually.`;
-                hintEl.style.display = 'block';
-                hintEl.setAttribute('aria-hidden', 'false');
-            } else {
-                hintEl.textContent = '';
-                hintEl.style.display = 'none';
-                hintEl.setAttribute('aria-hidden', 'true');
-            }
+            hintEl.textContent = '';
+            hintEl.style.display = 'none';
+            hintEl.setAttribute('aria-hidden', 'true');
         }
     } catch (_) { /* ignore hint failures */ }
 
@@ -2749,32 +2734,24 @@ function resetLabelsNodesToDefaults() {
 
 
             const checked = [];
-            // 仅当 leafCount 未定义或不超过阈值时才默认勾选叶标签
-            if (typeof leafCount !== 'number' || leafCount <= DEFAULT_LEAF_LABEL_THRESHOLD) {
-                const leafCb = levelsWrap.querySelector('input[type="checkbox"][value="0"]');
-                if (leafCb) {
-                    leafCb.checked = true;
-                    checked.push(0);
-                }
+            // 默认勾选叶层标签
+            const leafCb = levelsWrap.querySelector('input[type="checkbox"][value="0"]');
+            if (leafCb) {
+                leafCb.checked = true;
+                checked.push(0);
             }
 
             // 同步到全局与显示标志
             labelLevelsSelected = checked;
             showLabels = Array.isArray(labelLevelsSelected) ? labelLevelsSelected.length > 0 : true;
 
-            // 另外刷新性能提示显示状态以保证与当前 leafCount 同步
+            // 隐藏性能提示
             try {
                 const hintEl = document.getElementById('label-performance-hint');
                 if (hintEl) {
-                    if (typeof leafCount === 'number' && leafCount > DEFAULT_LEAF_LABEL_THRESHOLD) {
-                        hintEl.style.display = 'block';
-                        hintEl.setAttribute('aria-hidden', 'false');
-                        hintEl.textContent = `Detected ${leafCount.toLocaleString()} leaf nodes — labels are disabled by default for performance. You can enable selective levels manually.`;
-                    } else {
-                        hintEl.style.display = 'none';
-                        hintEl.setAttribute('aria-hidden', 'true');
-                        hintEl.textContent = '';
-                    }
+                    hintEl.style.display = 'none';
+                    hintEl.setAttribute('aria-hidden', 'true');
+                    hintEl.textContent = '';
                 }
             } catch (_) { /* ignore hint update errors */ }
         }
@@ -4308,14 +4285,14 @@ async function handleLoadExampleClick() {
 
             if (metaResp.ok) {
                 const metaText = await metaResp.text();
-                
+
                 // Cache meta content for preview
                 if (typeof window !== 'undefined') {
-                     window.cachedMetaContent = metaText;
-                     window.cachedMetaLabel = 'Example: test/data/meta.tsv';
-                     // Show meta preview button
-                     const mBtn = document.getElementById('preview-meta-btn');
-                     if (mBtn) mBtn.style.display = 'inline-flex';
+                    window.cachedMetaContent = metaText;
+                    window.cachedMetaLabel = 'Example: test/data/meta.tsv';
+                    // Show meta preview button
+                    const mBtn = document.getElementById('preview-meta-btn');
+                    if (mBtn) mBtn.style.display = 'inline-flex';
                 }
 
                 // 解析并处理 meta 数据
@@ -4459,7 +4436,7 @@ try { if (typeof window !== 'undefined') window.loadMetaFromText = loadMetaFromT
 function handleMetaUpload(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    
+
     // Detect delimiter from extension
     const name = file.name.toLowerCase();
     const metaDelimSelect = document.getElementById('meta-delimiter-select');
@@ -4479,7 +4456,7 @@ function handleMetaUpload(e) {
                 customInput.style.display = 'none';
                 customInput.setAttribute('aria-hidden', 'true');
             }
-             if (typeof showToast === 'function') showToast(`Auto-detected meta delimiter: ${autoDelim === 'tab' ? 'Tab' : 'Comma'}`);
+            if (typeof showToast === 'function') showToast(`Auto-detected meta delimiter: ${autoDelim === 'tab' ? 'Tab' : 'Comma'}`);
         }
     }
 
@@ -5375,6 +5352,14 @@ function initUniformLabelColors() {
         });
     }
 
+    const smartCullingCheckbox = document.getElementById('smart-label-culling');
+    if (smartCullingCheckbox) {
+        smartCullingCheckbox.addEventListener('change', function () {
+            smartLabelCulling = this.checked;
+            redrawCurrentVisualization();
+        });
+    }
+
     // 右键菜单事件
     const applyCurrentBtn = document.getElementById('label-color-apply-current');
     const applySameBtn = document.getElementById('label-color-apply-same');
@@ -5559,14 +5544,14 @@ function showToast(message, duration = 3000) {
         document.body.appendChild(toast);
     }
     toast.textContent = message;
-    
+
     // Force reflow
     void toast.offsetWidth;
-    
+
     toast.classList.add('show');
-    
+
     if (toast._timeout) clearTimeout(toast._timeout);
-    
+
     toast._timeout = setTimeout(() => {
         toast.classList.remove('show');
     }, duration);

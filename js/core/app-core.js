@@ -62,6 +62,7 @@ let metaFilters = {};
 
 // 可视化参数
 let showLabels = true; // 是否显示标签（默认开启）
+let smartLabelCulling = true; // 是否启用智能标签碰撞检测
 let nodeSizeMultiplier = 1.0; // 节点大小倍数
 let edgeWidthMultiplier = 1.5; // 连线宽度倍数（全局轻微放大 1.5）
 let labelThreshold = 1.0; // 标签丰度阈值（0-1，0=不显示，1=显示全部）
@@ -96,6 +97,27 @@ let labelColorIndex = 0; // 当前使用的颜色索引
 // 针对单个节点实例的颜色覆盖：key 为祖先路径（唯一标识当前节点实例）
 let nodeColorOverrides = new Map(); // { nodeAncestorPath: color }
 let nodeColorOverrideLabel = new Map(); // { nodeAncestorPath: labelName } 用于按标签清理覆盖
+
+// 标签统计（用于UI显示）
+let labelStatsPerSample = {};
+
+function updateLabelStatsUI() {
+    let totalVis = 0;
+    let totalCand = 0;
+    Object.values(labelStatsPerSample).forEach(s => {
+        totalVis += s.visible;
+        totalCand += s.total;
+    });
+    const el = document.getElementById('label-visible-count');
+    if (el) {
+        if (totalCand > 0) {
+            const pct = Math.round(totalVis / totalCand * 100);
+            el.textContent = `Showing ${totalVis.toLocaleString()} / ${totalCand.toLocaleString()} (${pct}%)`;
+        } else {
+            el.textContent = '';
+        }
+    }
+}
 
 /**
  * 生成视觉上可区分的颜色
@@ -582,20 +604,20 @@ function parseLongFormatTSV(text, delimiter, mapping) {
 
     // Check if columns exist
     if (!header.includes(colTaxon) || !header.includes(colCond) || !header.includes(colValue)) {
-         throw new Error(`Required columns not found in header. Expected: ${colTaxon}, ${colCond}, ${colValue}`);
+        throw new Error(`Required columns not found in header. Expected: ${colTaxon}, ${colCond}, ${colValue}`);
     }
 
     for (const r of rows) {
         const taxon = (r[colTaxon] ?? '').trim();
         const cond = (r[colCond] ?? '').trim();
         if (!taxon || !cond) continue;
-        
+
         condSet.add(cond);
         const rawVal = parseFloat(r[colValue]);
         const val = isFinite(rawVal) ? rawVal : 0;
-        
+
         if (val < 0) hasNeg = true;
-        
+
         const qv = (colQ && r[colQ] !== undefined) ? parseFloat(r[colQ]) : undefined;
         const pv = (colP && r[colP] !== undefined) ? parseFloat(r[colP]) : undefined;
 
@@ -627,7 +649,7 @@ function parseMetaTSV(text, delimiter) {
     let separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
         : null;
-        
+
     if (!separator) {
         if (typeof getMetaFileDelimiter === 'function') {
             separator = getMetaFileDelimiter();
@@ -1738,6 +1760,10 @@ function setupPanelObserver() {
 function drawAllTrees() {
     console.log('drawAllTrees called, customLabelColors:', customLabelColors.size);
 
+    // 重置标签统计
+    labelStatsPerSample = {};
+    updateLabelStatsUI();
+
     // 在group模式下,先构建包含group数据的树
     if (visualizationMode === 'group') {
         computeGroupedData();
@@ -2380,31 +2406,98 @@ function drawTree(sample, globalDomain) {
             const thresholdValue = calculateLabelThreshold(hierarchy, sample);
             const selectedSet = getLabelLevelSet();
 
-            nodeGroup.filter(d => {
+            // 1. 筛选出所有符合基本条件（层级、阈值、显著性）的候选节点
+            const candidates = [];
+            nodeGroup.each(function (d) {
                 const abundance = d.data.abundances[sample] || 0;
                 const t = transformAbundance(abundance);
                 const depthFromLeaf = d.height;
                 const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
                 const sigOk = !singleSigActive || (d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
-                return levelOk && sigOk && Math.abs(t) >= thresholdValue;
-            })
-                .append('text')
-                .attr('class', 'node-label')
-                .attr('dy', '0.31em')
-                .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
-                .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
-                .attr('transform', d => {
-                    const angle = d.x * 180 / Math.PI - 90;
-                    return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
-                })
-                .text(d => getDisplayName(d))
-                .style('font-size', `${labelFontSize}px`)
-                .attr('fill', d => getLabelColor(d))
-                .attr('font-weight', '500')
-                .style('pointer-events', 'all')
-                .style('cursor', 'context-menu')
-                .on('contextmenu', handleLabelRightClick)
-                .call(applyLabelOverflow);
+                if (levelOk && sigOk && Math.abs(t) >= thresholdValue) {
+                    candidates.push(d);
+                }
+            });
+
+            let visibleNodesSet = null;
+            // 如果未启用智能过滤，则直接显示所有候选
+            if (!smartLabelCulling) {
+                nodeGroup.filter(d => candidates.includes(d))
+                    .append('text')
+                    .attr('class', 'node-label')
+                    .attr('dy', '0.31em')
+                    .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
+                    .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
+                    .attr('transform', d => {
+                        const angle = d.x * 180 / Math.PI - 90;
+                        return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
+                    })
+                    .text(d => getDisplayName(d))
+                    .style('font-size', `${labelFontSize}px`)
+                    .attr('fill', d => getLabelColor(d))
+                    .attr('font-weight', '500')
+                    .style('pointer-events', 'all')
+                    .style('cursor', 'context-menu')
+                    .on('contextmenu', handleLabelRightClick)
+                    .call(applyLabelOverflow);
+            } else {
+                // 2. 按深度分组并排序，进行贪婪的碰撞检测
+                visibleNodesSet = new Set();
+                const nodesByDepth = {};
+                candidates.forEach(d => {
+                    const depth = d.depth || 0;
+                    if (!nodesByDepth[depth]) nodesByDepth[depth] = [];
+                    nodesByDepth[depth].push(d);
+                });
+
+                const minArcLength = (labelFontSize || 10) * 1.0; // 最小弧长间隔
+                const minRadiusForLabel = 10; // 距离圆心太近不显示标签
+
+                Object.keys(nodesByDepth).forEach(depthKey => {
+                    const depthNodes = nodesByDepth[depthKey];
+                    // 按角度排序 (d.x 在 cluster/radial 布局中为角度)
+                    depthNodes.sort((a, b) => a.x - b.x);
+
+                    let lastAngle = -100;
+                    depthNodes.forEach(d => {
+                        // d.y 是半径距离
+                        const radius = d.y;
+                        if (radius < minRadiusForLabel) return;
+
+                        const currentAngle = d.x;
+                        // 简单的线性扫描碰撞检测 (未处理 2PI 循环边界，但在树图通常足够)
+                        // 弧长 distance ~= radius * angle_diff
+                        if (radius * (currentAngle - lastAngle) >= minArcLength) {
+                            visibleNodesSet.add(d);
+                            lastAngle = currentAngle;
+                        }
+                    });
+                });
+
+                // 3. 绘制通过碰撞检测的标签
+                nodeGroup.filter(d => visibleNodesSet.has(d))
+                    .append('text')
+                    .attr('class', 'node-label')
+                    .attr('dy', '0.31em')
+                    .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
+                    .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
+                    .attr('transform', d => {
+                        const angle = d.x * 180 / Math.PI - 90;
+                        return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
+                    })
+                    .text(d => getDisplayName(d))
+                    .style('font-size', `${labelFontSize}px`)
+                    .attr('fill', d => getLabelColor(d))
+                    .attr('font-weight', '500')
+                    .style('pointer-events', 'all')
+                    .style('cursor', 'context-menu')
+                    .on('contextmenu', handleLabelRightClick)
+                    .call(applyLabelOverflow);
+            }
+
+            const visCount = (!smartLabelCulling) ? candidates.length : (visibleNodesSet ? visibleNodesSet.size : 0);
+            labelStatsPerSample[sample] = { visible: visCount, total: candidates.length };
+            updateLabelStatsUI();
         }
 
     } else if (currentLayout === 'packing') {
@@ -2476,6 +2569,9 @@ function drawTree(sample, globalDomain) {
             const selectedSet = getLabelLevelSet();
             const minPackLabelRadius = Math.max(labelFontSize, 10);
 
+            let pVis = 0;
+            let pTotal = 0;
+
             const packLabels = g.selectAll('.node')
                 .filter(d => {
                     const abundance = (d.data && d.data.abundances && d.data.abundances[sample]) ? d.data.abundances[sample] : 0;
@@ -2483,10 +2579,20 @@ function drawTree(sample, globalDomain) {
                     const depthFromLeaf = d.height;
                     const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
                     const sigOk = !singleSigActive || (d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
-                    const isLeafLevel = depthFromLeaf === 0;
-                    const minRadius = isLeafLevel ? Math.max(labelFontSize * 0.5, 4) : minPackLabelRadius;
-                    const radiusOk = typeof d.r === 'number' ? d.r >= minRadius : true;
-                    return levelOk && sigOk && radiusOk && Math.abs(t) >= thresholdValue;
+
+                    const isCandidate = levelOk && sigOk && Math.abs(t) >= thresholdValue;
+                    if (isCandidate) {
+                        pTotal++;
+                        const isLeafLevel = depthFromLeaf === 0;
+                        const minRadius = isLeafLevel ? Math.max(labelFontSize * 0.5, 4) : minPackLabelRadius;
+                        const radiusOk = typeof d.r === 'number' ? d.r >= minRadius : true;
+
+                        if (radiusOk) {
+                            pVis++;
+                            return true;
+                        }
+                    }
+                    return false;
                 })
                 .append('text')
                 .attr('class', 'node-label')
@@ -2503,6 +2609,9 @@ function drawTree(sample, globalDomain) {
             if (typeof hoistPackingLabels === 'function') {
                 try { hoistPackingLabels(packLabels); } catch (_) { }
             }
+
+            labelStatsPerSample[sample] = { visible: pVis, total: pTotal };
+            updateLabelStatsUI();
         }
 
     } else {
@@ -2596,27 +2705,84 @@ function drawTree(sample, globalDomain) {
             const thresholdValue = calculateLabelThreshold(hierarchy, sample);
             const selectedSet = getLabelLevelSet();
 
-            nodeGroup.filter(d => {
+            // 1. 筛选候选
+            const candidates = [];
+            nodeGroup.each(function (d) {
                 const abundance = d.data.abundances[sample] || 0;
                 const t = transformAbundance(abundance);
                 const depthFromLeaf = d.height;
                 const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
                 const sigOk = !singleSigActive || (d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
-                return levelOk && sigOk && Math.abs(t) >= thresholdValue;
-            })
-                .append('text')
-                .attr('class', 'node-label')
-                .attr('dy', '0.31em')
-                .attr('x', d => d.children ? -10 : 10)
-                .attr('text-anchor', d => d.children ? 'end' : 'start')
-                .text(d => getDisplayName(d))
-                .style('font-size', `${labelFontSize}px`)
-                .attr('fill', d => getLabelColor(d))
-                .attr('font-weight', '500')
-                .style('pointer-events', 'all')
-                .style('cursor', 'context-menu')
-                .on('contextmenu', handleLabelRightClick)
-                .call(applyLabelOverflow);
+                if (levelOk && sigOk && Math.abs(t) >= thresholdValue) {
+                    candidates.push(d);
+                }
+            });
+
+            let visibleNodesSet = null;
+            // 如果未启用智能过滤，则直接显示所有候选
+            if (!smartLabelCulling) {
+                nodeGroup.filter(d => candidates.includes(d))
+                    .append('text')
+                    .attr('class', 'node-label')
+                    .attr('dy', '0.31em')
+                    .attr('x', d => d.children ? -10 : 10)
+                    .attr('text-anchor', d => d.children ? 'end' : 'start')
+                    .text(d => getDisplayName(d))
+                    .style('font-size', `${labelFontSize}px`)
+                    .attr('fill', d => getLabelColor(d))
+                    .attr('font-weight', '500')
+                    .style('pointer-events', 'all')
+                    .style('cursor', 'context-menu')
+                    .on('contextmenu', handleLabelRightClick)
+                    .call(applyLabelOverflow);
+            } else {
+                // 2. 碰撞检测 (垂直方向 overlap)
+                visibleNodesSet = new Set();
+                // 在 d3.tree (Horizontal) 中，d.x 是垂直位置，d.y 是水平（深度）位置
+                // 按深度分组（通常同一层级 x 坐标不同）
+                const nodesByDepth = {};
+                candidates.forEach(d => {
+                    // 使用 Math.round(d.y) 作为深度分组键，防止浮点误差
+                    const depthKey = Math.round(d.y);
+                    if (!nodesByDepth[depthKey]) nodesByDepth[depthKey] = [];
+                    nodesByDepth[depthKey].push(d);
+                });
+
+                const minVerticalSpacing = (labelFontSize || 10) * 1.0;
+
+                Object.keys(nodesByDepth).forEach(key => {
+                    const colNodes = nodesByDepth[key];
+                    // 按垂直位置 d.x 排序
+                    colNodes.sort((a, b) => a.x - b.x);
+
+                    let lastX = -100;
+                    colNodes.forEach(d => {
+                        if ((d.x - lastX) >= minVerticalSpacing) {
+                            visibleNodesSet.add(d);
+                            lastX = d.x;
+                        }
+                    });
+                });
+
+                nodeGroup.filter(d => visibleNodesSet.has(d))
+                    .append('text')
+                    .attr('class', 'node-label')
+                    .attr('dy', '0.31em')
+                    .attr('x', d => d.children ? -10 : 10)
+                    .attr('text-anchor', d => d.children ? 'end' : 'start')
+                    .text(d => getDisplayName(d))
+                    .style('font-size', `${labelFontSize}px`)
+                    .attr('fill', d => getLabelColor(d))
+                    .attr('font-weight', '500')
+                    .style('pointer-events', 'all')
+                    .style('cursor', 'context-menu')
+                    .on('contextmenu', handleLabelRightClick)
+                    .call(applyLabelOverflow);
+            }
+
+            const visCount = (!smartLabelCulling) ? candidates.length : (visibleNodesSet ? visibleNodesSet.size : 0);
+            labelStatsPerSample[sample] = { visible: visCount, total: candidates.length };
+            updateLabelStatsUI();
         }
     }
 
@@ -2971,17 +3137,17 @@ function addInteractions(nodes, sample) {
 
             // 构建 tooltip 内容
             const abundance = d.data.abundances[sample] || 0;
-                        // 节点的完整祖先路径（用于显示 full_path），如果外部提供函数则使用它
-                        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
-                        // 根据项目提供的分隔符智能插入换行点（<wbr>），并对每段进行 HTML 转义
-                        const delim = (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
-                        let nodePathDisplay = nodePath ? escapeHtml(nodePath) : (d.data.fullName || 'Root');
-                        try {
-                            if (nodePath) {
-                                const parts = String(nodePath).split(delim);
-                                nodePathDisplay = parts.map(p => p == null ? '' : String(p).replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||ch))).join((function(s){return s.replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||ch));})(delim) + '<wbr>');
-                            }
-                        } catch (_) { /* fallback uses escaped nodePath already set */ }
+            // 节点的完整祖先路径（用于显示 full_path），如果外部提供函数则使用它
+            const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+            // 根据项目提供的分隔符智能插入换行点（<wbr>），并对每段进行 HTML 转义
+            const delim = (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
+            let nodePathDisplay = nodePath ? escapeHtml(nodePath) : (d.data.fullName || 'Root');
+            try {
+                if (nodePath) {
+                    const parts = String(nodePath).split(delim);
+                    nodePathDisplay = parts.map(p => p == null ? '' : String(p).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch))).join((function (s) { return s.replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch)); })(delim) + '<wbr>');
+                }
+            } catch (_) { /* fallback uses escaped nodePath already set */ }
             // If using combined_long (isCombinedLong) and stats are available, include pvalue/padj
             const statForSample = (d.data && d.data.stats) ? d.data.stats[sample] : null;
             let tooltipHtml = `
@@ -3093,7 +3259,7 @@ function addInteractions(nodes, sample) {
                     window._collapsedHistory.push(d.data);
                 }
                 d.data.__collapsed = newState;
-                
+
                 // 如果存在原始节点引用（Group模式），同步状态
                 if (d.data.__originalNode) {
                     d.data.__originalNode.__collapsed = newState;

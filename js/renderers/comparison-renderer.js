@@ -459,7 +459,11 @@
           const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return;
-          if (typeof showOnlySignificant !== 'undefined' && showOnlySignificant && !isSignificantByThresholds(st)) return;
+          
+          // 如果用户明确选择了层级，则忽略显著性过滤（只要节点可见）
+          // 否则，如果启用了仅显示显著，则过滤非显著节点
+          if (!selectedSet && typeof showOnlySignificant !== 'undefined' && showOnlySignificant && !isSignificantByThresholds(st)) return;
+          
           const depthFromLeaf = node.height;
           const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
           const mag = Math.abs(st.comparison_value || 0);
@@ -696,7 +700,11 @@
           const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return false;
-          if (showOnlySignificant && !isSignificantByThresholds(st)) return false;
+          
+          // 如果用户明确选择了层级，则忽略显著性过滤（只要节点可见）
+          // 否则，如果启用了仅显示显著，则过滤非显著节点
+          if (!selectedSet && showOnlySignificant && !isSignificantByThresholds(st)) return false;
+
           const depthFromLeaf = d.height;
           const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
           const mag = Math.abs(st.comparison_value || 0);

@@ -2969,12 +2969,23 @@ function addInteractions(nodes, sample) {
 
             // 构建 tooltip 内容
             const abundance = d.data.abundances[sample] || 0;
+                        // 节点的完整祖先路径（用于显示 full_path），如果外部提供函数则使用它
+                        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+                        // 根据项目提供的分隔符智能插入换行点（<wbr>），并对每段进行 HTML 转义
+                        const delim = (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
+                        let nodePathDisplay = nodePath ? escapeHtml(nodePath) : (d.data.fullName || 'Root');
+                        try {
+                            if (nodePath) {
+                                const parts = String(nodePath).split(delim);
+                                nodePathDisplay = parts.map(p => p == null ? '' : String(p).replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||ch))).join((function(s){return s.replace(/[&<>\"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||ch));})(delim) + '<wbr>');
+                            }
+                        } catch (_) { /* fallback uses escaped nodePath already set */ }
             // If using combined_long (isCombinedLong) and stats are available, include pvalue/padj
             const statForSample = (d.data && d.data.stats) ? d.data.stats[sample] : null;
             let tooltipHtml = `
-                <div class="tooltip-taxon">${d.data.name}</div>
+                <div class="tooltip-taxon">${d.data.fullName || d.data.name}</div>
                 <div><strong>Sample:</strong> ${sample}</div>
-                <div>Name: ${d.data.fullName || 'Root'}</div>
+                <div><strong>Lineage:</strong> ${nodePathDisplay}</div>
                 <div>Depth: ${d.depth}</div>
                 ${d.children ? `<div>Children: ${d.children.length}</div>` : ''}
                 <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;

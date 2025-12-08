@@ -1518,6 +1518,19 @@ button:disabled {
     color: #81c784;
 }
 
+/* Tooltip path (full_path) - allow long paths to wrap nicely inside the tooltip */
+.tooltip-path {
+    color: #ddd;
+    margin-bottom: var(--spacing-sm);
+    display: block;
+    box-sizing: border-box;
+    max-width: 100%;
+    white-space: normal;         /* allow wrapping */
+    /* Force breaks for very long tokens (no spaces) so they don't overflow */
+    word-break: break-all;       /* break within words if needed */
+    overflow-wrap: anywhere;     /* ensure very long tokens wrap */
+}
+
 /* ========== Legend 样式 ========== */
 .legend {
     position: absolute;

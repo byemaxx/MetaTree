@@ -760,14 +760,26 @@
       const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
       const st = nodePath ? (comparisonStats[nodePath] || {}) : {};
       const fullLabel = getNodeFullLabel(d);
-      const displayName = escapeHtml(d.data.name || '');
-      const fullLabelHtml = fullLabel ? escapeHtml(fullLabel) : '';
+      // 标题为节点全名（fullLabel），如果没有则回退为短名
+      const displayName = escapeHtml(fullLabel || (d && d.data ? d.data.name : '') || '');
+      // 显示节点的全路径；根据项目分隔符在分隔处插入换行点 (<wbr>)
+      const delim = (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
+      let fullPathHtml = '';
+      if (nodePath) {
+        try {
+          const parts = String(nodePath).split(delim);
+          // 对每段进行 HTML 转义，然后用分隔符 + <wbr> 连接，允许浏览器在分隔处换行
+          fullPathHtml = parts.map(p => escapeHtml(p)).join(escapeHtml(delim) + '<wbr>');
+        } catch (_) {
+          fullPathHtml = escapeHtml(nodePath);
+        }
+      }
       const fmt = (x, n = 3) => (x != null && isFinite(x)) ? x.toFixed(n) : '0';
       try {
         tooltip
           .html(`
             <div class="tooltip-taxon">${displayName}</div>
-            ${fullLabelHtml ? `<div class="tooltip-path">${fullLabelHtml}</div>` : ''}
+            ${fullPathHtml ? `<div class="tooltip-path"><strong>Lineage:</strong> ${fullPathHtml}</div>` : ''}
             <div><strong>${group1}</strong> median: ${fmt(st.median_1, 2)} | mean: ${fmt(st.mean_1, 2)}</div>
             <div><strong>${group2}</strong> median: ${fmt(st.median_2, 2)} | mean: ${fmt(st.mean_2, 2)}</div>
             <div>Log2 fold change (${group2}/${group1}): <strong>${fmt(st.log2_median_ratio, 3)}</strong></div>

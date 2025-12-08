@@ -3144,14 +3144,31 @@ function addInteractions(nodes, sample) {
             let nodePathDisplay = nodePath ? escapeHtml(nodePath) : (d.data.fullName || 'Root');
             try {
                 if (nodePath) {
+                    const esc = (s) => String(s).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch));
                     const parts = String(nodePath).split(delim);
-                    nodePathDisplay = parts.map(p => p == null ? '' : String(p).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch))).join((function (s) { return s.replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch)); })(delim) + '<wbr>');
+                    nodePathDisplay = parts.map(p => esc(p ?? '')).reduce((acc, curr, idx) => {
+                        if (idx === 0) return curr;
+                        const original = parts[idx];
+                        if (original && original.startsWith('<') && original.endsWith('>')) {
+                            return acc + ' ' + curr;
+                        }
+                        return acc + esc(delim) + '<wbr>' + curr;
+                    }, '');
                 }
             } catch (_) { /* fallback uses escaped nodePath already set */ }
             // If using combined_long (isCombinedLong) and stats are available, include pvalue/padj
             const statForSample = (d.data && d.data.stats) ? d.data.stats[sample] : null;
+            let displayLabel = d.data.fullName || d.data.name || '';
+            // For function nodes (formatted as <Name>), strip the outer brackets
+            if (displayLabel.startsWith('<') && displayLabel.endsWith('>')) {
+                displayLabel = displayLabel.slice(1, -1);
+            }
+
+            // Escape HTML characters to ensure the label is displayed as text
+            displayLabel = String(displayLabel).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch));
+
             let tooltipHtml = `
-                <div class="tooltip-taxon">${d.data.fullName || d.data.name}</div>
+                <div class="tooltip-taxon">${displayLabel}</div>
                 <div><strong>Sample:</strong> ${sample}</div>
                 <div><strong>Lineage:</strong> ${nodePathDisplay}</div>
                 <div>Depth: ${d.depth}</div>

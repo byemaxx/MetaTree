@@ -31,8 +31,15 @@
         <div class="app-body">
             <aside class="sidebar" id="sidebar">
                 <!-- 数据加载区（左侧边栏） -->
-                <div class="control-panel card-panel">
-                    <div class="panel-title">Data & Metadata</div>
+                <div class="control-panel card-panel" id="data-metadata-panel">
+                    <div class="panel-title">
+                        <span>Data & Metadata</span>
+                        <button type="button" class="toggle-btn" id="data-metadata-panel-toggle"
+                            aria-expanded="true" aria-controls="data-metadata-panel" aria-label="Collapse panel"
+                            title="Collapse panel">
+                            Collapse ▲
+                        </button>
+                    </div>
                     <div class="control-row">
                         <div class="control-group">
                             <div class="label-with-help">

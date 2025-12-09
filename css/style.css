@@ -368,6 +368,10 @@ body.info-modal-open {
     display: none;
 }
 
+.control-panel.collapsed > :not(.panel-title) {
+    display: none;
+}
+
 /* Ensure the toggle button in panel title aligns visually */
 .panel-title .toggle-btn {
     margin-left: var(--spacing-md);
@@ -700,6 +704,8 @@ body.info-modal-open {
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
 }
 
 .panel-title::after {

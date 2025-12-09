@@ -3880,6 +3880,63 @@ function handleColorDomainReset() {
     persistCurrentModeColorSettings();
 }
 
+function initCollapsiblePanel(panelId, toggleId, options = {}) {
+    const panel = document.getElementById(panelId);
+    const toggle = document.getElementById(toggleId);
+    if (!panel || !toggle) return;
+
+    const storageKey = options.storageKey || null;
+    const defaultCollapsed = !!options.defaultCollapsed;
+    const expandLabel = options.expandLabel || 'Expand ▼';
+    const collapseLabel = options.collapseLabel || 'Collapse ▲';
+    const expandAriaLabel = options.expandAriaLabel || 'Expand panel';
+    const collapseAriaLabel = options.collapseAriaLabel || 'Collapse panel';
+
+    const readPersistedState = () => {
+        if (!storageKey) return defaultCollapsed;
+        try {
+            const stored = localStorage.getItem(storageKey);
+            if (stored === null) return defaultCollapsed;
+            return stored === 'true';
+        } catch (_) {
+            return defaultCollapsed;
+        }
+    };
+
+    const persistState = (collapsed) => {
+        if (!storageKey) return;
+        try {
+            localStorage.setItem(storageKey, collapsed ? 'true' : 'false');
+        } catch (_) { }
+    };
+
+    const applyState = (collapsed) => {
+        panel.classList.toggle('collapsed', collapsed);
+        toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        const label = collapsed ? expandLabel : collapseLabel;
+        toggle.textContent = label;
+        const ariaLabel = collapsed ? expandAriaLabel : collapseAriaLabel;
+        toggle.setAttribute('aria-label', ariaLabel);
+        toggle.setAttribute('title', ariaLabel);
+        if (typeof options.onToggle === 'function') {
+            try {
+                options.onToggle(collapsed);
+            } catch (err) {
+                console.warn('Collapsible panel onToggle failed', err);
+            }
+        }
+    };
+
+    let collapsed = readPersistedState();
+    applyState(collapsed);
+
+    toggle.addEventListener('click', () => {
+        collapsed = !collapsed;
+        applyState(collapsed);
+        persistState(collapsed);
+    });
+}
+
 function initSidebarCollapseControl() {
     const appBody = document.querySelector('.app-body');
     const sidebar = document.getElementById('sidebar');
@@ -4073,6 +4130,13 @@ document.addEventListener('DOMContentLoaded', function () {
     initSidebarCollapseControl();
     initSidebarToggleScrollProxy();
     initDataParameterControls();
+    initCollapsiblePanel('data-metadata-panel', 'data-metadata-panel-toggle', {
+        defaultCollapsed: false,
+        expandLabel: 'Expand ▼',
+        collapseLabel: 'Collapse ▲',
+        expandAriaLabel: 'Expand Data & Metadata panel',
+        collapseAriaLabel: 'Collapse Data & Metadata panel'
+    });
     initFileFormatInfoModal();
 
     // 初始化 taxon 筛选功能
@@ -4205,6 +4269,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // 基础容器
             'viz-container', 'stats-panel', 'total-nodes', 'leaf-nodes', 'max-depth',
             // 数据与元数据
+            'data-metadata-panel', 'data-metadata-panel-toggle',
             'file-upload', 'meta-upload', 'load-example', 'filename-display', 'meta-file-display',
             'data-params-toggle', 'data-params-content', 'data-delimiter-select', 'data-delimiter-custom',
             'taxa-delimiter-select', 'taxa-delimiter-custom',

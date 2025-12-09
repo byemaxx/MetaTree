@@ -719,7 +719,7 @@
           return true;
       });
 
-      // 2. 应用 Smart Culling
+      // 2. 应用 Auto-hide overlapping labels
       // 尝试从 DOM 获取状态，因为 comparison-renderer 可能无法访问 app-core 的变量
       const smartCullingCheckbox = document.getElementById('smart-label-culling');
       const useSmartCulling = smartCullingCheckbox ? smartCullingCheckbox.checked : (typeof smartLabelCulling !== 'undefined' ? smartLabelCulling : true);

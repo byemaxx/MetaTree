@@ -621,142 +621,6 @@
                     </div>
                 </div>
 
-                <!-- 布局与面板尺寸控制区（新面板，默认折叠，位于 Colors & Domain 之上） -->
-                <div id="layout-panel" class="control-panel card-panel collapsed">
-                    <div class="panel-title">Layout & Panels
-                        <button id="layout-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
-                    </div>
-
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="layout-select">Layout:</label>
-                            <select id="layout-select">
-                                <option value="radial">Radial</option>
-                                <option value="tree">Tree</option>
-                                <option value="packing">Circle packing</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="panel-width-slider">Panel width:</label>
-                            <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="600"
-                                class="w-180 ml-8">
-                            <span id="panel-width-value" class="ml-8">600px</span>
-                        </div>
-
-                        <div class="control-group">
-                            <label for="panel-height-slider">Panel height:</label>
-                            <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600"
-                                class="w-180 ml-8">
-                            <span id="panel-height-value" class="ml-8">600px</span>
-                        </div>
-
-                        <div class="control-group">
-                            <label class="flex ai-center gap-8">
-                                <input type="checkbox" id="panel-lock-size" checked>
-                                Lock width & height
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 颜色与颜色域控制区（与 Labels & Sizing 同级） -->
-                <div id="colors-panel" class="control-panel card-panel collapsed">
-                    <div class="panel-title">Colors & Domain
-                        <button id="colors-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
-                    </div>
-
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label class="fw-500 flex ai-center gap-8">
-                                Color scheme:
-                                <button id="color-previews-toggle" class="toggle-btn ml-8" type="button"
-                                    aria-controls="color-previews-wrapper" aria-expanded="false">Schemes</button>
-                            </label>
-                            <label class="ml-10 fw-500 flex ai-center gap-6">
-                                <input type="checkbox" id="color-reverse">
-                                Reverse colors
-                            </label>
-                            <div id="color-previews-wrapper" class="mt-8">
-                                <div id="color-previews" class="flex gap-8 flex-wrap"></div>
-                                <div id="custom-color-controls" class="mt-8 gap-8 ai-center flex">
-                                    <label class="fw-500">Custom gradient:</label>
-                                    <input type="color" id="custom-color-start" value="#70706B"
-                                        aria-label="Custom gradient start color">
-                                    <span class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid" value="#ffd27f"
-                                        aria-label="Custom gradient midpoint color">
-                                    <span id="custom-arrow-mid" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid2" value="#ffd27f"
-                                        aria-label="Custom gradient midpoint color 2">
-                                    <span id="custom-arrow-mid2" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid3" value="#ffd27f"
-                                        aria-label="Custom gradient midpoint color 3">
-                                    <span id="custom-arrow-mid3" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-end" value="#08519c"
-                                        aria-label="Custom gradient end color">
-                                    <label class="ml-8 flex ai-center gap-6" for="custom-stops-count">
-                                        <span class="fs-12">Stops</span>
-                                        <select id="custom-stops-count">
-                                            <option value="2">2</option>
-                                            <option value="3" selected>3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                        </select>
-                                    </label>
-                                    <button id="apply-custom-color" class="btn-secondary ml-8">Apply</button>
-
-                                    <div class="zero-color-control">
-                                        <label class="flex ai-center gap-6" for="zero-color-toggle">
-                                            <input type="checkbox" id="zero-color-toggle">
-                                            <span class="fs-12">Zero value</span>
-                                        </label>
-                                        <input type="color" id="zero-color-input" value="#d6dce6"
-                                            aria-label="Zero value color" disabled
-                                            class="zero-color-input inline-input">
-                                    </div>
-
-                                    <label class="ml-12 fs-12" for="custom-presets">Presets</label>
-                                    <select id="custom-presets" class="minw-140" aria-label="Custom presets"></select>
-                                    <input type="text" id="preset-name" placeholder="Preset name" class="w-120">
-                                    <button id="save-preset" class="btn-small">Save</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="color-domain-abs">Color domain:</label>
-                            <input type="number" id="color-domain-abs" step="1" value="5" class="flex-1 minw-160"
-                                aria-label="Color domain absolute value">
-                            <button id="color-domain-reset" type="button" class="btn-icon ml-8"
-                                title="Reset to auto domain" aria-label="Reset color domain">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path
-                                        d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                            </button>
-                            <span class="help-icon"
-                                title="Set a single magnitude M. In abundance modes: [0, M]. In log2FC modes: [-M, M].">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- 标签与节点控制区 (默认折叠)（左侧边栏） -->
                 <div id="labels-panel" class="control-panel card-panel collapsed">
                     <div class="panel-title">Labels & Sizing
@@ -924,6 +788,144 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 布局与面板尺寸控制区（新面板，默认折叠，位于 Colors & Domain 之上） -->
+                <div id="layout-panel" class="control-panel card-panel collapsed">
+                    <div class="panel-title">Layout & Panels
+                        <button id="layout-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="layout-select">Layout:</label>
+                            <select id="layout-select">
+                                <option value="radial">Radial</option>
+                                <option value="tree">Tree</option>
+                                <option value="packing">Circle packing</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="panel-width-slider">Panel width:</label>
+                            <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="600"
+                                class="w-180 ml-8">
+                            <span id="panel-width-value" class="ml-8">600px</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="panel-height-slider">Panel height:</label>
+                            <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600"
+                                class="w-180 ml-8">
+                            <span id="panel-height-value" class="ml-8">600px</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="flex ai-center gap-8">
+                                <input type="checkbox" id="panel-lock-size" checked>
+                                Lock width & height
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 颜色与颜色域控制区（与 Labels & Sizing 同级） -->
+                <div id="colors-panel" class="control-panel card-panel collapsed">
+                    <div class="panel-title">Colors & Domain
+                        <button id="colors-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label class="fw-500 flex ai-center gap-8">
+                                Color scheme:
+                                <button id="color-previews-toggle" class="toggle-btn ml-8" type="button"
+                                    aria-controls="color-previews-wrapper" aria-expanded="false">Schemes</button>
+                            </label>
+                            <label class="ml-10 fw-500 flex ai-center gap-6">
+                                <input type="checkbox" id="color-reverse">
+                                Reverse colors
+                            </label>
+                            <div id="color-previews-wrapper" class="mt-8">
+                                <div id="color-previews" class="flex gap-8 flex-wrap"></div>
+                                <div id="custom-color-controls" class="mt-8 gap-8 ai-center flex">
+                                    <label class="fw-500">Custom gradient:</label>
+                                    <input type="color" id="custom-color-start" value="#70706B"
+                                        aria-label="Custom gradient start color">
+                                    <span class="mx-4">→</span>
+                                    <input type="color" id="custom-color-mid" value="#ffd27f"
+                                        aria-label="Custom gradient midpoint color">
+                                    <span id="custom-arrow-mid" class="mx-4">→</span>
+                                    <input type="color" id="custom-color-mid2" value="#ffd27f"
+                                        aria-label="Custom gradient midpoint color 2">
+                                    <span id="custom-arrow-mid2" class="mx-4">→</span>
+                                    <input type="color" id="custom-color-mid3" value="#ffd27f"
+                                        aria-label="Custom gradient midpoint color 3">
+                                    <span id="custom-arrow-mid3" class="mx-4">→</span>
+                                    <input type="color" id="custom-color-end" value="#08519c"
+                                        aria-label="Custom gradient end color">
+                                    <label class="ml-8 flex ai-center gap-6" for="custom-stops-count">
+                                        <span class="fs-12">Stops</span>
+                                        <select id="custom-stops-count">
+                                            <option value="2">2</option>
+                                            <option value="3" selected>3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </label>
+                                    <button id="apply-custom-color" class="btn-secondary ml-8">Apply</button>
+
+                                    <div class="zero-color-control">
+                                        <label class="flex ai-center gap-6" for="zero-color-toggle">
+                                            <input type="checkbox" id="zero-color-toggle">
+                                            <span class="fs-12">Zero value</span>
+                                        </label>
+                                        <input type="color" id="zero-color-input" value="#d6dce6"
+                                            aria-label="Zero value color" disabled
+                                            class="zero-color-input inline-input">
+                                    </div>
+
+                                    <label class="ml-12 fs-12" for="custom-presets">Presets</label>
+                                    <select id="custom-presets" class="minw-140" aria-label="Custom presets"></select>
+                                    <input type="text" id="preset-name" placeholder="Preset name" class="w-120">
+                                    <button id="save-preset" class="btn-small">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <label for="color-domain-abs">Color domain:</label>
+                            <input type="number" id="color-domain-abs" step="1" value="5" class="flex-1 minw-160"
+                                aria-label="Color domain absolute value">
+                            <button id="color-domain-reset" type="button" class="btn-icon ml-8"
+                                title="Reset to auto domain" aria-label="Reset color domain">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path
+                                        d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                            <span class="help-icon"
+                                title="Set a single magnitude M. In abundance modes: [0, M]. In log2FC modes: [-M, M].">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 标签与节点控制区 (默认折叠)（左侧边栏） -->
                 <div id="theme-panel" class="control-panel card-panel collapsed">
                     <div class="panel-title">
                         UI Theme

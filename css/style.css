@@ -652,6 +652,25 @@ body.info-modal-open {
     flex: 1 1 auto;
     padding: 10px;
     overflow: auto;
+    display: flex;            /* ensure inner wrapper can flex and be constrained */
+    flex-direction: column;
+    min-height: 0;            /* allow children to shrink below content height (fixes inner scrollbar placement) */
+}
+
+/* Wrapper for comparison results table inside modal. Make it the scrolling container
+   so horizontal scrollbar remains visible without having to scroll the outer modal. */
+.comparison-results-table-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;           /* important for flex children to respect container height */
+    overflow: auto;          /* allow both horizontal and vertical scroll inside wrapper */
+    padding: 6px;
+}
+
+/* Allow wide tables to determine their own width while still supporting a minimum
+   fill of the wrapper width. This makes horizontal scrolling appear on the wrapper. */
+.comparison-results-table-wrapper table.info-sample-table {
+    width: max-content;
+    min-width: 100%;
 }
 
 .comparison-modal-close {

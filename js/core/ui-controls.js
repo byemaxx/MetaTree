@@ -24,7 +24,7 @@ const FILE_FORMAT_INFO_CONTENT = {
         html: `
             <p><strong>Supported inputs:</strong> Tab/CSV/plain-text files that contain either a wide abundance table or a combined long-format statistics table.</p>
             <div class="info-example">
-                <div class="info-example-title">Wide hierarchy table (recommended)</div>
+                    <div class="info-example-title">Comparison Results Table</div>
                 <div class="info-table-wrapper">
                     <table class="info-sample-table" aria-label="Wide hierarchy table example">
                         <thead>
@@ -3605,7 +3605,7 @@ function populateComparisonResultsModal() {
     };
 
     // Build header (use data-col attributes so sorting can reference original key)
-    let html = '<div style="overflow:auto; padding:6px;"><table class="info-sample-table"><thead><tr>';
+    let html = '<div class="comparison-results-table-wrapper"><table class="info-sample-table"><thead><tr>';
     finalCols.forEach(col => {
         const label = colLabels[col] || String(col);
         html += `<th data-col="${escapeHtml(String(col))}">${escapeHtml(String(label))}</th>`;

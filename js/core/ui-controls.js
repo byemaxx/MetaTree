@@ -2069,6 +2069,9 @@ function updateSampleCheckboxes() {
     samples.forEach((sample, index) => {
         const checkboxItem = document.createElement('div');
         checkboxItem.className = 'checkbox-item';
+        
+        // Enable drag and drop
+        addDragListeners(checkboxItem, 'sample');
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
@@ -4766,6 +4769,12 @@ function updateGroupCheckboxes() {
     // 绑定复选框事件
     container.querySelectorAll('.group-checkbox-item').forEach(checkbox => {
         checkbox.addEventListener('change', handleGroupCheckboxChange);
+
+        // Enable drag and drop for the group item wrapper
+        const wrapper = checkbox.closest('div');
+        if (wrapper) {
+             addDragListeners(wrapper, 'group');
+        }
     });
 
     // 绑定快捷按钮事件
@@ -5561,3 +5570,108 @@ function showToast(message, duration = 3000) {
     }, duration);
 }
 try { if (typeof window !== 'undefined') window.showToast = showToast; } catch (_) { }
+
+// ========== Drag and Drop Support ==========
+
+let draggedElement = null;
+
+function addDragListeners(element, type) {
+    element.setAttribute('draggable', 'true');
+    element.style.cursor = 'move';
+
+    element.addEventListener('dragstart', function(e) {
+        draggedElement = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', this.innerHTML);
+        this.classList.add('dragging');
+    });
+
+    element.addEventListener('dragend', function(e) {
+        this.classList.remove('dragging');
+        draggedElement = null;
+        
+        // Trigger update after drop
+        if (type === 'sample') {
+            handleSampleOrderChange();
+        } else if (type === 'group') {
+            handleGroupOrderChange();
+        }
+    });
+
+    element.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        
+        if (this === draggedElement) return;
+        
+        // Determine insert position
+        const bounding = this.getBoundingClientRect();
+        const offset = bounding.y + (bounding.height / 2);
+        
+        if (e.clientY - offset > 0) {
+            this.parentNode.insertBefore(draggedElement, this.nextSibling);
+        } else {
+            this.parentNode.insertBefore(draggedElement, this);
+        }
+    });
+    
+    element.addEventListener('dragenter', function(e) {
+        e.preventDefault();
+    });
+}
+
+function handleSampleOrderChange() {
+    const container = document.getElementById('sample-checkboxes');
+    if (!container) return;
+    
+    const newOrder = [];
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+        newOrder.push(cb.value);
+    });
+    
+    // Update global samples array to persist the order
+    if (typeof samples !== 'undefined' && samples.length === newOrder.length) {
+        samples = newOrder;
+    }
+    
+    // Update selectedSamples order
+    if (typeof selectedSamples !== 'undefined') {
+        const currentSelectedSet = new Set(selectedSamples);
+        selectedSamples = newOrder.filter(s => currentSelectedSet.has(s));
+        
+        // Redraw
+        if (typeof initVisualization === 'function' && typeof drawAllTrees === 'function') {
+            initVisualization();
+            drawAllTrees();
+        }
+    }
+}
+
+function handleGroupOrderChange() {
+    const container = document.getElementById('group-checkboxes');
+    if (!container) return;
+    
+    const newOrder = [];
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+        newOrder.push(cb.value);
+    });
+    
+    // Update selectedGroups order
+    if (typeof selectedGroups !== 'undefined') {
+        const currentSelectedSet = new Set(selectedGroups);
+        selectedGroups = newOrder.filter(g => currentSelectedSet.has(g));
+        
+        // Also update activeSamples if in group mode
+        if (typeof visualizationMode !== 'undefined' && visualizationMode === 'group') {
+             // activeSamples is usually local in initVisualization, but we update selectedGroups which is used there
+        }
+        
+        if (typeof initVisualization === 'function' && typeof drawAllTrees === 'function') {
+            initVisualization();
+            drawAllTrees();
+        }
+    }
+}
+

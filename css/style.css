@@ -2685,3 +2685,42 @@ svg {
 #column-mapping-modal .info-modal-container {
     background-color: var(--bg-white, #fff);
 }
+
+/* Drag and drop styles */
+.dragging {
+    opacity: 0.5;
+    background-color: #f0f0f0;
+}
+
+
+/* Collapsible Panel Header Styles */
+.panel-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f0f3f7 0%, #e8ecf1 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding-right: var(--spacing-md);
+}
+
+.panel-header-row .panel-title {
+    background: none;
+    border-bottom: none;
+    flex-grow: 1;
+}
+
+.panel-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.panel-toggle-btn:hover {
+    color: var(--primary-color);
+}
+

@@ -204,13 +204,23 @@
       const target = e.target;
       if (!target) return;
       // Ignore when right-clicking on nodes/labels which have their own handlers
-      if (target.closest && target.closest('.node-label, .context-menu, .panel-actions, button, .matrix-cell')) return;
+      if (target.closest && target.closest('.node, .node-label, .context-menu, .panel-actions, button, .matrix-cell')) return;
 
       const panel = target.closest ? target.closest('.tree-panel, .comparison-panel') : null;
 
       // Prevent default browser menu and show our unified export menu
       e.preventDefault();
       e.stopPropagation();
+
+      // Hide tooltip immediately
+      const tooltip = document.getElementById('tooltip-global');
+      if (tooltip) {
+        tooltip.classList.remove('show');
+        if (window._tooltipHideTimer) {
+          clearTimeout(window._tooltipHideTimer);
+          window._tooltipHideTimer = null;
+        }
+      }
 
       const menu = document.getElementById('panel-export-menu');
       if (!menu) return;

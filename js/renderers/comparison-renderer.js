@@ -836,6 +836,25 @@
       try {
         if (window._tooltipHideTimer) { clearTimeout(window._tooltipHideTimer); window._tooltipHideTimer = null; }
       } catch (_) { }
+
+      // Check if any overlay (context menu, modal) is active
+      const isOverlayActive = () => {
+        // Check context menus
+        const menus = document.querySelectorAll('.context-menu');
+        for (let i = 0; i < menus.length; i++) {
+          if (menus[i].style.display === 'block') return true;
+        }
+        // Check modals
+        const modals = document.querySelectorAll('.info-modal, .group-modal, .taxon-edit-modal, .modal');
+        for (let i = 0; i < modals.length; i++) {
+          const m = modals[i];
+          if (m.style.display && m.style.display !== 'none') return true;
+        }
+        return false;
+      };
+
+      if (isOverlayActive()) return;
+
       const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
       const st = nodePath ? (comparisonStats[nodePath] || {}) : {};
       // Use getNodeFullLabel to get the full name (including prefixes like s__, g__)

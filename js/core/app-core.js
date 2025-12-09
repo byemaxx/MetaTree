@@ -3001,6 +3001,23 @@ function handleLabelRightClick(event, d) {
     event.preventDefault();
     event.stopPropagation();
 
+    // Hide tooltip immediately
+    const tooltip = document.getElementById('tooltip-global');
+    if (tooltip) {
+        tooltip.classList.remove('show');
+        if (window._tooltipHideTimer) {
+            clearTimeout(window._tooltipHideTimer);
+            window._tooltipHideTimer = null;
+        }
+    }
+
+    // Hide panel export menu if visible
+    const panelExportMenu = document.getElementById('panel-export-menu');
+    if (panelExportMenu) {
+        panelExportMenu.style.display = 'none';
+        panelExportMenu.setAttribute('aria-hidden', 'true');
+    }
+
     try {
         if (typeof window.hideVizExportMenu === 'function') {
             window.hideVizExportMenu();
@@ -3128,6 +3145,24 @@ function getNodeAncestorPath(d) {
 function addInteractions(nodes, sample) {
     nodes
         .on('mouseover', function (event, d) {
+            // Check if any overlay (context menu, modal) is active
+            const isOverlayActive = () => {
+                // Check context menus
+                const menus = document.querySelectorAll('.context-menu');
+                for (let i = 0; i < menus.length; i++) {
+                    if (menus[i].style.display === 'block') return true;
+                }
+                // Check modals
+                const modals = document.querySelectorAll('.info-modal, .group-modal, .taxon-edit-modal, .modal');
+                for (let i = 0; i < modals.length; i++) {
+                    const m = modals[i];
+                    if (m.style.display && m.style.display !== 'none') return true;
+                }
+                return false;
+            };
+
+            if (isOverlayActive()) return;
+
             // 高亮当前节点
             d3.select(this).select('circle')
                 .transition()

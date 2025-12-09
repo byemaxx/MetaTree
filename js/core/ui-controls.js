@@ -5485,7 +5485,11 @@ function initUniformLabelColors() {
     if (vizContainer) {
         vizContainer.addEventListener('contextmenu', function (e) {
             const target = e.target;
-            if (target && target.classList && target.classList.contains('node-label')) {
+            // Check for node labels or nodes (circles/paths inside .node group)
+            if (target && (
+                (target.classList && target.classList.contains('node-label')) ||
+                (target.closest && target.closest('.node'))
+            )) {
                 hideVizExportMenu();
                 return;
             }

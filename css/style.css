@@ -2749,3 +2749,74 @@ svg {
     color: var(--primary-color);
 }
 
+/* Mode Switcher Styles */
+.mode-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.mode-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.mode-header label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0;
+}
+
+.mode-switcher {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    background: var(--bg-light);
+    padding: 4px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+}
+
+.mode-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 2px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: var(--transition-fast);
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.mode-btn:hover {
+    background: rgba(0, 0, 0, 0.03);
+    color: var(--primary-color);
+}
+
+.mode-btn.active {
+    background: var(--bg-white);
+    color: var(--primary-color);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+    font-weight: 600;
+}
+
+.mode-btn svg {
+    opacity: 0.7;
+    transition: var(--transition-fast);
+}
+
+.mode-btn.active svg {
+    opacity: 1;
+    stroke: var(--primary-color);
+}
+

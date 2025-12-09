@@ -4145,6 +4145,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 初始化统一标签颜色功能
     initUniformLabelColors();
 
+    // Initialize custom mode switcher
+    initModeSwitcher();
+
     // 添加比较模式事件监听
     document.getElementById('viz-mode').addEventListener('change', handleVisualizationModeChange);
     document.getElementById('define-groups').addEventListener('click', handleDefineGroupsClick);
@@ -5739,4 +5742,48 @@ function handleGroupOrderChange() {
         }
     }
 }
+
+/**
+ * Initialize the custom mode switcher UI
+ */
+function initModeSwitcher() {
+    const select = document.getElementById('viz-mode');
+    const buttons = document.querySelectorAll('.mode-btn');
+    
+    if (!select || buttons.length === 0) return;
+
+    // Function to update active state
+    const updateActiveState = (value) => {
+        buttons.forEach(btn => {
+            if (btn.dataset.value === value) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    };
+
+    // Initialize state
+    updateActiveState(select.value);
+
+    // Add click listeners
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const value = btn.dataset.value;
+            if (select.value !== value) {
+                select.value = value;
+                updateActiveState(value);
+                // Trigger change event
+                const event = new Event('change');
+                select.dispatchEvent(event);
+            }
+        });
+    });
+
+    // Listen for changes on the select (in case it's changed programmatically)
+    select.addEventListener('change', () => {
+        updateActiveState(select.value);
+    });
+}
+
 

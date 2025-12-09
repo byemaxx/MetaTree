@@ -1512,7 +1512,7 @@ button:disabled {
     position: absolute;
     padding: var(--spacing-md) var(--spacing-lg);
     /* Slightly translucent black for a softer, modern look */
-    background: rgba(0, 0, 0, 0.65);
+    background: rgba(0, 0, 0, 0.5);
     /* soft border helps tooltips stand out over varying backgrounds */
     border: 1px solid rgba(255, 255, 255, 0.06);
     color: white;
@@ -1528,8 +1528,8 @@ button:disabled {
     z-index: 10050;
     max-width: 300px;
     box-shadow: var(--shadow-xl);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
 }
 
 .tooltip.show {

@@ -3145,6 +3145,8 @@ function getNodeAncestorPath(d) {
 function addInteractions(nodes, sample) {
     nodes
         .on('mouseover', function (event, d) {
+            if (window._tooltipShowTimer) { clearTimeout(window._tooltipShowTimer); window._tooltipShowTimer = null; }
+            
             // Check if any overlay (context menu, modal) is active
             const isOverlayActive = () => {
                 // Check context menus
@@ -3163,14 +3165,97 @@ function addInteractions(nodes, sample) {
 
             if (isOverlayActive()) return;
 
-            // 高亮当前节点
+            const self = this;
+            window._lastTooltipEvent = event;
+            
+            window._tooltipShowTimer = setTimeout(() => {
+                // 高亮当前节点
+                d3.select(self).select('circle')
+                    .transition()
+                    .duration(200)
+                    .attr('stroke', '#ff6b6b')
+                    .attr('stroke-width', 2);
+
+                // 构建 tooltip 内容
+                showTooltipContent(window._lastTooltipEvent || event, d, sample);
+                window._tooltipShowTimer = null;
+            }, 200);
+        })
+        .on('click', function (event, d) {
+            // 仅对拥有子节点的数据节点进行折叠/展开
+            if (d && d.data && Array.isArray(d.data.children) && d.data.children.length > 0) {
+                const newState = !d.data.__collapsed;
+                if (newState) {
+                    if (!window._collapsedHistory) window._collapsedHistory = [];
+                    window._collapsedHistory.push(d.data);
+                }
+                d.data.__collapsed = newState;
+
+                // 如果存在原始节点引用（Group模式），同步状态
+                if (d.data.__originalNode) {
+                    d.data.__originalNode.__collapsed = newState;
+                }
+
+                // 重新渲染所有样本以保持一致
+                initVisualization();
+                drawAllTrees();
+            }
+        })
+        .on('mouseout', function (event, d) {
+            if (window._tooltipShowTimer) { clearTimeout(window._tooltipShowTimer); window._tooltipShowTimer = null; }
+            // 移除当前节点高亮
             d3.select(this).select('circle')
                 .transition()
                 .duration(200)
-                .attr('stroke', '#ff6b6b')
-                .attr('stroke-width', 2);
+                .attr('stroke', 'none')
+                .attr('stroke-width', 0);
 
-            // 构建 tooltip 内容
+            // 如果启用了同步缩放，则在所有 panel 中移除相同节点的高亮
+            if (syncZoomEnabled && (visualizationMode === 'single' || visualizationMode === 'group')) {
+                // 使用完整的祖先路径来唯一标识节点
+                const nodeAncestorPath = getNodeAncestorPath(d);
+                let activeSamples;
+                if (visualizationMode === 'group') {
+                    activeSamples = selectedGroups.slice();
+                } else {
+                    activeSamples = (typeof getActiveSamples === 'function') ? getActiveSamples() : selectedSamples.slice();
+                }
+
+                activeSamples.forEach(otherSample => {
+                    if (otherSample === sample) return; // 跳过当前 sample
+
+                    const otherSvg = svgs[otherSample];
+                    if (!otherSvg) return;
+
+                    // 在其他 panel 中找到相同路径的节点并移除高亮
+                    otherSvg.selectAll('.node').each(function (nodeData) {
+                        const otherNodePath = getNodeAncestorPath(nodeData);
+                        // 只有完整路径完全匹配时才移除高亮
+                        if (otherNodePath === nodeAncestorPath) {
+                            d3.select(this).select('circle')
+                                .transition()
+                                .duration(200)
+                                .attr('stroke', 'none')
+                                .attr('stroke-width', 0);
+                        }
+                    });
+                });
+            }
+
+            try {
+                if (window._tooltipHideTimer) clearTimeout(window._tooltipHideTimer);
+                window._tooltipHideTimer = setTimeout(function () { try { tooltip.classed('show', false); } catch (_) { } window._tooltipHideTimer = null; }, 200);
+            } catch (_) { }
+        })
+        .on('mousemove', function (event) {
+            window._lastTooltipEvent = event;
+            tooltip
+                .style('left', (event.pageX + 30) + 'px')
+                .style('top', (event.pageY - 30) + 'px');
+        });
+}
+
+function showTooltipContent(event, d, sample) {
             const abundance = d.data.abundances[sample] || 0;
             // 节点的完整祖先路径（用于显示 full_path），如果外部提供函数则使用它
             const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
@@ -3299,80 +3384,9 @@ function addInteractions(nodes, sample) {
             tooltip
                 .html(tooltipHtml)
                 .classed('show', true)
-                .style('left', (event.pageX + 15) + 'px')
-                .style('top', (event.pageY - 15) + 'px');
-        })
-        .on('click', function (event, d) {
-            // 仅对拥有子节点的数据节点进行折叠/展开
-            if (d && d.data && Array.isArray(d.data.children) && d.data.children.length > 0) {
-                const newState = !d.data.__collapsed;
-                if (newState) {
-                    if (!window._collapsedHistory) window._collapsedHistory = [];
-                    window._collapsedHistory.push(d.data);
-                }
-                d.data.__collapsed = newState;
-
-                // 如果存在原始节点引用（Group模式），同步状态
-                if (d.data.__originalNode) {
-                    d.data.__originalNode.__collapsed = newState;
-                }
-
-                // 重新渲染所有样本以保持一致
-                initVisualization();
-                drawAllTrees();
-            }
-        })
-        .on('mouseout', function (event, d) {
-            // 移除当前节点高亮
-            d3.select(this).select('circle')
-                .transition()
-                .duration(200)
-                .attr('stroke', 'none')
-                .attr('stroke-width', 0);
-
-            // 如果启用了同步缩放，则在所有 panel 中移除相同节点的高亮
-            if (syncZoomEnabled && (visualizationMode === 'single' || visualizationMode === 'group')) {
-                // 使用完整的祖先路径来唯一标识节点
-                const nodeAncestorPath = getNodeAncestorPath(d);
-                let activeSamples;
-                if (visualizationMode === 'group') {
-                    activeSamples = selectedGroups.slice();
-                } else {
-                    activeSamples = (typeof getActiveSamples === 'function') ? getActiveSamples() : selectedSamples.slice();
-                }
-
-                activeSamples.forEach(otherSample => {
-                    if (otherSample === sample) return; // 跳过当前 sample
-
-                    const otherSvg = svgs[otherSample];
-                    if (!otherSvg) return;
-
-                    // 在其他 panel 中找到相同路径的节点并移除高亮
-                    otherSvg.selectAll('.node').each(function (nodeData) {
-                        const otherNodePath = getNodeAncestorPath(nodeData);
-                        // 只有完整路径完全匹配时才移除高亮
-                        if (otherNodePath === nodeAncestorPath) {
-                            d3.select(this).select('circle')
-                                .transition()
-                                .duration(200)
-                                .attr('stroke', 'none')
-                                .attr('stroke-width', 0);
-                        }
-                    });
-                });
-            }
-
-            try {
-                if (window._tooltipHideTimer) clearTimeout(window._tooltipHideTimer);
-                window._tooltipHideTimer = setTimeout(function () { try { tooltip.classed('show', false); } catch (_) { } window._tooltipHideTimer = null; }, 200);
-            } catch (_) { }
-        })
-        .on('mousemove', function (event) {
-            tooltip
-                .style('left', (event.pageX + 15) + 'px')
-                .style('top', (event.pageY - 15) + 'px');
-        });
-}
+                .style('left', (event.pageX + 30) + 'px')
+                .style('top', (event.pageY - 30) + 'px');
+    }
 
 function updateStats(hierarchy, sample) {
     if (selectedSamples.length === 0) {

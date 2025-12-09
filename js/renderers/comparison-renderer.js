@@ -895,8 +895,8 @@
             <div>p (${(st && st.test && String(st.test).toLowerCase().startsWith('t')) ? 't-test' : 'Wilcoxon'}): ${fmt(st.pvalue, 4)} ${st.significant ? '<strong style="color:#e74c3c">(sig)</strong>' : ''}</div>
           `)
           .classed('show', true)
-          .style('left', (event.pageX + 15) + 'px')
-          .style('top', (event.pageY - 15) + 'px');
+          .style('left', (event.pageX + 30) + 'px')
+          .style('top', (event.pageY - 30) + 'px');
       } catch (_) { }
     };
     const hideTip = () => {
@@ -908,13 +908,22 @@
 
     nodeGroup
       .on('mouseenter', function (event, d) {
-        showTip(event, d);
+        if (window._tooltipShowTimer) { clearTimeout(window._tooltipShowTimer); window._tooltipShowTimer = null; }
+        window._lastTooltipEvent = event;
+        window._tooltipShowTimer = setTimeout(() => {
+          showTip(window._lastTooltipEvent || event, d);
+          window._tooltipShowTimer = null;
+        }, 200);
         try {
           d3.select(this).select('.node-hover-ring').style('opacity', 1);
         } catch (_) { }
       })
-      .on('mousemove', function (event) { try { tooltip.style('left', (event.pageX + 15) + 'px').style('top', (event.pageY - 15) + 'px'); } catch (_) { } })
+      .on('mousemove', function (event) {
+        window._lastTooltipEvent = event;
+        try { tooltip.style('left', (event.pageX + 30) + 'px').style('top', (event.pageY - 30) + 'px'); } catch (_) { }
+      })
       .on('mouseleave', function () {
+        if (window._tooltipShowTimer) { clearTimeout(window._tooltipShowTimer); window._tooltipShowTimer = null; }
         hideTip();
         try {
           d3.select(this).select('.node-hover-ring').style('opacity', 0);

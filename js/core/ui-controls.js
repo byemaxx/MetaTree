@@ -1386,7 +1386,16 @@ function initEventListeners() {
     document.getElementById('label-font-size').addEventListener('input', handleLabelFontSizeChange);
     // 标签最大长度与溢出处理
     const lblMax = document.getElementById('label-max-length');
-    if (lblMax) lblMax.addEventListener('change', handleLabelMaxLengthChange);
+    if (lblMax) {
+        let timer = null;
+        lblMax.addEventListener('input', (e) => {
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(() => {
+                handleLabelMaxLengthChange(e);
+                timer = null;
+            }, 300);
+        });
+    }
     const lblOverflow = document.getElementById('label-overflow');
     if (lblOverflow) lblOverflow.addEventListener('change', handleLabelOverflowChange);
     // 分位数控制

@@ -2017,6 +2017,9 @@ function handleFileUpload(e) {
         }
     };
     reader.readAsText(file);
+    
+    // Reset input value to allow reloading the same file
+    e.target.value = '';
 }
 
 // Extracted Auto-detect logic
@@ -4650,6 +4653,9 @@ function handleMetaUpload(e) {
         }
     };
     reader.readAsText(file);
+
+    // Reset input value to allow reloading the same file
+    e.target.value = '';
 }
 
 // ========== 元数据筛选 UI ==========

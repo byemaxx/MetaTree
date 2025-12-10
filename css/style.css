@@ -1549,7 +1549,7 @@ button:disabled {
     color: white;
     border-radius: var(--radius-lg);
     /* allow pointer events so text can be selected; visibility is managed in JS to avoid flicker */
-    pointer-events: auto;
+    pointer-events: none;
     -webkit-user-select: text;
     user-select: text;
     font-size: var(--font-base);
@@ -1565,6 +1565,7 @@ button:disabled {
 
 .tooltip.show {
     opacity: 1;
+    pointer-events: auto;
 }
 
 .tooltip-taxon {

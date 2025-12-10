@@ -4860,13 +4860,21 @@ function handleGroupMetaColumnChange(col) {
  */
 function updateGroupCheckboxes() {
     const container = document.getElementById('group-checkboxes');
-    if (!container) return;
-
+    
     const groups = getAllGroups();
+    const groupCount = Object.keys(groups).length;
+
+    // Update status element
+    const statusEl = document.getElementById('group-meta-status');
+    if (statusEl) {
+        statusEl.textContent = groupCount > 0 ? `(${groupCount} groups)` : '';
+    }
+
+    if (!container) return;
 
     console.log('updateGroupCheckboxes called, groups:', groups);
 
-    if (Object.keys(groups).length === 0) {
+    if (groupCount === 0) {
         container.innerHTML = '<em class="text-light">No groups defined</em>';
         // 清空可视化
         const vizContainer = document.getElementById('viz-container');

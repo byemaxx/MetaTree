@@ -1625,7 +1625,7 @@ function initVisualization() {
     
     if (vizContainer) vizContainer.innerHTML = '';
     
-    // Clear any inline display modifications (e.g., matrix mode may set display:block)
+    // Reset viz-container display style (may have been modified by matrix mode)
     // Note: with sub-containers, we might not need to reset viz-container display, but keeping it safe
     try { document.getElementById('viz-container').style.display = ''; } catch (_) { }
     

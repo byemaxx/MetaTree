@@ -1735,15 +1735,15 @@ function loadDataFromText(text, options = {}) {
     const previewBtn = document.getElementById('preview-data-btn');
     if (previewBtn) previewBtn.style.display = 'inline-flex';
 
+    // 更新样本复选框（先设置选中的样本）
+    updateSampleCheckboxes();
+
     // 切换回单样本模式
     const modeSelect = document.getElementById('viz-mode');
     if (modeSelect && modeSelect.value !== 'single') {
         modeSelect.value = 'single';
         handleVisualizationModeChange();
     }
-
-    // 更新样本复选框
-    updateSampleCheckboxes();
 
     // 若为 combined_long 数据，显示单样本显著性过滤控件；否则隐藏
     const isCombined = !!(typeof window !== 'undefined' && window.isCombinedLong);

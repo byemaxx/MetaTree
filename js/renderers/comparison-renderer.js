@@ -320,6 +320,11 @@
     const showBack = !!opts.showBack;
     const onBack = typeof opts.onBack === 'function' ? opts.onBack : null;
 
+    // Generate a unique ID for the SVG container to avoid conflicts (e.g. between hidden comparison mode and visible matrix inline mode)
+    const svgContainerId = useModal 
+        ? 'svg-container-comparison-modal' 
+        : (containerId === 'inline-comparison-body' ? 'svg-container-comparison-inline' : 'svg-container-comparison');
+
     let vizContainer = document.getElementById(containerId);
     
     // If targeting main container, redirect to sub-container for comparison mode
@@ -382,14 +387,14 @@
       btnSvg.title = 'Export SVG';
       btnSvg.setAttribute('aria-label', 'Export SVG');
       btnSvg.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-      btnSvg.addEventListener('click', () => exportSVGForContainer('svg-container-comparison', `comparison_${group1}_vs_${group2}`));
+      btnSvg.addEventListener('click', () => exportSVGForContainer(svgContainerId, `comparison_${group1}_vs_${group2}`));
 
       const btnPng = document.createElement('button');
       btnPng.className = 'btn-icon';
       btnPng.title = 'Export PNG';
       btnPng.setAttribute('aria-label', 'Export PNG');
       btnPng.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 6l2-2h6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>';
-      btnPng.addEventListener('click', () => exportPNGForContainer('svg-container-comparison', `comparison_${group1}_vs_${group2}`));
+      btnPng.addEventListener('click', () => exportPNGForContainer(svgContainerId, `comparison_${group1}_vs_${group2}`));
 
       actionsWrap.appendChild(btnReset);
       actionsWrap.appendChild(btnRestore);
@@ -403,7 +408,7 @@
     // SVG 容器
     const svgContainer = document.createElement('div');
     svgContainer.className = 'tree-svg-container';
-    svgContainer.id = useModal ? 'svg-container-comparison-modal' : 'svg-container-comparison';
+    svgContainer.id = svgContainerId;
     panel.appendChild(svgContainer);
     vizContainer.appendChild(panel);
 
@@ -416,7 +421,7 @@
       svgContainer.style.height = 'auto';
     }
 
-    const container = document.getElementById(svgContainer.id);
+    const container = svgContainer;
     if (!container) return;
     const size = (typeof getResponsiveTreePanelSize === 'function')
       ? getResponsiveTreePanelSize(container, {

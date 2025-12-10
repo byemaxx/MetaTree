@@ -1938,6 +1938,10 @@ function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (typeof showToast === 'function') {
+        showToast(`Loading ${file.name}... Please wait.`, 5000);
+    }
+
     // Detect format preference
     const formatRadio = document.querySelector('input[name="data-format"]:checked');
     const format = formatRadio ? formatRadio.value : 'wide';
@@ -4413,6 +4417,8 @@ async function handleLoadExampleClick() {
         const filenameDisplay = document.getElementById('filename-display');
         filenameDisplay.textContent = 'Loading example data...';
 
+        if (typeof showToast === 'function') showToast('Loading example data...', 3000);
+
         // 加载示例 taxa.tsv（使用基于页面 base URI 的绝对 URL，兼容 GitHub Pages 子路径）
         const taxaUrl = new URL('test/data/taxa.tsv', document.baseURI).href;
         const taxaResp = await fetch(taxaUrl, { cache: 'no-store' });
@@ -4594,6 +4600,10 @@ try { if (typeof window !== 'undefined') window.loadMetaFromText = loadMetaFromT
 function handleMetaUpload(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+
+    if (typeof showToast === 'function') {
+        showToast(`Loading ${file.name}... Please wait.`, 5000);
+    }
 
     // Detect delimiter from extension
     const name = file.name.toLowerCase();

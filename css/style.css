@@ -2825,6 +2825,11 @@ svg {
     white-space: nowrap;
 }
 
+/* Make mode switcher labels bold for clarity */
+.mode-btn span {
+    font-weight: 700;
+}
+
 .mode-btn:hover {
     background: rgba(0, 0, 0, 0.03);
     color: var(--primary-color);

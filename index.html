@@ -244,19 +244,6 @@
                     <div class="panel-title">Analysis Mode</div>
                     <div class="control-row">
                         <div class="control-group mode-control-group">
-                            <div class="mode-header">
-                                <label>Visualization Mode</label>
-                                <span class="help-icon"
-                                    title="Single: view each sample separately. Group: aggregate samples by metadata. Comparison: compare two groups. Matrix: compare all group pairs.">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                    </svg>
-                                </span>
-                            </div>
-                            
                             <select id="viz-mode" style="display: none;">
                                 <option value="single" selected>Individual samples</option>
                                 <option value="group">Group samples</option>
@@ -264,7 +251,7 @@
                                 <option value="matrix">Comparison matrix</option>
                             </select>
 
-                            <div class="mode-switcher">
+                            <div class="mode-switcher" aria-label="Choose visualization mode">
                                 <button type="button" class="mode-btn active" data-value="single" title="View individual samples">
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="12" cy="12" r="10"></circle>

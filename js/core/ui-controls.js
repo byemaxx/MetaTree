@@ -3511,11 +3511,20 @@ function handleRunComparison() {
     }, 100);
 }
 
-// Open a modal to preview comparison results and offer export options
-function handleViewResults() {
-    const results = (visualizationMode === 'matrix') 
+/**
+ * Get comparison results based on the current visualization mode.
+ * Depends on the global visualizationMode variable to determine which results to return.
+ * @returns {Array|undefined} Comparison results array for the current mode (matrix or comparison)
+ */
+function getComparisonResultsForMode() {
+    return (visualizationMode === 'matrix') 
         ? (window.comparisonResults_matrix || window.comparisonResults)
         : (window.comparisonResults_comparison || window.comparisonResults);
+}
+
+// Open a modal to preview comparison results and offer export options
+function handleViewResults() {
+    const results = getComparisonResultsForMode();
 
     if (!results || results.length === 0) {
         alert('No comparison results to view. Please run a comparison first.');
@@ -3567,9 +3576,7 @@ function createComparisonResultsModal() {
     document.getElementById('comparison-results-close').addEventListener('click', closeComparisonResultsModal);
 
     document.getElementById('comparison-export-tsv').addEventListener('click', function () {
-        const results = (visualizationMode === 'matrix') 
-            ? (window.comparisonResults_matrix || window.comparisonResults)
-            : (window.comparisonResults_comparison || window.comparisonResults);
+        const results = getComparisonResultsForMode();
         const idx = parseInt(document.getElementById('comparison-select').value, 10) || 0;
         const singleComp = (results && results[idx]) ? results[idx] : null;
         const comp = singleComp ? [singleComp] : (results || []);
@@ -3584,9 +3591,7 @@ function createComparisonResultsModal() {
     });
 
     document.getElementById('comparison-export-csv').addEventListener('click', function () {
-        const results = (visualizationMode === 'matrix') 
-            ? (window.comparisonResults_matrix || window.comparisonResults)
-            : (window.comparisonResults_comparison || window.comparisonResults);
+        const results = getComparisonResultsForMode();
         const idx = parseInt(document.getElementById('comparison-select').value, 10) || 0;
         const comp = (results && results[idx]) ? results[idx] : null;
         if (!comp) {
@@ -3616,9 +3621,7 @@ function populateComparisonResultsModal() {
     if (!body || !select) return;
     // Preserve current selection (if any) before rebuilding options
     const prevValue = (typeof select.value === 'string' && select.value !== '') ? parseInt(select.value, 10) : 0;
-    const comps = (visualizationMode === 'matrix') 
-        ? (window.comparisonResults_matrix || window.comparisonResults)
-        : (window.comparisonResults_comparison || window.comparisonResults) || [];
+    const comps = getComparisonResultsForMode() || [];
     select.innerHTML = '';
     comps.forEach((c, i) => {
         const opt = document.createElement('option');

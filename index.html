@@ -243,24 +243,66 @@
                 <div class="control-panel card-panel">
                     <div class="panel-title">Analysis Mode</div>
                     <div class="control-row">
-                        <div class="control-group">
-                            <label for="viz-mode">Mode:</label>
-                            <select id="viz-mode">
+                        <div class="control-group mode-control-group">
+                            <div class="mode-header">
+                                <label>Visualization Mode</label>
+                                <span class="help-icon"
+                                    title="Single: view each sample separately. Group: aggregate samples by metadata. Comparison: compare two groups. Matrix: compare all group pairs.">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
+                            
+                            <select id="viz-mode" style="display: none;">
                                 <option value="single" selected>Individual samples</option>
                                 <option value="group">Group samples</option>
                                 <option value="comparison">Group comparison</option>
                                 <option value="matrix">Comparison matrix</option>
                             </select>
-                            <span class="help-icon"
-                                title="Single: view each sample separately. Group: aggregate samples by metadata. Comparison: compare two groups. Matrix: compare all group pairs.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
+
+                            <div class="mode-switcher">
+                                <button type="button" class="mode-btn active" data-value="single" title="View individual samples">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+                                    </svg>
+                                    <span>Sample View</span>
+                                </button>
+                                <button type="button" class="mode-btn" data-value="group" title="View aggregated groups">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                        <circle cx="7" cy="17" r="4"></circle>
+                                        <circle cx="17" cy="17" r="4"></circle>
+                                    </svg>
+                                    <span>Group View</span>
+                                </button>
+                                <button type="button" class="mode-btn" data-value="comparison" title="Compare two groups (Pairwise)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="6" cy="12" r="3"></circle>
+                                        <circle cx="18" cy="12" r="3"></circle>
+                                        <path d="M9 12h6"></path>
+                                        <path d="M9 12l2-2m-2 2l2 2"></path>
+                                        <path d="M15 12l-2-2m2 2l-2 2"></path>
+                                    </svg>
+                                    <span>Pairwise Diff</span>
+                                </button>
+                                <button type="button" class="mode-btn" data-value="matrix" title="Compare all groups (Matrix)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                        <path d="M3 9h18"></path>
+                                        <path d="M3 15h18"></path>
+                                        <path d="M9 3v18"></path>
+                                        <path d="M15 3v18"></path>
+                                    </svg>
+                                    <span>Diff Matrix</span>
+                                </button>
+                            </div>
                         </div>
+                    </div>
 
 
                         <!-- 单样本模式：当加载 combined_long.tsv 时显示显著性过滤控件 -->
@@ -300,11 +342,12 @@
                             </div>
                         </div>
                         <!-- Samples 折叠按钮（仅在 single 模式下显示） -->
-                        <div class="control-group" id="samples-toggle-group">
-                            <label for="sample-select">Samples:</label>
-                            <button id="toggle-samples" class="toggle-btn">Expand ▼</button>
+                        <div class="control-row">
+                            <div class="control-group" id="samples-toggle-group">
+                                <label for="sample-select">Samples:</label>
+                                <button id="toggle-samples" class="toggle-btn">Expand ▼</button>
+                            </div>
                         </div>
-                    </div>
 
                     <!-- 样本选择折叠区 -->
                     <div class="sample-selection-panel" id="sample-selection-panel">

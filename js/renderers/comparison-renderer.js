@@ -288,7 +288,13 @@
     const showBack = !!opts.showBack;
     const onBack = typeof opts.onBack === 'function' ? opts.onBack : null;
 
-    const vizContainer = document.getElementById(containerId);
+    let vizContainer = document.getElementById(containerId);
+    
+    // If targeting main container, redirect to sub-container for comparison mode
+    if (containerId === 'viz-container' && typeof window.getVizSubContainer === 'function') {
+        vizContainer = window.getVizSubContainer('comparison');
+    }
+
     if (!vizContainer) return;
     vizContainer.innerHTML = '';
 
@@ -956,12 +962,20 @@
       return;
     }
 
-    const vizContainer = document.getElementById('viz-container');
-    vizContainer.innerHTML = '';
+    const vizContainer = (typeof window.getVizSubContainer === 'function')
+        ? window.getVizSubContainer('matrix')
+        : document.getElementById('viz-container');
+        
+    if (vizContainer) vizContainer.innerHTML = '';
+    
     // For comparison matrix mode, allow the viz container to behave as a block so
     // the matrix container can size to its content (width = max-content). We
     // set display:block here and restore it when normal panel rendering runs.
-    try { vizContainer.style.display = 'block'; } catch (_) { }
+    // Note: with sub-containers, we set style on the sub-container if needed, or the parent?
+    // The original code set it on viz-container. Let's keep setting it on viz-container for layout safety,
+    // or set it on the sub-container.
+    // Since sub-container is a child, setting display:block on parent is fine.
+    try { document.getElementById('viz-container').style.display = 'block'; } catch (_) { }
     const matrixStore = resolveComparisonRendererStore();
     try { matrixStore.clear(); } catch (_) { }
 
@@ -1073,7 +1087,8 @@
     cell.style.cursor = 'pointer';
     cell.addEventListener('click', () => {
       try {
-        window._comparisonMatrixBackup = Array.isArray(window.comparisonResults) ? window.comparisonResults.slice() : window.comparisonResults;
+        const results = window.comparisonResults_matrix || window.comparisonResults;
+        window._comparisonMatrixBackup = Array.isArray(results) ? results.slice() : results;
       } catch (e) {
         window._comparisonMatrixBackup = window.comparisonResults;
       }
@@ -1184,7 +1199,11 @@
   // New: draw a focused comparison view inline in the main container (no modal)
   function drawInlineFocusedComparison(comparison) {
     if (!comparison) return;
-    const vizContainer = document.getElementById('viz-container');
+    
+    const vizContainer = (typeof window.getVizSubContainer === 'function')
+        ? window.getVizSubContainer('matrix')
+        : document.getElementById('viz-container');
+        
     if (!vizContainer) return;
     vizContainer.innerHTML = '';
 
@@ -1202,8 +1221,9 @@
     // Draw the full comparison tree into the dedicated body container with header and back
     const onBack = () => {
       try { delete window.currentInlineComparison; } catch (_) { window.currentInlineComparison = null; }
-      if (Array.isArray(window.comparisonResults) && window.comparisonResults.length > 0) {
-        drawComparisonMatrix(window.comparisonResults);
+      const results = window.comparisonResults_matrix || window.comparisonResults;
+      if (Array.isArray(results) && results.length > 0) {
+        drawComparisonMatrix(results);
       }
     };
     drawComparisonTree(

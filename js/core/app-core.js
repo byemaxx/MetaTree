@@ -1619,10 +1619,16 @@ function buildTreeWithGroupData() {
 
 // ========== 可视化模块 ==========
 function initVisualization() {
-    const vizContainer = document.getElementById('viz-container');
-    vizContainer.innerHTML = '';
-    // Clear any inline display modifications (e.g., matrix mode may set display:block)
-    try { vizContainer.style.display = ''; } catch (_) { }
+    const vizContainer = (typeof window.getVizSubContainer === 'function') 
+        ? window.getVizSubContainer(visualizationMode) 
+        : document.getElementById('viz-container');
+    
+    if (vizContainer) vizContainer.innerHTML = '';
+    
+    // Reset viz-container display style (may have been modified by matrix mode)
+    // Note: with sub-containers, we might not need to reset viz-container display, but keeping it safe
+    try { document.getElementById('viz-container').style.display = ''; } catch (_) { }
+    
     svgs = {};
     zooms = {};
     svgGroups = {};

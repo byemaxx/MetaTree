@@ -391,7 +391,7 @@
         heightVar: '--comparison-panel-svg-height',
         autoHeight: !useModal,
         applyHeight: !useModal,
-        lockWidth: false
+        lockWidth: true
       })
       : null;
     const width = (size && typeof size.width === 'number') ? size.width : container.clientWidth;

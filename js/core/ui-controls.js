@@ -3511,7 +3511,11 @@ function handleRunComparison() {
     }, 100);
 }
 
-// Helper function to get comparison results based on current visualization mode
+/**
+ * Get comparison results based on the current visualization mode
+ * @returns {Array} Comparison results array for the current mode (matrix or comparison)
+ * @depends {string} visualizationMode - Global variable indicating current visualization mode
+ */
 function getComparisonResultsForMode() {
     return (visualizationMode === 'matrix') 
         ? (window.comparisonResults_matrix || window.comparisonResults)

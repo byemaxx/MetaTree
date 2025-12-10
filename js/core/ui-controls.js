@@ -2854,6 +2854,7 @@ function handleVisualizationModeChange() {
     // 显示/隐藏相关控制
     const comparisonControls = document.getElementById('comparison-controls');
     const samplesToggle = document.getElementById('samples-toggle-group');
+    const samplesToggleRow = document.getElementById('samples-toggle-row');
     const singleModeSettings = document.getElementById('single-mode-settings');
     const groupModeSettings = document.getElementById('group-mode-settings');
     const groupSelectionRow = document.getElementById('group-selection-row');
@@ -2869,7 +2870,8 @@ function handleVisualizationModeChange() {
         // 单样本模式
         if (comparisonControls) comparisonControls.style.display = 'none';
         if (groupModeSettings) groupModeSettings.style.display = 'none';
-        if (samplesToggle) samplesToggle.style.display = 'flex';
+        if (samplesToggleRow) samplesToggleRow.style.display = 'flex';
+        else if (samplesToggle) samplesToggle.style.display = 'flex';
         if (singleModeSettings) singleModeSettings.style.display = 'block';
         // 单样本显著性控件仅在 combined_long 下显示
         try {
@@ -2892,7 +2894,8 @@ function handleVisualizationModeChange() {
         // group模式: 显示group选择控件和single-mode-settings
         if (comparisonControls) comparisonControls.style.display = 'none';
         if (groupModeSettings) groupModeSettings.style.display = 'block';
-        if (samplesToggle) samplesToggle.style.display = 'none';
+        if (samplesToggleRow) samplesToggleRow.style.display = 'none';
+        else if (samplesToggle) samplesToggle.style.display = 'none';
         if (singleModeSettings) singleModeSettings.style.display = 'block';  // 显示single模式的设置
 
         // 确保样本选择面板被折叠/隐藏
@@ -2920,7 +2923,8 @@ function handleVisualizationModeChange() {
         if (comparisonControls) comparisonControls.style.display = 'block';
         if (singleModeSettings) singleModeSettings.style.display = 'none';
         if (groupModeSettings) groupModeSettings.style.display = 'none';
-        if (samplesToggle) samplesToggle.style.display = 'none';
+        if (samplesToggleRow) samplesToggleRow.style.display = 'none';
+        else if (samplesToggle) samplesToggle.style.display = 'none';
         // Ensure the sample selection panel is collapsed/hidden when entering comparison/matrix modes
         const samplePanel = document.getElementById('sample-selection-panel');
         const toggleBtn = document.getElementById('toggle-samples');

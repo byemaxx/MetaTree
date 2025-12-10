@@ -1252,6 +1252,10 @@ button:disabled {
     position: relative;
     padding: clamp(var(--spacing-lg), 4vw, var(--spacing-3xl));
     background: var(--bg-white);
+    /* Grid layout moved to .viz-panel-sub to support multiple modes */
+}
+
+.viz-panel-sub {
     --panel-grid-gap: var(--spacing-xl);
     display: grid;
     grid-template-columns: repeat(
@@ -1267,6 +1271,12 @@ button:disabled {
     /* 新增：确保每一行至少有固定最小高度，便于控制面板高度 */
     grid-auto-rows: minmax(var(--panel-min-height), auto);
     align-items: start;
+    width: 100%;
+}
+
+/* Matrix mode might need block layout */
+#viz-panel-matrix {
+    display: block;
 }
 
 .tree-panel {
@@ -2754,6 +2764,12 @@ svg {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
+    container-type: inline-size;
+    flex: 1; /* Allow to fill available space */
+    width: 100%; /* Fallback/Force width */
+    min-width: 0; /* Critical for container queries in flex items */
+    align-items: stretch; /* Override .control-group's center */
+    flex-wrap: nowrap; /* Prevent wrapping issues in column layout */
 }
 
 .mode-header {
@@ -2777,6 +2793,18 @@ svg {
     padding: 4px;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
+}
+
+@container (max-width: 340px) {
+    .mode-switcher {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@container (max-width: 180px) {
+    .mode-switcher {
+        grid-template-columns: 1fr;
+    }
 }
 
 .mode-btn {

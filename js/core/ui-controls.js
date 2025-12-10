@@ -1671,16 +1671,18 @@ function redrawCurrentViz() {
         }
     } else if (visualizationMode === 'comparison') {
         // 比较模式：直接重绘现有比较结果（无需重新计算统计）
-        if (window.comparisonResults && window.comparisonResults.length > 0) {
-            const comp = window.comparisonResults[0];
+        const results = window.comparisonResults_comparison || window.comparisonResults;
+        if (results && results.length > 0) {
+            const comp = results[0];
             drawComparisonTree(comp.treatment_1, comp.treatment_2, comp.stats);
         }
     } else if (visualizationMode === 'matrix') {
         // 矩阵模式：如存在内联放大视图，则优先重绘该视图；否则重绘矩阵
+        const results = window.comparisonResults_matrix || window.comparisonResults;
         if (window.currentInlineComparison) {
             drawInlineFocusedComparison(window.currentInlineComparison);
-        } else if (window.comparisonResults && window.comparisonResults.length > 0) {
-            drawComparisonMatrix(window.comparisonResults);
+        } else if (results && results.length > 0) {
+            drawComparisonMatrix(results);
         }
     }
 }
@@ -2806,12 +2808,45 @@ function handleToggleSamples() {
 
 // ========== 比较模式事件处理 ==========
 
+// Helper to manage sub-containers for different modes to preserve state
+window.getVizSubContainer = function(mode) {
+    const container = document.getElementById('viz-container');
+    if (!container) return null;
+    const subId = `viz-panel-${mode}`;
+    let sub = document.getElementById(subId);
+    if (!sub) {
+        sub = document.createElement('div');
+        sub.id = subId;
+        sub.className = 'viz-panel-sub';
+        sub.style.width = '100%';
+        container.appendChild(sub);
+    }
+    return sub;
+};
+
+window.updateVizContainerVisibility = function(mode) {
+    const modes = ['single', 'group', 'comparison', 'matrix'];
+    modes.forEach(m => {
+        const sub = window.getVizSubContainer(m);
+        if (sub) {
+            // Use empty string to let CSS control display (grid vs block), or 'none' to hide
+            sub.style.display = (m === mode) ? '' : 'none';
+        }
+    });
+};
+
 function handleVisualizationModeChange() {
     const prevMode = (typeof window !== 'undefined' && window.visualizationMode)
         ? window.visualizationMode
         : visualizationMode;
     persistCurrentModeColorSettings(prevMode);
     visualizationMode = document.getElementById('viz-mode').value;
+    
+    // Manage visibility instead of clearing to preserve state
+    if (typeof window.updateVizContainerVisibility === 'function') {
+        window.updateVizContainerVisibility(visualizationMode);
+    }
+
     try { if (typeof window !== 'undefined') window.visualizationMode = visualizationMode; } catch (_) { }
     applyModeColorSettings(visualizationMode);
     setActiveLayoutPanelContext(getActiveLayoutPanelContext(), { force: true });
@@ -2823,6 +2858,12 @@ function handleVisualizationModeChange() {
     const groupModeSettings = document.getElementById('group-mode-settings');
     const groupSelectionRow = document.getElementById('group-selection-row');
     const matrixGroupSelection = document.getElementById('matrix-group-selection');
+    const sharedLegend = document.getElementById('shared-legend');
+
+    // Hide shared legend in comparison/matrix modes as they have their own legends
+    if (sharedLegend) {
+        sharedLegend.style.display = (visualizationMode === 'comparison' || visualizationMode === 'matrix') ? 'none' : 'block';
+    }
 
     if (visualizationMode === 'single') {
         // 单样本模式
@@ -3359,7 +3400,12 @@ function handleRunComparison() {
     }
 
     // 显示加载提示
-    document.getElementById('viz-container').innerHTML = '<div style="text-align:center; padding:50px;"><h2>Running comparison analysis...</h2><p>This may take a moment...</p></div>';
+    const vizSub = window.getVizSubContainer(visualizationMode);
+    if (vizSub) {
+        vizSub.innerHTML = '<div style="text-align:center; padding:50px;"><h2>Running comparison analysis...</h2><p>This may take a moment...</p></div>';
+    } else {
+        document.getElementById('viz-container').innerHTML = '<div style="text-align:center; padding:50px;"><h2>Running comparison analysis...</h2><p>This may take a moment...</p></div>';
+    }
 
     // 获取参数
     comparisonMetric = document.getElementById('comparison-metric').value;
@@ -3398,21 +3444,32 @@ function handleRunComparison() {
     setTimeout(() => {
         try {
             // 运行比较 - 保存到全局 window 对象以便重绘函数访问
-            window.comparisonResults = compareGroups(treeData, groupsFiltered, {
+            const results = compareGroups(treeData, groupsFiltered, {
                 metric: comparisonMetric,
                 transform: 'none',  // 已在数据中应用
                 minAbundance: 0,
                 runTests: true,
                 test: comparisonTest
             });
+            
+            // Store results based on mode to prevent overwriting between modes
+            if (visualizationMode === 'comparison') {
+                window.comparisonResults_comparison = results;
+                window.comparisonResults = results; // Keep for backward compatibility
+            } else if (visualizationMode === 'matrix') {
+                window.comparisonResults_matrix = results;
+                window.comparisonResults = results; // Keep for backward compatibility
+            } else {
+                window.comparisonResults = results;
+            }
 
             // 验证结果
-            if (!window.comparisonResults || window.comparisonResults.length === 0) {
+            if (!results || results.length === 0) {
                 throw new Error('No comparison results generated. Check if groups have valid samples.');
             }
 
             // 验证统计数据
-            window.comparisonResults.forEach((comp, idx) => {
+            results.forEach((comp, idx) => {
                 // Validate stats; keep warnings/errors but remove verbose logs
                 if (!comp.stats || Object.keys(comp.stats).length === 0) {
                     console.warn(`Warning: No statistics for comparison ${idx + 1}`);
@@ -3423,22 +3480,24 @@ function handleRunComparison() {
             if (visualizationMode === 'comparison') {
                 const [g1, g2] = Object.keys(groupsFiltered);
                 if (!g1 || !g2) {
-                    document.getElementById('viz-container').innerHTML = '';
+                    const vizSub = window.getVizSubContainer(visualizationMode);
+                    if (vizSub) vizSub.innerHTML = '';
                     alert('Selected groups have no samples after current filters. Please adjust filters or choose other groups.');
                     return;
                 }
                 // 单个比较：使用第一个比较结果
-                const comp = window.comparisonResults[0];
+                const comp = results[0];
                 drawComparisonTree(comp.treatment_1, comp.treatment_2, comp.stats);
             } else if (visualizationMode === 'matrix') {
                 // 矩阵模式：如果过滤后可用组少于 2，则阻止
                 const available = Object.keys(groupsFiltered);
                 if (available.length < 2) {
-                    document.getElementById('viz-container').innerHTML = '';
+                    const vizSub = window.getVizSubContainer(visualizationMode);
+                    if (vizSub) vizSub.innerHTML = '';
                     alert('Fewer than 2 groups remain after current filters. Please adjust filters or groups.');
                     return;
                 }
-                drawComparisonMatrix(window.comparisonResults);
+                drawComparisonMatrix(results);
             }
 
             // 显示导出按钮
@@ -3454,7 +3513,11 @@ function handleRunComparison() {
 
 // Open a modal to preview comparison results and offer export options
 function handleViewResults() {
-    if (!window.comparisonResults || window.comparisonResults.length === 0) {
+    const results = (visualizationMode === 'matrix') 
+        ? (window.comparisonResults_matrix || window.comparisonResults)
+        : (window.comparisonResults_comparison || window.comparisonResults);
+
+    if (!results || results.length === 0) {
         alert('No comparison results to view. Please run a comparison first.');
         return;
     }
@@ -3504,9 +3567,12 @@ function createComparisonResultsModal() {
     document.getElementById('comparison-results-close').addEventListener('click', closeComparisonResultsModal);
 
     document.getElementById('comparison-export-tsv').addEventListener('click', function () {
+        const results = (visualizationMode === 'matrix') 
+            ? (window.comparisonResults_matrix || window.comparisonResults)
+            : (window.comparisonResults_comparison || window.comparisonResults);
         const idx = parseInt(document.getElementById('comparison-select').value, 10) || 0;
-        const singleComp = (window.comparisonResults && window.comparisonResults[idx]) ? window.comparisonResults[idx] : null;
-        const comp = singleComp ? [singleComp] : (window.comparisonResults || []);
+        const singleComp = (results && results[idx]) ? results[idx] : null;
+        const comp = singleComp ? [singleComp] : (results || []);
         // Build filename including group names when exporting a single comparison
         let filename = 'comparison_results.tsv';
         if (singleComp) {
@@ -3518,8 +3584,11 @@ function createComparisonResultsModal() {
     });
 
     document.getElementById('comparison-export-csv').addEventListener('click', function () {
+        const results = (visualizationMode === 'matrix') 
+            ? (window.comparisonResults_matrix || window.comparisonResults)
+            : (window.comparisonResults_comparison || window.comparisonResults);
         const idx = parseInt(document.getElementById('comparison-select').value, 10) || 0;
-        const comp = (window.comparisonResults && window.comparisonResults[idx]) ? window.comparisonResults[idx] : null;
+        const comp = (results && results[idx]) ? results[idx] : null;
         if (!comp) {
             alert('No comparison selected');
             return;
@@ -3547,7 +3616,9 @@ function populateComparisonResultsModal() {
     if (!body || !select) return;
     // Preserve current selection (if any) before rebuilding options
     const prevValue = (typeof select.value === 'string' && select.value !== '') ? parseInt(select.value, 10) : 0;
-    const comps = window.comparisonResults || [];
+    const comps = (visualizationMode === 'matrix') 
+        ? (window.comparisonResults_matrix || window.comparisonResults)
+        : (window.comparisonResults_comparison || window.comparisonResults) || [];
     select.innerHTML = '';
     comps.forEach((c, i) => {
         const opt = document.createElement('option');
@@ -4726,6 +4797,8 @@ function updateGroupMetaColumnOptions() {
     const select = document.getElementById('group-meta-column-select');
     if (!select) return;
 
+    const currentValue = select.value;
+
     select.innerHTML = '<option value="">-- Select column --</option>';
 
     if (!metaData || !metaColumns || metaColumns.length === 0) {
@@ -4738,6 +4811,10 @@ function updateGroupMetaColumnOptions() {
         option.textContent = col;
         select.appendChild(option);
     });
+
+    if (currentValue && metaColumns.includes(currentValue)) {
+        select.value = currentValue;
+    }
 }
 
 /**

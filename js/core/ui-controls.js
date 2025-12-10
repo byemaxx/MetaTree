@@ -3512,9 +3512,9 @@ function handleRunComparison() {
 }
 
 /**
- * Get comparison results based on the current visualization mode
- * @returns {Array} Comparison results array for the current mode (matrix or comparison)
- * @depends {string} visualizationMode - Global variable indicating current visualization mode
+ * Get comparison results based on the current visualization mode.
+ * Depends on the global visualizationMode variable to determine which results to return.
+ * @returns {Array|undefined} Comparison results array for the current mode (matrix or comparison)
  */
 function getComparisonResultsForMode() {
     return (visualizationMode === 'matrix') 

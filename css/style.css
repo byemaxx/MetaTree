@@ -1252,7 +1252,7 @@ button:disabled {
     position: relative;
     padding: clamp(var(--spacing-lg), 4vw, var(--spacing-3xl));
     background: var(--bg-white);
-    /* Grid layout moved to .viz-panel-sub to support multiple modes */
+    /* Grid layout moved to .viz-panel-sub to support independent layout for each mode sub-container */
 }
 
 .viz-panel-sub {

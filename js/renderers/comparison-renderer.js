@@ -151,6 +151,21 @@
       const diameter = Math.max(10, Math.min(width, height) - padding);
       const offsetX = (width - diameter) / 2;
       const offsetY = (height - diameter) / 2;
+
+      // Use provided dataToPath or build local one (fallback)
+      let dataToPath = opts.dataToPath;
+      if (!dataToPath) {
+          dataToPath = new Map();
+          if (root) {
+            root.each(d => {
+              if (d.data) {
+                const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
+                if (p) dataToPath.set(d.data, p);
+              }
+            });
+          }
+      }
+
       const packChildAccessor = (node) => (node && node.__collapsed) ? null : node && node.children;
       let packRoot = null;
       if (root && root.data) {
@@ -171,9 +186,10 @@
         }
       } catch (_) { }
       packRoot
-        .sum(node => {
-          const label = node && node.data ? node.data.name : null;
-          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : label;
+        .sum(d => {
+          const label = d ? d.name : null;
+          let nodePath = dataToPath.get(d);
+          if (!nodePath) nodePath = label;
           const stats = nodePath ? comparisonStats[nodePath] : undefined;
           return computePackMetric(stats);
         })
@@ -183,6 +199,22 @@
         .padding(forMini ? 1.5 : 3);
       const packed = pack(packRoot);
       layout.nodes = packed.descendants();
+      
+      // Propagate visibility flag from original data if filtering is active
+      if (opts.filterBySignificance) {
+          const visibleSet = opts.visibleData;
+          layout.nodes.forEach(node => {
+              if (visibleSet && visibleSet.has(node.data)) {
+                  node._hasVisibleDesc = true;
+              } else if (!visibleSet) {
+                  // Fallback if set not provided but filtering requested (should not happen)
+                  node._hasVisibleDesc = false;
+              } else {
+                  node._hasVisibleDesc = false;
+              }
+          });
+      }
+
       layout.links = [];
       layout.collapsedNodes = layout.nodes.filter(d => d.data && d.data.__collapsed);
       layout.applyGroupTransform = (g) => g.attr('transform', `translate(${offsetX}, ${offsetY})`);
@@ -435,13 +467,28 @@
       }
     } catch (_) { }
 
+    // Pre-calculate paths for data objects to support layouts that rebuild hierarchy (like packing)
+    const dataToPath = new Map();
+    if (root) {
+        root.each(d => {
+            if (d.data) {
+                const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
+                if (p) dataToPath.set(d.data, p);
+            }
+        });
+    }
+    const getPathForNode = (d) => {
+        if (d && d.data && dataToPath.has(d.data)) return dataToPath.get(d.data);
+        return (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+    };
+
     // ========== 统一标签颜色（comparison 模式）==========
     if (typeof uniformLabelColors !== 'undefined' && uniformLabelColors && root && comparisonStats) {
       try {
         // 计算阈值（与后续标签过滤一致）
         const values = [];
         root.each(node => {
-          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+          const nodePath = getPathForNode(node);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return;
           const v = Math.abs(st.comparison_value || 0);
@@ -462,7 +509,7 @@
         // 收集本次会显示的标签（使用完整名称）
         const visibleLabels = new Set();
         root.each(node => {
-          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+          const nodePath = getPathForNode(node);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return;
           
@@ -544,7 +591,15 @@
     const { maxAgg, filterBySignificance } = annotateComparisonAggregates(root, comparisonStats);
     const strokeScale = d3.scaleSqrt().domain([0, maxAgg]).range([0.8, 5]).clamp(true);
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false });
+    // Collect visible data objects for packing mode (where nodes are recreated)
+    const visibleData = new Set();
+    if (filterBySignificance) {
+        root.each(d => {
+            if (d._hasVisibleDesc) visibleData.add(d.data);
+        });
+    }
+
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false, dataToPath, visibleData, filterBySignificance });
     try { layoutConfig.applyGroupTransform(g); } catch (_) { }
     const nodesForRender = getVisibleComparisonNodes(layoutConfig.nodes, filterBySignificance);
 
@@ -595,7 +650,7 @@
 
     // 节点大小（平均丰度）
     const avgAbundances = root.descendants().map(d => {
-      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const nodePath = getPathForNode(d);
       const stats = nodePath ? comparisonStats[nodePath] : undefined;
       if (!stats) return 0;
       const m1 = stats.mean_1 || 0;
@@ -608,7 +663,7 @@
       .range([minNodeSize * nodeSizeMultiplier, maxNodeSize * nodeSizeMultiplier * 0.3])
       .clamp(true);
     const computeNodeRadius = (d) => {
-      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const nodePath = getPathForNode(d);
       const stats = nodePath ? comparisonStats[nodePath] : undefined;
       if (!stats) return minNodeSize * nodeSizeMultiplier * 0.5;
       const mean1 = stats.mean_1 || 0;
@@ -642,7 +697,7 @@
     nodeGroup.append('circle')
       .attr('r', d => computeVisualRadius(d))
       .style('fill', d => {
-        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+        const nodePath = getPathForNode(d);
         const stats = nodePath ? comparisonStats[nodePath] : undefined;
         if (!stats) return zeroNodeColor;
         const mean1 = stats.mean_1 || 0;
@@ -683,7 +738,7 @@
     if (showLabels) {
       const values = [];
       root.each(node => {
-        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(node) : (node && node.data ? node.data.name : null);
+        const nodePath = getPathForNode(node);
         const st = nodePath ? comparisonStats[nodePath] : undefined;
         if (!st) return;
         const v = Math.abs(st.comparison_value || 0);
@@ -703,7 +758,7 @@
       
       // 1. 筛选候选节点
       const candidates = nodesForRender.filter(d => {
-          const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+          const nodePath = getPathForNode(d);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return false;
           
@@ -861,7 +916,7 @@
 
       if (isOverlayActive()) return;
 
-      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const nodePath = getPathForNode(d);
       const st = nodePath ? (comparisonStats[nodePath] || {}) : {};
       // Use getNodeFullLabel to get the full name (including prefixes like s__, g__)
       let labelRaw = getNodeFullLabel(d);
@@ -1260,7 +1315,32 @@
       }
     } catch (_) { }
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true });
+    // Pre-calculate paths for data objects
+    const dataToPath = new Map();
+    if (root) {
+        root.each(d => {
+            if (d.data) {
+                const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
+                if (p) dataToPath.set(d.data, p);
+            }
+        });
+    }
+    const getPathForNode = (d) => {
+        if (d && d.data && dataToPath.has(d.data)) return dataToPath.get(d.data);
+        return (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+    };
+
+    const { filterBySignificance: filterMini } = annotateComparisonAggregates(root, comparisonStats);
+    
+    // Collect visible data objects for packing mode
+    const visibleData = new Set();
+    if (filterMini) {
+        root.each(d => {
+            if (d._hasVisibleDesc) visibleData.add(d.data);
+        });
+    }
+
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true, dataToPath, visibleData, filterBySignificance: filterMini });
     try { layoutConfig.applyGroupTransform(g); } catch (_) { }
 
     const reverseColorsEnabled = resolveReverseColorsFlag();
@@ -1301,7 +1381,7 @@
       ? resolveZeroNodeColor(colorAtValMini, comparisonHasNegativesMini)
       : ((typeof customZeroColor === 'string' && customZeroColor) ? customZeroColor : ZERO_NODE_COLOR);
 
-    const { filterBySignificance: filterMini } = annotateComparisonAggregates(root, comparisonStats);
+    // Note: annotateComparisonAggregates was already called above
     const miniNodes = getVisibleComparisonNodes(layoutConfig.nodes, filterMini);
     const miniNodeSet = new Set(miniNodes);
     const miniLinks = getVisibleComparisonLinks(layoutConfig.links, miniNodeSet, filterMini);
@@ -1316,7 +1396,7 @@
       linkMini
         .style('fill', 'none')
         .style('stroke', d => {
-          const targetPath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d.target) : (d && d.target && d.target.data ? d.target.data.name : null);
+          const targetPath = getPathForNode(d.target);
           const stats = targetPath ? comparisonStats[targetPath] : undefined;
           if (!stats) return zeroLinkColorMini;
           const mean1 = stats.mean_1 || 0;
@@ -1331,7 +1411,7 @@
     }
 
     const computeMiniRadius = (d) => {
-      const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      const nodePath = getPathForNode(d);
       const stats = nodePath ? comparisonStats[nodePath] : undefined;
       if (!stats) return 1;
       const mean1 = stats.mean_1 || 0;
@@ -1357,7 +1437,7 @@
     nodeSel.append('circle')
       .attr('r', d => computeMiniVisualRadius(d))
       .style('fill', d => {
-        const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+        const nodePath = getPathForNode(d);
         const stats = nodePath ? comparisonStats[nodePath] : undefined;
         if (!stats) return zeroNodeColorMini;
         const mean1 = stats.mean_1 || 0;

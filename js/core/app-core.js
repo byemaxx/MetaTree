@@ -2447,37 +2447,72 @@ function drawTree(sample, globalDomain) {
                     .on('contextmenu', handleLabelRightClick)
                     .call(applyLabelOverflow);
             } else {
-                // 2. 按深度分组并排序，进行贪婪的碰撞检测
+                // 2. 全局碰撞检测 (不再按深度分组)
                 visibleNodesSet = new Set();
-                const nodesByDepth = {};
-                candidates.forEach(d => {
-                    const depth = d.depth || 0;
-                    if (!nodesByDepth[depth]) nodesByDepth[depth] = [];
-                    nodesByDepth[depth].push(d);
+                
+                // 按丰度排序，优先显示高丰度节点
+                const sortedCandidates = [...candidates].sort((a, b) => {
+                    const abA = Math.abs(transformAbundance(a.data.abundances[sample] || 0));
+                    const abB = Math.abs(transformAbundance(b.data.abundances[sample] || 0));
+                    return abB - abA;
                 });
 
-                const minArcLength = (labelFontSize || 10) * 1.0; // 最小弧长间隔
-                const minRadiusForLabel = 10; // 距离圆心太近不显示标签
+                const placedLabels = []; // { angle, radius, startR, endR }
+                const currentLabelFontSize = (labelFontSize || 10);
+                const charWidth = currentLabelFontSize * 0.6;
+                const minRadiusForLabel = 10;
 
-                Object.keys(nodesByDepth).forEach(depthKey => {
-                    const depthNodes = nodesByDepth[depthKey];
-                    // 按角度排序 (d.x 在 cluster/radial 布局中为角度)
-                    depthNodes.sort((a, b) => a.x - b.x);
+                sortedCandidates.forEach(d => {
+                    const radius = d.y;
+                    if (radius < minRadiusForLabel) return;
 
-                    let lastAngle = -100;
-                    depthNodes.forEach(d => {
-                        // d.y 是半径距离
-                        const radius = d.y;
-                        if (radius < minRadiusForLabel) return;
+                    const labelText = getDisplayName(d);
+                    const textLen = labelText.length * charWidth;
+                    const angle = d.x;
+                    const normAngle = (angle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                    
+                    const isLeaf = !d.children;
+                    
+                    // Logic matches rendering: 
+                    // Leaf -> Outwards
+                    // Inner -> Inwards
+                    
+                    let startR, endR;
+                    if (isLeaf) {
+                        // Outwards
+                        startR = radius + 6;
+                        endR = startR + textLen;
+                    } else {
+                        // Inwards
+                        endR = radius - 6;
+                        startR = endR - textLen;
+                    }
 
-                        const currentAngle = d.x;
-                        // 简单的线性扫描碰撞检测 (未处理 2PI 循环边界，但在树图通常足够)
-                        // 弧长 distance ~= radius * angle_diff
-                        if (radius * (currentAngle - lastAngle) >= minArcLength) {
-                            visibleNodesSet.add(d);
-                            lastAngle = currentAngle;
+                    let overlaps = false;
+                    for (const p of placedLabels) {
+                        // Angular distance check
+                        let diff = Math.abs(normAngle - p.angle);
+                        if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                        
+                        // Arc distance at average radius
+                        const avgR = (radius + p.radius) / 2;
+                        const arcDist = diff * avgR;
+
+                        // If angularly close
+                        if (arcDist < currentLabelFontSize) {
+                            // Check radial overlap
+                            const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
+                            if (overlapR) {
+                                overlaps = true;
+                                break;
+                            }
                         }
-                    });
+                    }
+
+                    if (!overlaps) {
+                        placedLabels.push({ angle: normAngle, radius, startR, endR });
+                        visibleNodesSet.add(d);
+                    }
                 });
 
                 // 3. 绘制通过碰撞检测的标签
@@ -2742,32 +2777,59 @@ function drawTree(sample, globalDomain) {
                     .on('contextmenu', handleLabelRightClick)
                     .call(applyLabelOverflow);
             } else {
-                // 2. 碰撞检测 (垂直方向 overlap)
+                // 2. 全局碰撞检测 (不再按深度分组)
                 visibleNodesSet = new Set();
-                // 在 d3.tree (Horizontal) 中，d.x 是垂直位置，d.y 是水平（深度）位置
-                // 按深度分组（通常同一层级 x 坐标不同）
-                const nodesByDepth = {};
-                candidates.forEach(d => {
-                    // 使用 Math.round(d.y) 作为深度分组键，防止浮点误差
-                    const depthKey = Math.round(d.y);
-                    if (!nodesByDepth[depthKey]) nodesByDepth[depthKey] = [];
-                    nodesByDepth[depthKey].push(d);
+                
+                // 按丰度排序
+                const sortedCandidates = [...candidates].sort((a, b) => {
+                    const abA = Math.abs(transformAbundance(a.data.abundances[sample] || 0));
+                    const abB = Math.abs(transformAbundance(b.data.abundances[sample] || 0));
+                    return abB - abA;
                 });
 
-                const minVerticalSpacing = (labelFontSize || 10) * 1.0;
+                const placedLabels = []; // { xMin, xMax, yMin, yMax }
+                const currentLabelFontSize = (labelFontSize || 10);
+                const charWidth = currentLabelFontSize * 0.6;
 
-                Object.keys(nodesByDepth).forEach(key => {
-                    const colNodes = nodesByDepth[key];
-                    // 按垂直位置 d.x 排序
-                    colNodes.sort((a, b) => a.x - b.x);
+                sortedCandidates.forEach(d => {
+                    const x = d.x; // Vertical position in d3.tree horizontal layout
+                    const y = d.y; // Horizontal position (depth)
+                    const isLeaf = !d.children;
+                    const labelText = getDisplayName(d);
+                    const textLen = labelText.length * charWidth;
 
-                    let lastX = -100;
-                    colNodes.forEach(d => {
-                        if ((d.x - lastX) >= minVerticalSpacing) {
-                            visibleNodesSet.add(d);
-                            lastX = d.x;
+                    // Bounding box calculation
+                    // x is vertical center. Height is approx fontSize.
+                    const xMin = x - currentLabelFontSize / 2;
+                    const xMax = x + currentLabelFontSize / 2;
+
+                    let yMin, yMax;
+                    if (isLeaf) {
+                        // Anchor start (left), x=10. Text extends right.
+                        // y is the node center. Text starts at y+10.
+                        yMin = y + 10;
+                        yMax = yMin + textLen;
+                    } else {
+                        // Anchor end (right), x=-10. Text extends left.
+                        // y is node center. Text ends at y-10.
+                        yMax = y - 10;
+                        yMin = yMax - textLen;
+                    }
+
+                    let overlaps = false;
+                    for (const p of placedLabels) {
+                        const intersectX = Math.max(xMin, p.xMin) < Math.min(xMax, p.xMax);
+                        const intersectY = Math.max(yMin, p.yMin) < Math.min(yMax, p.yMax);
+                        if (intersectX && intersectY) {
+                            overlaps = true;
+                            break;
                         }
-                    });
+                    }
+
+                    if (!overlaps) {
+                        placedLabels.push({ xMin, xMax, yMin, yMax });
+                        visibleNodesSet.add(d);
+                    }
                 });
 
                 nodeGroup.filter(d => visibleNodesSet.has(d))

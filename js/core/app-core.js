@@ -2432,8 +2432,8 @@ function drawTree(sample, globalDomain) {
                     .append('text')
                     .attr('class', 'node-label')
                     .attr('dy', '0.31em')
-                    .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
-                    .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
+                    .attr('x', d => d.x < Math.PI ? 6 : -6)
+                    .attr('text-anchor', d => d.x < Math.PI ? 'start' : 'end')
                     .attr('transform', d => {
                         const angle = d.x * 180 / Math.PI - 90;
                         return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
@@ -2450,8 +2450,9 @@ function drawTree(sample, globalDomain) {
                 // 2. 全局碰撞检测 (不再按深度分组)
                 visibleNodesSet = new Set();
                 
-                // 按丰度排序，优先显示高丰度节点
+                // 按优先级排序：优先显示外层节点（height较小），同层级优先显示高丰度
                 const sortedCandidates = [...candidates].sort((a, b) => {
+                    if (a.height !== b.height) return a.height - b.height; // Leaves (0) first
                     const abA = Math.abs(transformAbundance(a.data.abundances[sample] || 0));
                     const abB = Math.abs(transformAbundance(b.data.abundances[sample] || 0));
                     return abB - abA;
@@ -2468,63 +2469,99 @@ function drawTree(sample, globalDomain) {
 
                     const labelText = getDisplayName(d);
                     const textLen = labelText.length * charWidth;
-                    const angle = d.x;
-                    const normAngle = (angle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
                     
-                    const isLeaf = !d.children;
+                    // 初始角度（原始位置）
+                    const originalAngle = d.x;
                     
-                    // Logic matches rendering: 
-                    // Leaf -> Outwards
-                    // Inner -> Inwards
-                    
-                    let startR, endR;
-                    if (isLeaf) {
-                        // Outwards
-                        startR = radius + 6;
-                        endR = startR + textLen;
-                    } else {
-                        // Inwards
-                        endR = radius - 6;
-                        startR = endR - textLen;
-                    }
-
-                    let overlaps = false;
-                    for (const p of placedLabels) {
-                        // Angular distance check
-                        let diff = Math.abs(normAngle - p.angle);
-                        if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                    // 检查重叠的辅助函数
+                    const checkOverlap = (testAngle) => {
+                        const normAngle = (testAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                        const startR = radius + 6;
+                        const endR = startR + textLen;
                         
-                        // Arc distance at average radius
-                        const avgR = (radius + p.radius) / 2;
-                        const arcDist = diff * avgR;
+                        for (const p of placedLabels) {
+                            let diff = Math.abs(normAngle - p.angle);
+                            if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                            const avgR = (radius + p.radius) / 2;
+                            const arcDist = diff * avgR;
 
-                        // If angularly close
-                        if (arcDist < currentLabelFontSize) {
-                            // Check radial overlap
-                            const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
-                            if (overlapR) {
-                                overlaps = true;
-                                break;
+                            if (arcDist < currentLabelFontSize * 0.7) {
+                                const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
+                                if (overlapR) return true;
                             }
                         }
+                        return false;
+                    };
+
+                    let finalAngle = originalAngle;
+                    let isOverlapping = checkOverlap(finalAngle);
+
+                    // 如果重叠且是内部节点，尝试偏移
+                    if (isOverlapping && d.children && d.children.length > 0) {
+                         const maxOffsetAngle = Math.PI / 6; // Max 30 degrees
+                         const stepArc = currentLabelFontSize * 0.5;
+                         const maxSteps = 10;
+                         
+                         for (let i = 1; i <= maxSteps; i++) {
+                             const currentOffsetArc = stepArc * i;
+                             const currentOffsetAngle = currentOffsetArc / Math.max(radius, 10);
+                             
+                             if (currentOffsetAngle > maxOffsetAngle) break;
+
+                             // 尝试正向偏移
+                             if (!checkOverlap(originalAngle + currentOffsetAngle)) {
+                                 finalAngle = originalAngle + currentOffsetAngle;
+                                 isOverlapping = false;
+                                 break;
+                             } 
+                             // 尝试负向偏移
+                             if (!checkOverlap(originalAngle - currentOffsetAngle)) {
+                                 finalAngle = originalAngle - currentOffsetAngle;
+                                 isOverlapping = false;
+                                 break;
+                             }
+                         }
                     }
 
-                    if (!overlaps) {
+                    if (!isOverlapping) {
+                        d._labelAngle = finalAngle;
+                        const normAngle = (finalAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                        const startR = radius + 6;
+                        const endR = startR + textLen;
                         placedLabels.push({ angle: normAngle, radius, startR, endR });
                         visibleNodesSet.add(d);
                     }
                 });
 
-                // 3. 绘制通过碰撞检测的标签
-                nodeGroup.filter(d => visibleNodesSet.has(d))
-                    .append('text')
+                // 3. 绘制通过碰撞检测的标签 (Render in separate layer on top)
+                const labelLayer = g.append('g').attr('class', 'labels-layer');
+                
+                labelLayer.selectAll('.node-label')
+                    .data(nodes.filter(d => visibleNodesSet.has(d)))
+                    .join('text')
                     .attr('class', 'node-label')
                     .attr('dy', '0.31em')
-                    .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
-                    .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
                     .attr('transform', d => {
-                        const angle = d.x * 180 / Math.PI - 90;
-                        return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
+                        // Calculate node position
+                        const angle = d.x;
+                        const radius = d.y;
+                        const nx = centerX + radius * Math.cos(angle - Math.PI / 2);
+                        const ny = centerY + radius * Math.sin(angle - Math.PI / 2);
+                        
+                        // Calculate rotation
+                        const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+                        const rot = finalAngle * 180 / Math.PI - 90;
+                        const rotStr = finalAngle < Math.PI ? `rotate(${rot})` : `rotate(${rot + 180})`;
+                        
+                        return `translate(${nx},${ny}) ${rotStr}`;
+                    })
+                    .attr('x', d => {
+                        const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+                        return finalAngle < Math.PI ? 6 : -6;
+                    })
+                    .attr('text-anchor', d => {
+                        const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+                        return finalAngle < Math.PI ? 'start' : 'end';
                     })
                     .text(d => getDisplayName(d))
                     .style('font-size', `${labelFontSize}px`)
@@ -2613,8 +2650,9 @@ function drawTree(sample, globalDomain) {
             let pVis = 0;
             let pTotal = 0;
 
-            const packLabels = g.selectAll('.node')
-                .filter(d => {
+            const packLabels = g.append('g').attr('class', 'labels-layer')
+                .selectAll('.node-label')
+                .data(nodes.filter(d => {
                     const abundance = (d.data && d.data.abundances && d.data.abundances[sample]) ? d.data.abundances[sample] : 0;
                     const t = transformAbundance(abundance);
                     const depthFromLeaf = d.height;
@@ -2634,11 +2672,12 @@ function drawTree(sample, globalDomain) {
                         }
                     }
                     return false;
-                })
-                .append('text')
+                }))
+                .join('text')
                 .attr('class', 'node-label')
                 .attr('text-anchor', 'middle')
                 .attr('dy', '0.32em')
+                .attr('transform', d => `translate(${d.x + offsetX},${d.y + offsetY})`)
                 .text(d => getDisplayName(d))
                 .style('font-size', `${labelFontSize}px`)
                 .attr('fill', d => getLabelColor(d))
@@ -2832,10 +2871,15 @@ function drawTree(sample, globalDomain) {
                     }
                 });
 
-                nodeGroup.filter(d => visibleNodesSet.has(d))
-                    .append('text')
+                // Render labels in separate layer
+                const labelLayer = g.append('g').attr('class', 'labels-layer');
+                
+                labelLayer.selectAll('.node-label')
+                    .data(nodes.filter(d => visibleNodesSet.has(d)))
+                    .join('text')
                     .attr('class', 'node-label')
                     .attr('dy', '0.31em')
+                    .attr('transform', d => `translate(${d.y + 50},${d.x + 50})`)
                     .attr('x', d => d.children ? -10 : 10)
                     .attr('text-anchor', d => d.children ? 'end' : 'start')
                     .text(d => getDisplayName(d))

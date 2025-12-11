@@ -280,11 +280,18 @@
       return `translate(${x},${y})`;
     };
     layout.configureLabels = (sel) => sel
-      .attr('x', d => d.x < Math.PI === !d.children ? 6 : -6)
-      .attr('text-anchor', d => d.x < Math.PI === !d.children ? 'start' : 'end')
+      .attr('x', d => {
+        const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+        return finalAngle < Math.PI ? 6 : -6;
+      })
+      .attr('text-anchor', d => {
+        const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+        return finalAngle < Math.PI ? 'start' : 'end';
+      })
       .attr('transform', d => {
-        const angle = d.x * 180 / Math.PI - 90;
-        return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
+        const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+        const angle = finalAngle * 180 / Math.PI - 90;
+        return finalAngle < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
       });
     layout.configureCollapse = (sel) => sel
       .attr('transform', d => `rotate(${d.x * 180 / Math.PI - 90}) translate(${d.y},0)`)
@@ -792,8 +799,9 @@
 
       let visibleNodesSet = new Set();
       if (useSmartCulling && layoutConfig.mode !== 'packing') {
-          // Sort candidates by magnitude (importance) to prioritize significant nodes
+          // Sort candidates by priority: Outer nodes (lower height) first, then magnitude
           const sortedCandidates = [...candidates].sort((a, b) => {
+              if (a.height !== b.height) return a.height - b.height; // Leaves (0) first
               const pathA = getPathForNode(a);
               const pathB = getPathForNode(b);
               const valA = pathA && comparisonStats[pathA] ? Math.abs(comparisonStats[pathA].comparison_value || 0) : 0;
@@ -805,56 +813,72 @@
           const currentLabelFontSize = (typeof labelFontSize === 'number') ? labelFontSize : (typeof window !== 'undefined' && typeof window.labelFontSize === 'number' ? window.labelFontSize : 9);
           const charWidth = currentLabelFontSize * 0.6;
 
+          // Pre-calculate label angles with offset for single-child nodes
+          // Removed pre-calculation to apply offset conditionally on collision
+          // candidates.forEach(d => { ... });
+
           sortedCandidates.forEach(d => {
               const labelText = (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || '');
               const textLen = labelText.length * charWidth;
               let overlaps = false;
 
               if (layoutConfig.mode === 'radial') {
-                  const angle = d.x;
                   const radius = d.y;
-                  const normAngle = (angle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                  
-                  const isLeaf = !d.children;
-                  const isRight = d.x < Math.PI;
-                  // Logic matches configureLabels: 
-                  // Right Leaf (T, T) -> Outwards
-                  // Right Inner (T, F) -> Inwards
-                  // Left Leaf (F, T) -> Outwards (rotated 180)
-                  // Left Inner (F, F) -> Inwards (rotated 180)
-                  const isOutwards = (isRight === !!isLeaf);
+                  const originalAngle = d.x;
 
-                  let startR, endR;
-                  if (isOutwards) {
-                      startR = radius + 6;
-                      endR = startR + textLen;
-                  } else {
-                      endR = radius - 6;
-                      startR = endR - textLen;
-                  }
-
-                  // Check against placed labels
-                  for (const p of placedLabels) {
-                      // Angular distance check
-                      let diff = Math.abs(normAngle - p.angle);
-                      if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                  const checkOverlap = (testAngle) => {
+                      const normAngle = (testAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                      const startR = radius + 6;
+                      const endR = startR + textLen;
                       
-                      // Arc distance at average radius
-                      const avgR = (radius + p.radius) / 2;
-                      const arcDist = diff * avgR;
+                      for (const p of placedLabels) {
+                          let diff = Math.abs(normAngle - p.angle);
+                          if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                          const avgR = (radius + p.radius) / 2;
+                          const arcDist = diff * avgR;
 
-                      // If angularly close (spokes are close)
-                      if (arcDist < currentLabelFontSize) {
-                          // Check radial overlap
-                          const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
-                          if (overlapR) {
-                              overlaps = true;
+                          if (arcDist < currentLabelFontSize * 0.7) {
+                              const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
+                              if (overlapR) return true;
+                          }
+                      }
+                      return false;
+                  };
+
+                  let finalAngle = originalAngle;
+                  let isOverlapping = checkOverlap(finalAngle);
+
+                  if (isOverlapping && d.children && d.children.length > 0) {
+                      const maxOffsetAngle = Math.PI / 6; // Max 30 degrees
+                      const stepArc = currentLabelFontSize * 0.5;
+                      const maxSteps = 10;
+                      
+                      for (let i = 1; i <= maxSteps; i++) {
+                          const currentOffsetArc = stepArc * i;
+                          const currentOffsetAngle = currentOffsetArc / Math.max(radius, 10);
+                          
+                          if (currentOffsetAngle > maxOffsetAngle) break;
+
+                          // 尝试正向偏移
+                          if (!checkOverlap(originalAngle + currentOffsetAngle)) {
+                              finalAngle = originalAngle + currentOffsetAngle;
+                              isOverlapping = false;
+                              break;
+                          } 
+                          // 尝试负向偏移
+                          if (!checkOverlap(originalAngle - currentOffsetAngle)) {
+                              finalAngle = originalAngle - currentOffsetAngle;
+                              isOverlapping = false;
                               break;
                           }
                       }
                   }
 
-                  if (!overlaps) {
+                  if (!isOverlapping) {
+                      d._labelAngle = finalAngle;
+                      const normAngle = (finalAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+                      const startR = radius + 6;
+                      const endR = startR + textLen;
                       placedLabels.push({ angle: normAngle, radius, startR, endR });
                       visibleNodesSet.add(d);
                   }
@@ -911,12 +935,24 @@
           }
       }
 
-      const labels = nodeGroup
-        .filter(d => visibleNodesSet.has(d))
-        .append('text')
+      // Render labels in separate layer on top
+      const labelLayer = g.append('g').attr('class', 'labels-layer');
+      
+      const labels = labelLayer.selectAll('.node-label')
+        .data(nodesForRender.filter(d => visibleNodesSet.has(d)))
+        .join('text')
         .attr('class', 'node-label')
         .attr('dy', layoutConfig.mode === 'packing' ? '0.35em' : '0.31em');
+      
       try { layoutConfig.configureLabels(labels); } catch (_) { }
+      
+      // Apply node transform to labels since they are no longer children of nodeGroup
+      labels.attr('transform', function(d) {
+          const nodePos = layoutConfig.positionNode(d); // "translate(x,y)"
+          const labelTrans = d3.select(this).attr('transform') || ''; 
+          return `${nodePos} ${labelTrans}`;
+      });
+
       labels
         .text(d => (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || ''))
         .style('font-size', `${labelFontSize}px`)
@@ -934,25 +970,7 @@
         });
 
       if (layoutConfig.mode === 'packing') {
-        const hoistFn = (typeof window !== 'undefined' && typeof window.hoistPackingLabels === 'function')
-          ? window.hoistPackingLabels
-          : function (sel) {
-            if (!sel || typeof sel.each !== 'function') return;
-            sel.each(function () {
-              const parent = this && this.parentNode;
-              const grandParent = parent && parent.parentNode;
-              if (!parent || !grandParent) return;
-              const parentTransform = parent.getAttribute && parent.getAttribute('transform') || '';
-              const ownTransform = this.getAttribute && this.getAttribute('transform') || '';
-              const combined = [parentTransform, ownTransform].map(str => str.trim()).filter(Boolean).join(' ');
-              if (combined) this.setAttribute('transform', combined);
-              try {
-                parent.removeChild(this);
-                grandParent.appendChild(this);
-              } catch (_) { }
-            });
-          };
-        try { hoistFn(labels); } catch (_) { }
+        // No need to hoist since we are already in a separate layer
       }
     }
 

@@ -281,14 +281,17 @@
     };
     layout.configureLabels = (sel) => sel
       .attr('x', d => {
+        if (d === root) return 0;
         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
         return finalAngle < Math.PI ? 6 : -6;
       })
       .attr('text-anchor', d => {
+        if (d === root) return 'middle';
         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
         return finalAngle < Math.PI ? 'start' : 'end';
       })
       .attr('transform', d => {
+        if (d === root) return null;
         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
         const angle = finalAngle * 180 / Math.PI - 90;
         return finalAngle < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;

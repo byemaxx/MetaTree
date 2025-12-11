@@ -2432,9 +2432,10 @@ function drawTree(sample, globalDomain) {
                     .append('text')
                     .attr('class', 'node-label')
                     .attr('dy', '0.31em')
-                    .attr('x', d => d.x < Math.PI ? 6 : -6)
-                    .attr('text-anchor', d => d.x < Math.PI ? 'start' : 'end')
+                    .attr('x', d => d === hierarchy ? 0 : (d.x < Math.PI ? 6 : -6))
+                    .attr('text-anchor', d => d === hierarchy ? 'middle' : (d.x < Math.PI ? 'start' : 'end'))
                     .attr('transform', d => {
+                        if (d === hierarchy) return null;
                         const angle = d.x * 180 / Math.PI - 90;
                         return d.x < Math.PI ? `rotate(${angle})` : `rotate(${angle + 180})`;
                     })
@@ -2546,6 +2547,8 @@ function drawTree(sample, globalDomain) {
                         const nx = centerX + radius * Math.cos(angle - Math.PI / 2);
                         const ny = centerY + radius * Math.sin(angle - Math.PI / 2);
                         
+                        if (d === hierarchy) return `translate(${nx},${ny})`;
+
                         // Calculate rotation
                         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
                         const rot = finalAngle * 180 / Math.PI - 90;
@@ -2554,10 +2557,12 @@ function drawTree(sample, globalDomain) {
                         return `translate(${nx},${ny}) ${rotStr}`;
                     })
                     .attr('x', d => {
+                        if (d === hierarchy) return 0;
                         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
                         return finalAngle < Math.PI ? 6 : -6;
                     })
                     .attr('text-anchor', d => {
+                        if (d === hierarchy) return 'middle';
                         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
                         return finalAngle < Math.PI ? 'start' : 'end';
                     })

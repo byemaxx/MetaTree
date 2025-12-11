@@ -793,37 +793,57 @@
       let visibleNodesSet = null;
       if (useSmartCulling && layoutConfig.mode !== 'packing') {
           visibleNodesSet = new Set();
-          const nodesByDepth = {};
+          // Group by radius (y) instead of depth to ensure we compare nodes on the same circle/level
+          const nodesByRadius = {};
           candidates.forEach(d => {
-              const depth = d.depth || 0;
-              if (!nodesByDepth[depth]) nodesByDepth[depth] = [];
-              nodesByDepth[depth].push(d);
+              // Use y (radius/horizontal position) as key, rounded to avoid float issues
+              const rKey = Math.round((d.y || 0) * 100); 
+              if (!nodesByRadius[rKey]) nodesByRadius[rKey] = [];
+              nodesByRadius[rKey].push(d);
           });
 
-          const minArcLength = (labelFontSize || 10) * 1.0; 
+          const currentLabelFontSize = (typeof labelFontSize === 'number') ? labelFontSize : (typeof window !== 'undefined' && typeof window.labelFontSize === 'number' ? window.labelFontSize : 9);
+          const minArcLength = currentLabelFontSize * 1.0; 
           
-          Object.keys(nodesByDepth).forEach(depthKey => {
-              const depthNodes = nodesByDepth[depthKey];
+          Object.keys(nodesByRadius).forEach(key => {
+              const depthNodes = nodesByRadius[key];
               
               if (layoutConfig.mode === 'radial') {
                   // Radial: sort by angle (x), check arc length
                   depthNodes.sort((a, b) => a.x - b.x);
-                  let lastAngle = -100;
+                  
                   const minRadiusForLabel = 10;
-                  depthNodes.forEach(d => {
+                  // Check if nodes are too close to center
+                  if (depthNodes.length > 0 && depthNodes[0].y < minRadiusForLabel) return;
+
+                  let lastAngle = -100;
+                  let firstAngle = null;
+                  
+                  depthNodes.forEach((d, i) => {
                       const radius = d.y;
-                      if (radius < minRadiusForLabel) return;
                       const currentAngle = d.x;
-                      if (radius * (currentAngle - lastAngle) >= minArcLength) {
-                          visibleNodesSet.add(d);
-                          lastAngle = currentAngle;
+                      
+                      // Check overlap with previous node
+                      if (lastAngle === -100 || radius * (currentAngle - lastAngle) >= minArcLength) {
+                          // Also check overlap with the first node (wrap-around) for the last few nodes
+                          // Only relevant if we have multiple nodes and we are completing the circle
+                          let overlapsFirst = false;
+                          if (firstAngle !== null && radius * (2 * Math.PI - currentAngle + firstAngle) < minArcLength) {
+                              overlapsFirst = true;
+                          }
+
+                          if (!overlapsFirst) {
+                              visibleNodesSet.add(d);
+                              lastAngle = currentAngle;
+                              if (firstAngle === null) firstAngle = currentAngle;
+                          }
                       }
                   });
               } else if (layoutConfig.mode === 'tree') {
                   // Tree: sort by vertical position (x), check vertical distance
                   depthNodes.sort((a, b) => a.x - b.x);
                   let lastPos = -1000;
-                  const minVerticalDist = (labelFontSize || 10);
+                  const minVerticalDist = currentLabelFontSize;
                   depthNodes.forEach(d => {
                       if ((d.x - lastPos) >= minVerticalDist) {
                           visibleNodesSet.add(d);

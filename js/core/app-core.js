@@ -2461,12 +2461,10 @@ function drawTree(sample, globalDomain) {
                 const placedLabels = []; // { angle, radius, startR, endR }
                 const currentLabelFontSize = (labelFontSize || 10);
                 const charWidth = currentLabelFontSize * 0.6;
-                const minRadiusForLabel = 10;
-
+                
                 sortedCandidates.forEach(d => {
                     const radius = d.y;
-                    if (radius < minRadiusForLabel) return;
-
+                    
                     const labelText = getDisplayName(d);
                     const textLen = labelText.length * charWidth;
                     

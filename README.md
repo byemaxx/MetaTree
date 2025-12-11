@@ -8,10 +8,10 @@
 
 *   **Comparative Visualization**: Designed for group contrasts (e.g., treatment vs. control) and comparisons on shared hierarchies.
 *   **Multiple Modes**:
-    *   **Individual**: Heat-tree matrices for single samples.
-    *   **Group / Aggregated**: Automatically aggregate samples by metadata.
-    *   **Two-Group Comparison**: Direct comparison with effect size and significance-aware styling.
-    *   **Multi-Group Comparison**: Simultaneous visualization of multiple group contrasts.
+    *   **Individual (Sample View)**: Heat-tree matrices for single samples.
+    *   **Group / Aggregated (Group View)**: Automatically aggregate samples by metadata.
+    *   **Two-Group Comparison (Pairwise Diff)**: Direct comparison with effect size and significance-aware styling.
+    *   **Multi-Group Comparison (Diff Matrix)**: Simultaneous visualization of multiple group contrasts.
 *   **Flexible Inputs**: Supports both hierarchical abundance tables (wide format) and differential statistics tables (long format).
 *   **Rich Customization**: Adjust layouts (radial, tree, packing), color schemes, transforms (log, sqrt), and filtering without writing code.
 *   **Publication-Ready Export**: Export high-quality SVG and PNG images directly from the browser.
@@ -25,7 +25,7 @@ Access the latest version of MetaTree directly in your browser:
 ### Local Usage
 You can run MetaTree locally, but for full functionality (especially image export), we recommend using a local web server to avoid browser security restrictions on `file://` protocols.
 
-**Option A: Simple Server (Recommended)**
+**Option A: Simple Server**
 If you have Python installed:
 ```bash
 # Run in the project directory

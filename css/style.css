@@ -130,7 +130,7 @@ html, body {
 }
 
 body {
-    zoom: 0.9;
+    /* zoom: 0.9; */ /*! 使用缩放会影响所有元素的尺寸计算，改为调整字体大小 */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: var(--bg-body);
     min-height: 100vh;
@@ -2874,5 +2874,55 @@ svg {
 .mode-btn.active svg {
     opacity: 1;
     stroke: var(--primary-color);
+}
+
+/* ========== Tab Navigation Styles ========== */
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-xs);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: var(--transition-fast);
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+    background-color: var(--bg-light);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-content-wrapper {
+    min-height: 420px; /* Prevent layout jumping when switching tabs */
+    display: flex;
+    flex-direction: column;
 }
 

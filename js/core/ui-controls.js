@@ -1214,6 +1214,7 @@ function initEventListeners() {
 
     initFilePreviewModal();
     initColumnMappingListeners();
+    initTabs();
 
     // 布局选择
     // 布局选择
@@ -6020,6 +6021,38 @@ function initModeSwitcher() {
     // Listen for changes on the select (in case it's changed programmatically)
     select.addEventListener('change', () => {
         updateActiveState(select.value);
+    });
+}
+
+/**
+ * Initialize tab navigation for panels
+ */
+function initTabs() {
+    const tabNavs = document.querySelectorAll('.tab-nav');
+    
+    tabNavs.forEach(nav => {
+        const buttons = nav.querySelectorAll('.tab-btn');
+        
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons in this nav
+                buttons.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                btn.classList.add('active');
+                
+                // Hide all tab content in this panel
+                const panel = nav.closest('.control-panel');
+                const contents = panel.querySelectorAll('.tab-content');
+                contents.forEach(c => c.classList.remove('active'));
+                
+                // Show target content
+                const targetId = btn.dataset.tab;
+                const targetContent = document.getElementById(targetId);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            });
+        });
     });
 }
 

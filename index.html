@@ -691,170 +691,189 @@
                         </button>
                     </div>
 
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="label-threshold">Amount:</label>
-                            <input type="range" id="label-threshold" min="0" max="100" value="100" step="1"
-                                class="w-140">
-                            <span id="label-threshold-value">100%</span>
-                            <span class="help-icon"
-                                title="Percentage of labels to show. In comparison mode, based on effect size.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
+                    <!-- Tab Navigation -->
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="tab-labels">Labels</button>
+                        <button class="tab-btn" data-tab="tab-nodes">Nodes</button>
+                        <button class="tab-btn" data-tab="tab-edges">Edges</button>
+                    </div>
+
+                    <!-- Tab Content Wrapper -->
+                    <div class="tab-content-wrapper">
+                        <!-- Tab Content: Labels -->
+                        <div id="tab-labels" class="tab-content active">
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label for="label-threshold">Amount:</label>
+                                <input type="range" id="label-threshold" min="0" max="100" value="100" step="1"
+                                    class="w-140">
+                                <span id="label-threshold-value">100%</span>
+                                <span class="help-icon"
+                                    title="Percentage of labels to show. In comparison mode, based on effect size.">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="label-font-size">Font:</label>
+                                <input type="range" id="label-font-size" min="1" max="24" value="9" step="1" class="w-140">
+                                <span id="label-font-size-value">9px</span>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="label-max-length">Max length:</label>
+                                <input type="number" id="label-max-length" min="4" max="80" step="1" value="15"
+                                    class="w-70">
+                            </div>
+
+                            <div class="control-group">
+                                <label for="label-overflow">Overflow:</label>
+                                <select id="label-overflow" class="minw-120" title="How to handle long labels">
+                                    <option value="ellipsis" selected>Ellipsis</option>
+                                    <option value="wrap">Wrap</option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="flex ai-center gap-8">
+                                    <input type="checkbox" id="uniform-label-colors">
+                                    Uniform label colors
+                                </label>
+                                <span class="help-icon"
+                                    title="Assign same color to all nodes with the same label name. Right-click a label to customize color.">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
+
+                            <div class="control-group" style="flex-wrap: wrap;">
+                                <label class="flex ai-center gap-8">
+                                    <input type="checkbox" id="smart-label-culling" checked>
+                                    Auto-hide overlapping labels
+                                </label>
+                                <span class="help-icon" title="Automatically hide overlapping labels to prevent clutter">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                                <span id="label-visible-count"
+                                    style="display: block; width: 100%; margin-left: 24px; margin-top: 4px; font-size: 11px; color: #666;"></span>
+                            </div>
                         </div>
 
-                        <div class="control-group">
-                            <label for="label-font-size">Font:</label>
-                            <input type="range" id="label-font-size" min="1" max="24" value="9" step="1" class="w-140">
-                            <span id="label-font-size-value">9px</span>
-                        </div>
-
-                        <div class="control-group">
-                            <label for="label-max-length">Max length:</label>
-                            <input type="number" id="label-max-length" min="4" max="80" step="1" value="15"
-                                class="w-70">
-                        </div>
-
-                        <div class="control-group">
-                            <label for="label-overflow">Overflow:</label>
-                            <select id="label-overflow" class="minw-120" title="How to handle long labels">
-                                <option value="ellipsis" selected>Ellipsis</option>
-                                <option value="wrap">Wrap</option>
-                            </select>
-                        </div>
-
-                        <div class="control-group">
-                            <label class="flex ai-center gap-8">
-                                <input type="checkbox" id="uniform-label-colors">
-                                Uniform label colors
-                            </label>
-                            <span class="help-icon"
-                                title="Assign same color to all nodes with the same label name. Right-click a label to customize color.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
-                        </div>
-
-                        <div class="control-group" style="flex-wrap: wrap;">
-                            <label class="flex ai-center gap-8">
-                                <input type="checkbox" id="smart-label-culling" checked>
-                                Auto-hide overlapping labels
-                            </label>
-                            <span class="help-icon" title="Automatically hide overlapping labels to prevent clutter">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
-                            <span id="label-visible-count"
-                                style="display: block; width: 100%; margin-left: 24px; margin-top: 4px; font-size: 11px; color: #666;"></span>
+                        <div class="control-row">
+                            <div class="control-group full-width" id="label-levels-group">
+                                <label>Levels (from leaf):</label>
+                                <div id="label-levels" class="flex flex-wrap gap-8"></div>
+                                <span class="help-icon"
+                                    title="Select levels by distance from leaf. 0=leaf (species/function), 1=genus, 2=family, etc. Applies to all modes.">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="control-row">
-                        <div class="control-group full-width" id="label-levels-group">
-                            <label>Levels (from leaf):</label>
-                            <div id="label-levels" class="flex flex-wrap gap-8"></div>
-                            <span class="help-icon"
-                                title="Select levels by distance from leaf. 0=leaf (species/function), 1=genus, 2=family, etc. Applies to all modes.">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
+                    <!-- Tab Content: Nodes -->
+                    <div id="tab-nodes" class="tab-content">
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label for="node-size-multiplier">Node size:</label>
+                                <input type="range" id="node-size-multiplier" min="0.1" max="5" value="1" step="0.1"
+                                    class="w-140">
+                                <span id="node-size-value">1.0x</span>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="min-node-size">Min:</label>
+                                <input type="range" id="min-node-size" min="0" max="20" value="3" step="1" class="w-120">
+                                <span id="min-node-size-value">3px</span>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="max-node-size">Max:</label>
+                                <input type="range" id="max-node-size" min="20" max="120" value="35" step="5" class="w-120">
+                                <span id="max-node-size-value">35px</span>
+                            </div>
+                            <div class="control-group">
+                                <label for="node-opacity">Opacity:</label>
+                                <input type="range" id="node-opacity" min="0" max="1" value="1" step="0.05" class="w-140">
+                                <span id="node-opacity-value">100%</span>
+                                <span class="help-icon" title="Adjust opacity (0–1.0)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="node-size-multiplier">Node size:</label>
-                            <input type="range" id="node-size-multiplier" min="0.1" max="5" value="1" step="0.1"
-                                class="w-140">
-                            <span id="node-size-value">1.0x</span>
-                        </div>
-
-                        <div class="control-group">
-                            <label for="min-node-size">Min:</label>
-                            <input type="range" id="min-node-size" min="0" max="20" value="3" step="1" class="w-120">
-                            <span id="min-node-size-value">3px</span>
-                        </div>
-
-                        <div class="control-group">
-                            <label for="max-node-size">Max:</label>
-                            <input type="range" id="max-node-size" min="20" max="120" value="35" step="5" class="w-120">
-                            <span id="max-node-size-value">35px</span>
-                        </div>
-                        <div class="control-group">
-                            <label for="node-opacity">Opacity:</label>
-                            <input type="range" id="node-opacity" min="0" max="1" value="1" step="0.05" class="w-140">
-                            <span id="node-opacity-value">100%</span>
-                            <span class="help-icon" title="Adjust opacity (0–1.0)">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
+                    <!-- Tab Content: Edges -->
+                    <div id="tab-edges" class="tab-content">
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label for="edge-width-multiplier">Edge width:</label>
+                                <input type="range" id="edge-width-multiplier" min="0.1" max="5" value="1" step="0.1"
+                                    class="w-140">
+                                <span id="edge-width-value">1.0x</span>
+                                <span class="help-icon" title="Adjust the width of connecting lines between nodes">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="control-group">
+                                <label for="min-edge-width">Min Edge width:</label>
+                                <input type="range" id="min-edge-width" min="0.1" max="5" value="0.5" step="0.1"
+                                    class="w-140">
+                                <span id="min-edge-width-value">0.5</span>
+                                <span class="help-icon" title="Adjust the minimum width of connecting lines">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="control-group">
+                                <label for="edge-opacity">Edge opacity:</label>
+                                <input type="range" id="edge-opacity" min="0.1" max="1" value="0.8" step="0.05"
+                                    class="w-140">
+                                <span id="edge-opacity-value">80%</span>
+                                <span class="help-icon" title="Adjust the opacity of edges (0.1–1.0)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                    </svg>
+                                </span>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="edge-width-multiplier">Edge width:</label>
-                            <input type="range" id="edge-width-multiplier" min="0.1" max="5" value="1" step="0.1"
-                                class="w-140">
-                            <span id="edge-width-value">1.0x</span>
-                            <span class="help-icon" title="Adjust the width of connecting lines between nodes">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
-                        </div>
-                        <div class="control-group">
-                            <label for="min-edge-width">Min Edge width:</label>
-                            <input type="range" id="min-edge-width" min="0.1" max="5" value="0.5" step="0.1"
-                                class="w-140">
-                            <span id="min-edge-width-value">0.5</span>
-                            <span class="help-icon" title="Adjust the minimum width of connecting lines">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
-                        </div>
-                        <div class="control-group">
-                            <label for="edge-opacity">Edge opacity:</label>
-                            <input type="range" id="edge-opacity" min="0.1" max="1" value="0.8" step="0.05"
-                                class="w-140">
-                            <span id="edge-opacity-value">80%</span>
-                            <span class="help-icon" title="Adjust the opacity of edges (0.1–1.0)">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                </svg>
-                            </span>
-                        </div>
                     </div>
                 </div>
 

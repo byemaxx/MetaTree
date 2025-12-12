@@ -102,12 +102,18 @@ let nodeColorOverrideLabel = new Map(); // { nodeAncestorPath: labelName } ç”¨äº
 let labelStatsPerSample = {};
 
 function updateLabelStatsUI() {
-    let totalVis = 0;
-    let totalCand = 0;
-    Object.values(labelStatsPerSample).forEach(s => {
-        totalVis += s.visible;
-        totalCand += s.total;
-    });
+    const stats = Object.values(labelStatsPerSample);
+    if (stats.length === 0) {
+        const el = document.getElementById('label-visible-count');
+        if (el) el.textContent = '';
+        return;
+    }
+
+    // Use the first sample's stats as representative (user requested not to sum all panels)
+    const s = stats[0];
+    const totalVis = s.visible;
+    const totalCand = s.total;
+
     const el = document.getElementById('label-visible-count');
     if (el) {
         if (totalCand > 0) {

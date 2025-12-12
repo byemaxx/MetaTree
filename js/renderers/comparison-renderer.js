@@ -233,8 +233,24 @@
     }
 
     if (mode === 'tree') {
-      const isVertical = (typeof treeLayoutDirection !== 'undefined' && treeLayoutDirection === 'vertical') ||
-        (typeof window !== 'undefined' && window.treeLayoutDirection === 'vertical');
+      const pSort = (typeof window !== 'undefined' && window.treeNodeSort) ? window.treeNodeSort : ((typeof treeNodeSort !== 'undefined') ? treeNodeSort : 'none');
+      const pDir = (typeof window !== 'undefined' && window.treeLayoutDirection) ? window.treeLayoutDirection : ((typeof treeLayoutDirection !== 'undefined') ? treeLayoutDirection : 'horizontal');
+      const pShape = (typeof window !== 'undefined' && window.treeLinkShape) ? window.treeLinkShape : ((typeof treeLinkShape !== 'undefined') ? treeLinkShape : 'curved');
+      const pAlign = (typeof window !== 'undefined' && typeof window.treeAlignLeaves !== 'undefined') ? window.treeAlignLeaves : ((typeof treeAlignLeaves !== 'undefined') ? treeAlignLeaves : false);
+      const pSep = (typeof window !== 'undefined' && typeof window.treeSeparation === 'number') ? window.treeSeparation : ((typeof treeSeparation === 'number') ? treeSeparation : 1.0);
+
+      const isVertical = (pDir === 'vertical');
+
+      // Sorting
+      if (pSort && pSort !== 'none') {
+        root.sort((a, b) => {
+          if (pSort === 'name') return d3.ascending(a.data.name, b.data.name);
+          if (typeof a.value === 'number' && typeof b.value === 'number') {
+            return pSort === 'value-asc' ? a.value - b.value : b.value - a.value;
+          }
+          return 0;
+        });
+      }
 
       const margin = forMini
         ? { top: 10, right: 40, bottom: 10, left: 40 }
@@ -246,22 +262,49 @@
       const layoutWidth = Math.max(10, width - margin.left - margin.right);
       const layoutHeight = Math.max(10, height - margin.top - margin.bottom);
 
-      const tree = d3.tree().size(isVertical
-        ? [layoutWidth, layoutHeight]
-        : [layoutHeight, layoutWidth]
+      const separationMult = pSep;
+      const useCluster = (pAlign === true);
+      const layoutFn = useCluster ? d3.cluster() : d3.tree();
+
+      layoutFn.size(isVertical
+        ? [layoutWidth * separationMult, layoutHeight]
+        : [layoutHeight * separationMult, layoutWidth]
       );
-      tree(root);
+      layoutFn(root);
 
       layout.nodes = root.descendants();
       layout.links = root.links();
       layout.collapsedNodes = layout.nodes.filter(d => d.data && d.data.__collapsed);
       layout.applyGroupTransform = (g) => g.attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-      const linkGen = isVertical
-        ? d3.linkVertical().x(d => d.x).y(d => d.y)
-        : d3.linkHorizontal().x(d => d.y).y(d => d.x);
+      let linkGenerator;
 
-      layout.configureLinks = (sel) => sel.attr('d', linkGen);
+      if (pShape === 'straight') {
+        linkGenerator = (d) => {
+          const sx = isVertical ? d.source.x : d.source.y;
+          const sy = isVertical ? d.source.y : d.source.x;
+          const tx = isVertical ? d.target.x : d.target.y;
+          const ty = isVertical ? d.target.y : d.target.x;
+          return `M${sx},${sy}L${tx},${ty}`;
+        };
+      } else if (pShape === 'orthogonal') {
+        linkGenerator = (d) => {
+          const s = d.source;
+          const t = d.target;
+          if (isVertical) {
+            return `M${s.x},${s.y}V${(s.y + t.y) / 2}H${t.x}V${t.y}`;
+          } else {
+            return `M${s.y},${s.x}H${(s.y + t.y) / 2}V${t.x}H${t.y}`;
+          }
+        };
+      } else {
+        linkGenerator = isVertical
+          ? d3.linkVertical().x(d => d.x).y(d => d.y)
+          : d3.linkHorizontal().x(d => d.y).y(d => d.x);
+      }
+
+
+      layout.configureLinks = (sel) => sel.attr('d', linkGenerator);
 
       layout.positionNode = (d) => isVertical
         ? `translate(${d.x},${d.y})`
@@ -288,17 +331,81 @@
     }
 
     // Default radial layout
+    const pSort = (typeof window !== 'undefined' && window.treeNodeSort) ? window.treeNodeSort : ((typeof treeNodeSort !== 'undefined') ? treeNodeSort : 'none');
+    const pAlign = (typeof window !== 'undefined' && typeof window.treeAlignLeaves !== 'undefined') ? window.treeAlignLeaves : ((typeof treeAlignLeaves !== 'undefined') ? treeAlignLeaves : false);
+    const pSep = (typeof window !== 'undefined' && typeof window.treeSeparation === 'number') ? window.treeSeparation : ((typeof treeSeparation === 'number') ? treeSeparation : 1.0);
+    const pShape = (typeof window !== 'undefined' && window.treeLinkShape) ? window.treeLinkShape : ((typeof treeLinkShape !== 'undefined') ? treeLinkShape : 'curved');
+
+    if (pSort && pSort !== 'none') {
+      root.sort((a, b) => {
+        if (pSort === 'name') return d3.ascending(a.data.name, b.data.name);
+        if (typeof a.value === 'number' && typeof b.value === 'number') {
+          return pSort === 'value-asc' ? a.value - b.value : b.value - a.value;
+        }
+        return 0;
+      });
+    }
+
     const radialPadding = forMini ? 10 : 40;
-    const radius = Math.max(10, Math.min(width, height) / 2 - radialPadding);
-    const radialTree = d3.tree()
-      .size([2 * Math.PI, radius])
-      .separation((a, b) => (a.parent === b.parent ? 1 : 2) / ((a.depth || 1)));
-    radialTree(root);
+    const radius = Math.max(10, Math.min(width, height) / 2 - radialPadding) * pSep;
+    const layoutFn = pAlign ? d3.cluster() : d3.tree();
+
+    layoutFn.size([2 * Math.PI, radius]);
+    if (!pAlign) {
+      layoutFn.separation((a, b) => (a.parent === b.parent ? 1 : 2) / ((a.depth || 1)));
+    }
+
+    layoutFn(root);
     layout.nodes = root.descendants();
     layout.links = root.links();
     layout.collapsedNodes = layout.nodes.filter(d => d.data && d.data.__collapsed);
     layout.applyGroupTransform = (g) => g.attr('transform', `translate(${width / 2}, ${height / 2})`);
-    const linkRadial = d3.linkRadial().angle(d => d.x).radius(d => d.y);
+
+    let linkRadial;
+    if (pShape === 'straight') {
+      linkRadial = (d) => {
+        const sa = d.source.x - Math.PI / 2;
+        const sr = d.source.y;
+        const ta = d.target.x - Math.PI / 2;
+        const tr = d.target.y;
+        const sx = sr * Math.cos(sa);
+        const sy = sr * Math.sin(sa);
+        const tx = tr * Math.cos(ta);
+        const ty = tr * Math.sin(ta);
+        return `M${sx},${sy}L${tx},${ty}`;
+      };
+    } else if (pShape === 'orthogonal') {
+      linkRadial = (d) => {
+        const sa = d.source.x - Math.PI / 2;
+        const sr = d.source.y;
+        const ta = d.target.x - Math.PI / 2;
+        const tr = d.target.y;
+
+        const sx = sr * Math.cos(sa);
+        const sy = sr * Math.sin(sa);
+        const tx = tr * Math.cos(ta);
+        const ty = tr * Math.sin(ta);
+
+        const cx = sr * Math.cos(ta);
+        const cy = sr * Math.sin(ta);
+
+        let da = ta - sa;
+        while (da > Math.PI) da -= 2 * Math.PI;
+        while (da < -Math.PI) da += 2 * Math.PI;
+
+        if (Math.abs(da) < 1e-4 || sr < 1) {
+          return `M${sx},${sy}L${tx},${ty}`;
+        }
+
+        const sweep = da >= 0 ? 1 : 0;
+        const largeArc = Math.abs(da) > Math.PI ? 1 : 0;
+
+        return `M${sx},${sy}A${sr},${sr} 0 ${largeArc},${sweep} ${cx},${cy}L${tx},${ty}`;
+      };
+    } else {
+      linkRadial = d3.linkRadial().angle(d => d.x).radius(d => d.y);
+    }
+
     layout.configureLinks = (sel) => sel.attr('d', linkRadial);
     layout.positionNode = (d) => {
       const angle = d.x;

@@ -13,6 +13,10 @@ let zooms = {};
 let svgGroups = {}; // store <g> per sample for direct transform when needed
 let currentLayout = 'radial';
 let treeLayoutDirection = 'horizontal'; // 'horizontal' | 'vertical'
+let treeLinkShape = 'curved'; // 'curved' | 'straight' | 'orthogonal'
+let treeAlignLeaves = false;
+let treeSeparation = 1.0;
+let treeNodeSort = 'none'; // 'none' | 'value-asc' | 'value-desc' | 'name'
 let tooltip;
 let abundanceTransform = 'none'; // 丰度转换方式: 'none', 'log', 'log2', 'sqrt', 'area' (默认改为 none)
 let colorScheme = 'Viridis'; // 颜色方案 - 改用高对比度的 Viridis
@@ -2507,12 +2511,27 @@ function drawTree(sample, globalDomain) {
     let layout, nodes, links;
 
     if (currentLayout === 'radial') {
-        // 径向布局
-        const radius = Math.min(width, height) / 2 - 100;
-        const tree = d3.cluster()
-            .size([2 * Math.PI, radius]);
+        const pSort = (typeof window !== 'undefined' && window.treeNodeSort) ? window.treeNodeSort : ((typeof treeNodeSort !== 'undefined') ? treeNodeSort : 'none');
+        const pAlign = (typeof window !== 'undefined' && typeof window.treeAlignLeaves !== 'undefined') ? window.treeAlignLeaves : ((typeof treeAlignLeaves !== 'undefined') ? treeAlignLeaves : false);
+        const pSep = (typeof window !== 'undefined' && typeof window.treeSeparation === 'number') ? window.treeSeparation : ((typeof treeSeparation === 'number') ? treeSeparation : 1.0);
 
-        layout = tree(hierarchy);
+        if (pSort && pSort !== 'none') {
+            hierarchy.sort((a, b) => {
+                if (pSort === 'name') return d3.ascending(a.data.name, b.data.name);
+                const valA = transformAbundance(a.data.abundances[sample] || 0);
+                const valB = transformAbundance(b.data.abundances[sample] || 0);
+                if (pSort === 'value-asc') return valA - valB;
+                if (pSort === 'value-desc') return valB - valA;
+                return 0;
+            });
+        }
+
+        // 径向布局
+        const radius = (Math.min(width, height) / 2 - 100) * pSep;
+        const layoutFn = (pAlign) ? d3.cluster() : d3.tree();
+        layoutFn.size([2 * Math.PI, radius]);
+
+        layout = layoutFn(hierarchy);
         nodes = layout.descendants();
         links = layout.links();
 
@@ -2526,11 +2545,59 @@ function drawTree(sample, globalDomain) {
             n._nodeR = t > 0 ? sizeScale(t) : Math.max(1, adjustedMinSize * 0.7);
         });
 
-        // 绘制连接线（径向），将半径减去节点半径使连线在接近节点时留出圆边
-        const linkGenerator = d3.linkRadial()
-            .angle(d => d.x)
-            // 让连线延伸到节点中心，结合一致的不透明度以获得“融合”的外观
-            .radius(d => d.y);
+        // Link Generator Logic
+        const pShape = (typeof window !== 'undefined' && window.treeLinkShape) ? window.treeLinkShape : 'curved';
+        let linkGenerator;
+
+        if (pShape === 'straight') {
+            linkGenerator = (d) => {
+                const sa = d.source.x - Math.PI / 2;
+                const sr = d.source.y;
+                const ta = d.target.x - Math.PI / 2;
+                const tr = d.target.y;
+                const sx = sr * Math.cos(sa);
+                const sy = sr * Math.sin(sa);
+                const tx = tr * Math.cos(ta);
+                const ty = tr * Math.sin(ta);
+                return `M${sx},${sy}L${tx},${ty}`;
+            };
+        } else if (pShape === 'orthogonal') {
+            linkGenerator = (d) => {
+                const sa = d.source.x - Math.PI / 2;
+                const sr = d.source.y;
+                const ta = d.target.x - Math.PI / 2;
+                const tr = d.target.y;
+
+                const sx = sr * Math.cos(sa);
+                const sy = sr * Math.sin(sa);
+                const tx = tr * Math.cos(ta);
+                const ty = tr * Math.sin(ta);
+
+                // Corner point: at source radius, target angle
+                const cx = sr * Math.cos(ta);
+                const cy = sr * Math.sin(ta);
+
+                // Check angle difference for Arc
+                let da = ta - sa;
+                while (da > Math.PI) da -= 2 * Math.PI;
+                while (da < -Math.PI) da += 2 * Math.PI;
+
+                if (Math.abs(da) < 1e-4 || sr < 1) {
+                    // Straight line if same angle or root
+                    return `M${sx},${sy}L${tx},${ty}`;
+                }
+
+                const sweep = da >= 0 ? 1 : 0;
+                const largeArc = Math.abs(da) > Math.PI ? 1 : 0;
+
+                // Path: Start -> Arc to Corner -> Line to Target
+                return `M${sx},${sy}A${sr},${sr} 0 ${largeArc},${sweep} ${cx},${cy}L${tx},${ty}`;
+            };
+        } else {
+            linkGenerator = d3.linkRadial()
+                .angle(d => d.x)
+                .radius(d => d.y);
+        }
 
         // 不剔除非显著节点/连线，而是以灰色呈现
         let filteredLinks = links;
@@ -2895,27 +2962,78 @@ function drawTree(sample, globalDomain) {
         }
 
     } else {
-        // 树形布局
-        const isVertical = (typeof treeLayoutDirection !== 'undefined' && treeLayoutDirection === 'vertical') || (typeof window !== 'undefined' && window.treeLayoutDirection === 'vertical');
+        const hierarchy = d3.hierarchy(sourceTree, d => d.__collapsed ? null : d.children);
 
-        const tree = d3.tree()
-            .size(isVertical ? [width - 100, height - 250] : [height - 100, width - 250]);
+        // Resolve layout parameters from window (priority) or local scope
+        const pSort = (typeof window !== 'undefined' && window.treeNodeSort) ? window.treeNodeSort : ((typeof treeNodeSort !== 'undefined') ? treeNodeSort : 'none');
+        const pDir = (typeof window !== 'undefined' && window.treeLayoutDirection) ? window.treeLayoutDirection : ((typeof treeLayoutDirection !== 'undefined') ? treeLayoutDirection : 'horizontal');
+        const pShape = (typeof window !== 'undefined' && window.treeLinkShape) ? window.treeLinkShape : ((typeof treeLinkShape !== 'undefined') ? treeLinkShape : 'curved');
+        const pAlign = (typeof window !== 'undefined' && typeof window.treeAlignLeaves !== 'undefined') ? window.treeAlignLeaves : ((typeof treeAlignLeaves !== 'undefined') ? treeAlignLeaves : false);
+        const pSep = (typeof window !== 'undefined' && typeof window.treeSeparation === 'number') ? window.treeSeparation : ((typeof treeSeparation === 'number') ? treeSeparation : 1.0);
 
-        layout = tree(hierarchy);
+        if (pSort && pSort !== 'none') {
+            hierarchy.sort((a, b) => {
+                if (pSort === 'name') return d3.ascending(a.data.name, b.data.name);
+                const valA = transformAbundance(a.data.abundances[sample] || 0);
+                const valB = transformAbundance(b.data.abundances[sample] || 0);
+                if (pSort === 'value-asc') return valA - valB;
+                if (pSort === 'value-desc') return valB - valA;
+                return 0;
+            });
+        }
+
+        const isVertical = (pDir === 'vertical');
+        const separationMult = pSep;
+        const useCluster = (pAlign === true);
+
+        const layoutFn = useCluster ? d3.cluster() : d3.tree();
+
+        const baseBreadth = isVertical ? width - 100 : height - 100;
+        const baseDepth = isVertical ? height - 250 : width - 250;
+
+        layoutFn.size(isVertical
+            ? [baseBreadth * separationMult, baseDepth]
+            : [baseBreadth * separationMult, baseDepth]
+        );
+
+        layout = layoutFn(hierarchy);
         nodes = layout.descendants();
         links = layout.links();
 
-        // 预计算每个节点的显示半径，用于让连线在靠近节点时留白
+        // 预计算每个节点的显示半径
         nodes.forEach(n => {
             const abundance = n.data.abundances[sample] || 0;
             const t = transformAbundance(abundance);
             n._nodeR = t > 0 ? sizeScale(t) : Math.max(1, adjustedMinSize * 0.7);
         });
 
-        // 绘制连接线（树形），在 x 方向减去节点半径让连接更柔和
-        const linkGenerator = isVertical
-            ? d3.linkVertical().x(d => d.x).y(d => d.y)
-            : d3.linkHorizontal().x(d => d.y).y(d => d.x);
+        // Link Generator Logic
+        let linkGenerator;
+
+        if (pShape === 'straight') {
+            linkGenerator = (d) => {
+                const sx = isVertical ? d.source.x : d.source.y;
+                const sy = isVertical ? d.source.y : d.source.x;
+                const tx = isVertical ? d.target.x : d.target.y;
+                const ty = isVertical ? d.target.y : d.target.x;
+                return `M${sx},${sy}L${tx},${ty}`;
+            };
+        } else if (pShape === 'orthogonal') {
+            linkGenerator = (d) => {
+                const s = d.source;
+                const t = d.target;
+                if (isVertical) {
+                    return `M${s.x},${s.y}V${(s.y + t.y) / 2}H${t.x}V${t.y}`;
+                } else {
+                    return `M${s.y},${s.x}H${(s.y + t.y) / 2}V${t.x}H${t.y}`;
+                }
+            };
+        } else {
+            // Curved
+            linkGenerator = isVertical
+                ? d3.linkVertical().x(d => d.x).y(d => d.y)
+                : d3.linkHorizontal().x(d => d.y).y(d => d.x);
+        }
 
         // 树形布局同样不剔除非显著节点/连线，灰色显示
 

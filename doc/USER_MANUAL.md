@@ -139,8 +139,18 @@ Navigate to the **Analysis Mode** panel and select a mode:
 
 #### Layouts
 In the **Layout & Panels** section:
+
 *   **Radial**: Circular tree (good for large hierarchies).
+    *   **Link Shape**: Choose between *Curved* (smooth arcs), *Straight* (direct lines), or *Step* (orthogonal/right-angled paths).
+    *   **Align Leaves**: Align all leaf nodes to the outer edge (dendrogram style).
+    *   **Tree Spread**: Slider to adjust the overall size and node separation.
+    *   **Sort Nodes**: Sort branches by *Value* (Ascending/Descending) or *Name*.
 *   **Tree**: Traditional linear dendrogram.
+    *   **Direction**: Switch between *Horizontal* (Left-to-Right) and *Vertical* (Top-to-Bottom).
+    *   **Link Shape**: Choose between *Curved*, *Straight*, or *Step*.
+    *   **Align Leaves**: Align leaf nodes to the far end of the tree.
+    *   **Tree Spread**: Slider to adjust the tree height/width.
+    *   **Sort Nodes**: Sort branches by *Value* or *Name*.
 *   **Circle Packing**: Nested circles (good for overviewing abundance).
 
 #### Colors

@@ -373,10 +373,28 @@ function setActiveLayoutPanelContext(context, options = {}) {
 function syncLayoutPanelInputsToSettings(settings) {
     if (!settings) return;
     const layoutSelect = document.getElementById('layout-select');
-    if (layoutSelect && settings.layout && layoutSelect.value !== settings.layout) {
-        layoutSelect.value = settings.layout;
+
+    // Always update visibility based on settings, not just if changed
+    if (settings.layout) {
+        if (layoutSelect && layoutSelect.value !== settings.layout) {
+            layoutSelect.value = settings.layout;
+        }
         currentLayout = settings.layout;
         try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) { }
+
+        // Update visibility for Tree/Radial settings
+        const visible = (currentLayout === 'tree' || currentLayout === 'radial');
+        document.querySelectorAll('.tree-only-setting').forEach(el => {
+            el.style.display = visible ? 'flex' : 'none';
+            el.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        });
+
+        // Tree Direction is Tree-only
+        const treeDirRow = document.getElementById('tree-direction-row');
+        if (treeDirRow) {
+            treeDirRow.style.display = (currentLayout === 'tree') ? 'flex' : 'none';
+            treeDirRow.setAttribute('aria-hidden', (currentLayout === 'tree') ? 'false' : 'true');
+        }
     }
     const panelSlider = document.getElementById('panel-width-slider');
     const panelValue = document.getElementById('panel-width-value');
@@ -1198,7 +1216,13 @@ function initEventListeners() {
     initColumnMappingListeners();
 
     // 布局选择
-    document.getElementById('layout-select').addEventListener('change', handleLayoutChange);
+    // 布局选择
+    const layoutSelect = document.getElementById('layout-select');
+    if (layoutSelect) {
+        layoutSelect.addEventListener('change', handleLayoutChange);
+        // Trigger initial update to ensure correct UI state
+        layoutSelect.dispatchEvent(new Event('change'));
+    }
 
     // Tree Layout Direction
     document.querySelectorAll('input[name="tree-direction"]').forEach(radio => {
@@ -1207,6 +1231,42 @@ function initEventListeners() {
             if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
         });
     });
+
+    // New Tree Layout Settings
+    const linkShapeSel = document.getElementById('tree-link-shape');
+    if (linkShapeSel) {
+        linkShapeSel.addEventListener('change', (e) => {
+            if (typeof window !== 'undefined') window.treeLinkShape = e.target.value;
+            if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
+        });
+    }
+
+    const alignLeavesCheck = document.getElementById('tree-align-leaves');
+    if (alignLeavesCheck) {
+        alignLeavesCheck.addEventListener('change', (e) => {
+            if (typeof window !== 'undefined') window.treeAlignLeaves = e.target.checked;
+            if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
+        });
+    }
+
+    const sepSlider = document.getElementById('tree-separation-slider');
+    const sepVal = document.getElementById('tree-separation-value');
+    if (sepSlider && sepVal) {
+        sepSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            sepVal.textContent = val.toFixed(1) + 'x';
+            if (typeof window !== 'undefined') window.treeSeparation = val;
+            if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
+        });
+    }
+
+    const sortSel = document.getElementById('tree-sort-select');
+    if (sortSel) {
+        sortSel.addEventListener('change', (e) => {
+            if (typeof window !== 'undefined') window.treeNodeSort = e.target.value;
+            if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
+        });
+    }
 
     // 丰度转换选择
     document.getElementById('abundance-transform').addEventListener('change', handleAbundanceTransformChange);
@@ -1675,6 +1735,15 @@ function initEventListeners() {
     loadPresets && loadPresets();
     if (typeof renderColorPreviews === 'function') renderColorPreviews();
     // deprecated: renderDivergingPreviews removed
+
+    // Force visibility update on init to handle radial layout settings
+    const initLayout = (typeof window !== 'undefined' && window.currentLayout) ? window.currentLayout : 'radial';
+    if (initLayout === 'radial' || initLayout === 'tree') {
+        document.querySelectorAll('.tree-only-setting').forEach(el => {
+            el.style.display = 'flex';
+            el.setAttribute('aria-hidden', 'false');
+        });
+    }
 }
 
 // 统一的重绘入口：根据当前可视化模式触发相应的重绘
@@ -2281,6 +2350,12 @@ function handleLayoutChange(e) {
         treeDirRow.style.display = (currentLayout === 'tree') ? 'flex' : 'none';
         treeDirRow.setAttribute('aria-hidden', (currentLayout === 'tree') ? 'false' : 'true');
     }
+
+    document.querySelectorAll('.tree-only-setting').forEach(el => {
+        const visible = (currentLayout === 'tree' || currentLayout === 'radial');
+        el.style.display = visible ? 'flex' : 'none';
+        el.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    });
 
     if (typeof redrawCurrentViz === 'function') {
         try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after layout change', err); }

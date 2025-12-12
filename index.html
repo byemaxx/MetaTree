@@ -34,9 +34,8 @@
                 <div class="control-panel card-panel" id="data-metadata-panel">
                     <div class="panel-title">
                         <span>Data & Metadata</span>
-                        <button type="button" class="toggle-btn" id="data-metadata-panel-toggle"
-                            aria-expanded="true" aria-controls="data-metadata-panel" aria-label="Collapse panel"
-                            title="Collapse panel">
+                        <button type="button" class="toggle-btn" id="data-metadata-panel-toggle" aria-expanded="true"
+                            aria-controls="data-metadata-panel" aria-label="Collapse panel" title="Collapse panel">
                             Collapse ▲
                         </button>
                     </div>
@@ -264,23 +263,29 @@
                             </select>
 
                             <div class="mode-switcher" aria-label="Choose visualization mode">
-                                <button type="button" class="mode-btn active" data-value="single" title="View individual samples">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <button type="button" class="mode-btn active" data-value="single"
+                                    title="View individual samples">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="12" cy="12" r="10"></circle>
                                         <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
                                     </svg>
                                     <span>Sample View</span>
                                 </button>
-                                <button type="button" class="mode-btn" data-value="group" title="View aggregated groups">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <button type="button" class="mode-btn" data-value="group"
+                                    title="View aggregated groups">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="12" cy="7" r="4"></circle>
                                         <circle cx="7" cy="17" r="4"></circle>
                                         <circle cx="17" cy="17" r="4"></circle>
                                     </svg>
                                     <span>Group View</span>
                                 </button>
-                                <button type="button" class="mode-btn" data-value="comparison" title="Compare two groups (Pairwise)">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <button type="button" class="mode-btn" data-value="comparison"
+                                    title="Compare two groups (Pairwise)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="6" cy="12" r="3"></circle>
                                         <circle cx="18" cy="12" r="3"></circle>
                                         <path d="M9 12h6"></path>
@@ -289,8 +294,10 @@
                                     </svg>
                                     <span>Pairwise Diff</span>
                                 </button>
-                                <button type="button" class="mode-btn" data-value="matrix" title="Compare all groups (Matrix)">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <button type="button" class="mode-btn" data-value="matrix"
+                                    title="Compare all groups (Matrix)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                                         <path d="M3 9h18"></path>
                                         <path d="M3 15h18"></path>
@@ -304,49 +311,47 @@
                     </div>
 
 
-                        <!-- 单样本模式：当加载 combined_long.tsv 时显示显著性过滤控件 -->
-                        <div class="control-row" id="single-significance-toggle-row">
-                            <div class="control-group">
-                                <label>
-                                    <input type="checkbox" id="single-show-significance">
-                                    Filter by significance
-                                </label>
-                                <span class="help-icon"
-                                    title="Only show items significant by p/q-value and |log2FC| thresholds (for combined_long.tsv)">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" />
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                    </svg>
-                                </span>
-                            </div>
+                    <!-- 单样本模式：当加载 combined_long.tsv 时显示显著性过滤控件 -->
+                    <div class="control-row" id="single-significance-toggle-row">
+                        <div class="control-group">
+                            <label>
+                                <input type="checkbox" id="single-show-significance">
+                                Filter by significance
+                            </label>
+                            <span class="help-icon"
+                                title="Only show items significant by p/q-value and |log2FC| thresholds (for combined_long.tsv)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                </svg>
+                            </span>
                         </div>
-                        <div class="control-row" id="single-significance-thresholds-row">
-                            <div class="control-group">
-                                <label for="single-pvalue-threshold">P-value ≤</label>
-                                <input type="number" id="single-pvalue-threshold" value="0.05" step="0.01" min="0"
-                                    max="1" class="w-65">
-                            </div>
-                            <div class="control-group">
-                                <label for="single-qvalue-threshold">Q-value ≤</label>
-                                <input type="number" id="single-qvalue-threshold" value="0.05" step="0.01" min="0"
-                                    max="1" class="w-65">
-                            </div>
-                            <div class="control-group">
-                                <label for="single-logfc-threshold">|Log2FC| ≥</label>
-                                <input type="number" id="single-logfc-threshold" value="1" step="0.1" min="0"
-                                    class="w-65">
-                            </div>
+                    </div>
+                    <div class="control-row" id="single-significance-thresholds-row">
+                        <div class="control-group">
+                            <label for="single-pvalue-threshold">P-value ≤</label>
+                            <input type="number" id="single-pvalue-threshold" value="0.05" step="0.01" min="0" max="1"
+                                class="w-65">
                         </div>
-                        <!-- Samples 折叠按钮（仅在 single 模式下显示） -->
-                        <div class="control-row" id="samples-toggle-row">
-                            <div class="control-group" id="samples-toggle-group">
-                                <label for="sample-select">Samples:</label>
-                                <button id="toggle-samples" class="toggle-btn">Expand ▼</button>
-                            </div>
+                        <div class="control-group">
+                            <label for="single-qvalue-threshold">Q-value ≤</label>
+                            <input type="number" id="single-qvalue-threshold" value="0.05" step="0.01" min="0" max="1"
+                                class="w-65">
                         </div>
+                        <div class="control-group">
+                            <label for="single-logfc-threshold">|Log2FC| ≥</label>
+                            <input type="number" id="single-logfc-threshold" value="1" step="0.1" min="0" class="w-65">
+                        </div>
+                    </div>
+                    <!-- Samples 折叠按钮（仅在 single 模式下显示） -->
+                    <div class="control-row" id="samples-toggle-row">
+                        <div class="control-group" id="samples-toggle-group">
+                            <label for="sample-select">Samples:</label>
+                            <button id="toggle-samples" class="toggle-btn">Expand ▼</button>
+                        </div>
+                    </div>
 
                     <!-- 样本选择折叠区 -->
                     <div class="sample-selection-panel" id="sample-selection-panel">
@@ -844,53 +849,90 @@
                         <button id="layout-toggle" class="toggle-btn ml-12" aria-expanded="false">Expand ▼</button>
                     </div>
 
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="layout-select">Layout:</label>
-                            <select id="layout-select">
-                                <option value="radial">Radial</option>
-                                <option value="tree">Tree</option>
-                                <option value="packing">Circle packing</option>
-                            </select>
+                    <div class="layout-panel-content" style="width: 100%;">
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label for="layout-select">Layout:</label>
+                                <select id="layout-select">
+                                    <option value="radial">Radial</option>
+                                    <option value="tree">Tree</option>
+                                    <option value="packing">Circle packing</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="control-row" id="tree-direction-row" style="display: none;">
-                        <div class="control-group">
-                            <label class="fw-500 mb-4">Direction:</label>
-                            <div class="flex gap-12">
-                                <label class="flex ai-center gap-4 fw-normal" title="Left-to-Right">
-                                    <input type="radio" name="tree-direction" value="horizontal" checked>
-                                    Horizontal
-                                </label>
-                                <label class="flex ai-center gap-4 fw-normal" title="Top-to-Bottom">
-                                    <input type="radio" name="tree-direction" value="vertical">
-                                    Vertical
+                        <div class="control-row" id="tree-direction-row" style="display: none;">
+                            <div class="control-group">
+                                <label class="fw-500 mb-4">Direction:</label>
+                                <div class="flex gap-12">
+                                    <label class="flex ai-center gap-4 fw-normal" title="Left-to-Right">
+                                        <input type="radio" name="tree-direction" value="horizontal" checked>
+                                        Horizontal
+                                    </label>
+                                    <label class="flex ai-center gap-4 fw-normal" title="Top-to-Bottom">
+                                        <input type="radio" name="tree-direction" value="vertical">
+                                        Vertical
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-row tree-only-setting" style="display: none;">
+                            <div class="control-group">
+                                <label for="tree-link-shape">Link Shape:</label>
+                                <select id="tree-link-shape" class="w-120">
+                                    <option value="curved">Curved</option>
+                                    <option value="straight">Straight</option>
+                                    <option value="orthogonal">Step</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label class="flex ai-center gap-8">
+                                    <input type="checkbox" id="tree-align-leaves">
+                                    Align Leaves
                                 </label>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="control-row">
-                        <div class="control-group">
-                            <label for="panel-width-slider">Panel width:</label>
-                            <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="600"
-                                class="w-180 ml-8">
-                            <span id="panel-width-value" class="ml-8">600px</span>
+                        <div class="control-row tree-only-setting" style="display: none;">
+                            <div class="control-group">
+                                <label for="tree-separation-slider">Tree Spread:</label>
+                                <input type="range" id="tree-separation-slider" min="0.5" max="3" step="0.1" value="1"
+                                    class="w-100 ml-8">
+                                <span id="tree-separation-value" class="ml-4">1.0x</span>
+                            </div>
+                            <div class="control-group">
+                                <label for="tree-sort-select">Sort Nodes:</label>
+                                <select id="tree-sort-select" class="w-120">
+                                    <option value="none">Default</option>
+                                    <option value="value-desc">Value (Desc)</option>
+                                    <option value="value-asc">Value (Asc)</option>
+                                    <option value="name">Name</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="control-group">
-                            <label for="panel-height-slider">Panel height:</label>
-                            <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600"
-                                class="w-180 ml-8">
-                            <span id="panel-height-value" class="ml-8">600px</span>
-                        </div>
+                        <div class="control-row">
+                            <div class="control-group">
+                                <label for="panel-width-slider">Panel width:</label>
+                                <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="600"
+                                    class="w-180 ml-8">
+                                <span id="panel-width-value" class="ml-8">600px</span>
+                            </div>
 
-                        <div class="control-group">
-                            <label class="flex ai-center gap-8">
-                                <input type="checkbox" id="panel-lock-size" checked>
-                                Lock width & height
-                            </label>
+                            <div class="control-group">
+                                <label for="panel-height-slider">Panel height:</label>
+                                <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600"
+                                    class="w-180 ml-8">
+                                <span id="panel-height-value" class="ml-8">600px</span>
+                            </div>
+
+                            <div class="control-group">
+                                <label class="flex ai-center gap-8">
+                                    <input type="checkbox" id="panel-lock-size" checked>
+                                    Lock width & height
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

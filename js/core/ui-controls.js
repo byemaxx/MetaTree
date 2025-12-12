@@ -2837,10 +2837,10 @@ function resetLabelsNodesToDefaults() {
         // 4.1) 边不透明度
         const edgeOp = document.getElementById('edge-opacity');
         if (edgeOp) {
-            edgeOp.value = '1';
+            edgeOp.value = '0.8';
             const opSpan = document.getElementById('edge-opacity-value');
-            if (opSpan) opSpan.textContent = '100%';
-            edgeOpacity = 1.0;
+            if (opSpan) opSpan.textContent = '80%';
+            edgeOpacity = 0.8;
         }
 
         // 5) 标签层级（从叶）恢复默认：考虑当前叶子节点数，若节点数过多则不勾选叶标签以避免性能问题

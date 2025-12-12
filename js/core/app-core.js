@@ -76,7 +76,7 @@ let labelMaxLength = 15; // 标签最大长度（字符数）
 let labelOverflowMode = 'ellipsis'; // 'ellipsis' | 'wrap'
 let minNodeSize = 3; // 最小节点大小
 let maxNodeSize = 35; // 最大节点大小
-let edgeOpacity = 1.0; // 连线不透明度（由 UI 控制）
+let edgeOpacity = 0.8; // 连线不透明度（由 UI 控制）
 let nodeOpacity = 1.0; // 节点不透明度（由 UI 控制）
 // 多选的标签层级（从叶的距离：0=叶，1=叶上一层...）
 let labelLevelsSelected = []; // 空表示全部

@@ -12,6 +12,7 @@ let svgs = {};
 let zooms = {};
 let svgGroups = {}; // store <g> per sample for direct transform when needed
 let currentLayout = 'radial';
+let treeLayoutDirection = 'horizontal'; // 'horizontal' | 'vertical'
 let tooltip;
 let abundanceTransform = 'none'; // 丰度转换方式: 'none', 'log', 'log2', 'sqrt', 'area' (默认改为 none)
 let colorScheme = 'Viridis'; // 颜色方案 - 改用高对比度的 Viridis
@@ -535,7 +536,7 @@ function aggregateWideTableRows(rows, headers, method) {
             }
         } else {
             if (method === 'first') continue;
-            
+
             const existingRow = map.get(id);
             const existingCounts = method === 'mean' ? counts.get(id) : null;
 
@@ -571,7 +572,7 @@ function aggregateWideTableRows(rows, headers, method) {
 function aggregateLongTableRows(rows, mapping, method) {
     if (!rows.length || method === 'none') return rows;
     // mapping: { taxon, condition, value, pvalue... }
-    const keyFn = (r) => (r[mapping.taxon]||'').trim() + '@@@' + (r[mapping.condition]||'').trim();
+    const keyFn = (r) => (r[mapping.taxon] || '').trim() + '@@@' + (r[mapping.condition] || '').trim();
     const map = new Map();
     const counts = new Map();
 
@@ -588,22 +589,22 @@ function aggregateLongTableRows(rows, mapping, method) {
             if (method === 'mean') counts.set(key, 1);
         } else {
             if (method === 'first') continue;
-            
+
             const existingRow = map.get(key);
             const current = existingRow[mapping.value];
 
             if (method === 'sum' || method === 'mean') {
                 existingRow[mapping.value] = current + val;
                 if (method === 'mean') counts.set(key, counts.get(key) + 1);
-                
+
                 // Handle stats (pvalue etc) - keep best?
                 // For now, let's keep the one with min pvalue if available
                 if (mapping.pvalue) {
                     const pOld = parseFloat(existingRow[mapping.pvalue]);
                     const pNew = parseFloat(row[mapping.pvalue]);
                     if (!isNaN(pNew) && (isNaN(pOld) || pNew < pOld)) {
-                         existingRow[mapping.pvalue] = row[mapping.pvalue];
-                         if (mapping.qvalue) existingRow[mapping.qvalue] = row[mapping.qvalue];
+                        existingRow[mapping.pvalue] = row[mapping.pvalue];
+                        if (mapping.qvalue) existingRow[mapping.qvalue] = row[mapping.qvalue];
                     }
                 }
 
@@ -666,7 +667,7 @@ function parseTSV(text, delimiter, duplicateHandling = 'sum') {
 
     // Pre-process: Aggregate duplicate rows
     if (duplicateHandling && duplicateHandling !== 'none') {
-         let originalCount = rows.length;
+        let originalCount = rows.length;
         rows = aggregateWideTableRows(rows, headers, duplicateHandling);
         let aggregatedCount = rows.length;
         if (originalCount !== aggregatedCount) {
@@ -746,7 +747,7 @@ function parseLongFormatTSV(text, delimiter, mapping, duplicateHandling = 'sum')
     // Pre-process: Aggregate duplicate rows
     if (duplicateHandling && duplicateHandling !== 'none') {
         let originalCount = rows.length;
-        
+
         console.log(`[MetaTree] Aggregating long table rows using method: ${duplicateHandling}. Original count: ${rows.length}`);
         rows = aggregateLongTableRows(rows, mapping, duplicateHandling);
         let aggregatedCount = rows.length;
@@ -1433,7 +1434,7 @@ function buildHierarchy(data) {
             if (currentNode.children.length > 0) {
                 // 这是一个中间节点，不能标记为叶子，否则会丢失子节点数据
                 currentNode.isLeaf = false;
-                
+
                 // 如果当前行有非零数据，说明是混合层级数据（Mixed Rank）
                 // 创建一个 "Unclassified" 子节点来承载这些数据
                 const hasData = Object.values(item.abundances).some(v => v !== 0);
@@ -1815,16 +1816,16 @@ function buildTreeWithGroupData() {
 
 // ========== 可视化模块 ==========
 function initVisualization() {
-    const vizContainer = (typeof window.getVizSubContainer === 'function') 
-        ? window.getVizSubContainer(visualizationMode) 
+    const vizContainer = (typeof window.getVizSubContainer === 'function')
+        ? window.getVizSubContainer(visualizationMode)
         : document.getElementById('viz-container');
-    
+
     if (vizContainer) vizContainer.innerHTML = '';
-    
+
     // Reset viz-container display style (may have been modified by matrix mode)
     // Note: with sub-containers, we might not need to reset viz-container display, but keeping it safe
     try { document.getElementById('viz-container').style.display = ''; } catch (_) { }
-    
+
     svgs = {};
     zooms = {};
     svgGroups = {};
@@ -2646,7 +2647,7 @@ function drawTree(sample, globalDomain) {
             } else {
                 // 2. 全局碰撞检测 (不再按深度分组)
                 visibleNodesSet = new Set();
-                
+
                 // 按优先级排序：优先显示外层节点（height较小），同层级优先显示高丰度
                 const sortedCandidates = [...candidates].sort((a, b) => {
                     if (a.height !== b.height) return a.height - b.height; // Leaves (0) first
@@ -2658,22 +2659,22 @@ function drawTree(sample, globalDomain) {
                 const placedLabels = []; // { angle, radius, startR, endR }
                 const currentLabelFontSize = (labelFontSize || 10);
                 const charWidth = currentLabelFontSize * 0.6;
-                
+
                 sortedCandidates.forEach(d => {
                     const radius = d.y;
-                    
+
                     const labelText = getDisplayName(d);
                     const textLen = labelText.length * charWidth;
-                    
+
                     // 初始角度（原始位置）
                     const originalAngle = d.x;
-                    
+
                     // 检查重叠的辅助函数
                     const checkOverlap = (testAngle) => {
                         const normAngle = (testAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
                         const startR = radius + 6;
                         const endR = startR + textLen;
-                        
+
                         for (const p of placedLabels) {
                             let diff = Math.abs(normAngle - p.angle);
                             if (diff > Math.PI) diff = 2 * Math.PI - diff;
@@ -2693,29 +2694,29 @@ function drawTree(sample, globalDomain) {
 
                     // 如果重叠且是内部节点，尝试偏移
                     if (isOverlapping && d.children && d.children.length > 0) {
-                         const maxOffsetAngle = Math.PI / 6; // Max 30 degrees
-                         const stepArc = currentLabelFontSize * 0.5;
-                         const maxSteps = 10;
-                         
-                         for (let i = 1; i <= maxSteps; i++) {
-                             const currentOffsetArc = stepArc * i;
-                             const currentOffsetAngle = currentOffsetArc / Math.max(radius, 10);
-                             
-                             if (currentOffsetAngle > maxOffsetAngle) break;
+                        const maxOffsetAngle = Math.PI / 6; // Max 30 degrees
+                        const stepArc = currentLabelFontSize * 0.5;
+                        const maxSteps = 10;
 
-                             // 尝试正向偏移
-                             if (!checkOverlap(originalAngle + currentOffsetAngle)) {
-                                 finalAngle = originalAngle + currentOffsetAngle;
-                                 isOverlapping = false;
-                                 break;
-                             } 
-                             // 尝试负向偏移
-                             if (!checkOverlap(originalAngle - currentOffsetAngle)) {
-                                 finalAngle = originalAngle - currentOffsetAngle;
-                                 isOverlapping = false;
-                                 break;
-                             }
-                         }
+                        for (let i = 1; i <= maxSteps; i++) {
+                            const currentOffsetArc = stepArc * i;
+                            const currentOffsetAngle = currentOffsetArc / Math.max(radius, 10);
+
+                            if (currentOffsetAngle > maxOffsetAngle) break;
+
+                            // 尝试正向偏移
+                            if (!checkOverlap(originalAngle + currentOffsetAngle)) {
+                                finalAngle = originalAngle + currentOffsetAngle;
+                                isOverlapping = false;
+                                break;
+                            }
+                            // 尝试负向偏移
+                            if (!checkOverlap(originalAngle - currentOffsetAngle)) {
+                                finalAngle = originalAngle - currentOffsetAngle;
+                                isOverlapping = false;
+                                break;
+                            }
+                        }
                     }
 
                     if (!isOverlapping) {
@@ -2730,7 +2731,7 @@ function drawTree(sample, globalDomain) {
 
                 // 3. 绘制通过碰撞检测的标签 (Render in separate layer on top)
                 const labelLayer = g.append('g').attr('class', 'labels-layer');
-                
+
                 labelLayer.selectAll('.node-label')
                     .data(nodes.filter(d => visibleNodesSet.has(d)))
                     .join('text')
@@ -2742,14 +2743,14 @@ function drawTree(sample, globalDomain) {
                         const radius = d.y;
                         const nx = centerX + radius * Math.cos(angle - Math.PI / 2);
                         const ny = centerY + radius * Math.sin(angle - Math.PI / 2);
-                        
+
                         if (d === hierarchy) return `translate(${nx},${ny})`;
 
                         // Calculate rotation
                         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
                         const rot = finalAngle * 180 / Math.PI - 90;
                         const rotStr = finalAngle < Math.PI ? `rotate(${rot})` : `rotate(${rot + 180})`;
-                        
+
                         return `translate(${nx},${ny}) ${rotStr}`;
                     })
                     .attr('x', d => {
@@ -2895,8 +2896,10 @@ function drawTree(sample, globalDomain) {
 
     } else {
         // 树形布局
+        const isVertical = (typeof treeLayoutDirection !== 'undefined' && treeLayoutDirection === 'vertical') || (typeof window !== 'undefined' && window.treeLayoutDirection === 'vertical');
+
         const tree = d3.tree()
-            .size([height - 100, width - 250]);
+            .size(isVertical ? [width - 100, height - 250] : [height - 100, width - 250]);
 
         layout = tree(hierarchy);
         nodes = layout.descendants();
@@ -2910,10 +2913,9 @@ function drawTree(sample, globalDomain) {
         });
 
         // 绘制连接线（树形），在 x 方向减去节点半径让连接更柔和
-        const linkGenerator = d3.linkHorizontal()
-            // 让连线延伸到节点中心，结合一致的不透明度以获得“融合”的外观
-            .x(d => d.y)
-            .y(d => d.x);
+        const linkGenerator = isVertical
+            ? d3.linkVertical().x(d => d.x).y(d => d.y)
+            : d3.linkHorizontal().x(d => d.y).y(d => d.x);
 
         // 树形布局同样不剔除非显著节点/连线，灰色显示
 
@@ -2945,7 +2947,7 @@ function drawTree(sample, globalDomain) {
             .data(nodes)
             .join('g')
             .attr('class', 'node')
-            .attr('transform', d => `translate(${d.y + 50},${d.x + 50})`);
+            .attr('transform', d => isVertical ? `translate(${d.x + 50},${d.y + 50})` : `translate(${d.y + 50},${d.x + 50})`);
 
         nodeGroup.append('circle')
             .attr('r', d => {
@@ -3004,8 +3006,9 @@ function drawTree(sample, globalDomain) {
                     .append('text')
                     .attr('class', 'node-label')
                     .attr('dy', '0.31em')
-                    .attr('x', d => d.children ? -10 : 10)
+                    .attr('x', d => isVertical ? (d.children ? -8 : 8) : (d.children ? -10 : 10))
                     .attr('text-anchor', d => d.children ? 'end' : 'start')
+                    .attr('transform', isVertical ? 'rotate(90)' : null)
                     .text(d => getDisplayName(d))
                     .style('font-size', `${labelFontSize}px`)
                     .attr('fill', d => getLabelColor(d))
@@ -3017,7 +3020,7 @@ function drawTree(sample, globalDomain) {
             } else {
                 // 2. 全局碰撞检测 (不再按深度分组)
                 visibleNodesSet = new Set();
-                
+
                 // 按丰度排序
                 const sortedCandidates = [...candidates].sort((a, b) => {
                     const abA = Math.abs(transformAbundance(a.data.abundances[sample] || 0));
@@ -3030,27 +3033,27 @@ function drawTree(sample, globalDomain) {
                 const charWidth = currentLabelFontSize * 0.6;
 
                 sortedCandidates.forEach(d => {
-                    const x = d.x; // Vertical position in d3.tree horizontal layout
-                    const y = d.y; // Horizontal position (depth)
+                    const x = d.x; // Breadth (Vertical in HorizLayout, Horiz in VertLayout)
+                    const y = d.y; // Depth (Horizontal in HorizLayout, Vert in VertLayout)
                     const isLeaf = !d.children;
                     const labelText = getDisplayName(d);
                     const textLen = labelText.length * charWidth;
 
                     // Bounding box calculation
-                    // x is vertical center. Height is approx fontSize.
+                    // x is breadth center. Height is approx fontSize.
                     const xMin = x - currentLabelFontSize / 2;
                     const xMax = x + currentLabelFontSize / 2;
 
                     let yMin, yMax;
                     if (isLeaf) {
-                        // Anchor start (left), x=10. Text extends right.
-                        // y is the node center. Text starts at y+10.
-                        yMin = y + 10;
+                        // Anchor start (left/down), x offset +8/+10.
+                        const offset = isVertical ? 8 : 10;
+                        yMin = y + offset;
                         yMax = yMin + textLen;
                     } else {
-                        // Anchor end (right), x=-10. Text extends left.
-                        // y is node center. Text ends at y-10.
-                        yMax = y - 10;
+                        // Anchor end (right/up), x offset -8/-10.
+                        const offset = isVertical ? 8 : 10;
+                        yMax = y - offset;
                         yMin = yMax - textLen;
                     }
 
@@ -3070,16 +3073,22 @@ function drawTree(sample, globalDomain) {
                     }
                 });
 
-                // Render labels in separate layer
+                // Render labels in separate layer (must handle transform manually)
                 const labelLayer = g.append('g').attr('class', 'labels-layer');
-                
+
                 labelLayer.selectAll('.node-label')
                     .data(nodes.filter(d => visibleNodesSet.has(d)))
                     .join('text')
                     .attr('class', 'node-label')
                     .attr('dy', '0.31em')
-                    .attr('transform', d => `translate(${d.y + 50},${d.x + 50})`)
-                    .attr('x', d => d.children ? -10 : 10)
+                    .attr('transform', d => isVertical
+                        ? `translate(${d.x + 50},${d.y + 50}) rotate(90)`
+                        : `translate(${d.y + 50},${d.x + 50})`
+                    )
+                    .attr('x', d => {
+                        const offset = isVertical ? 8 : 10;
+                        return d.children ? -offset : offset;
+                    })
                     .attr('text-anchor', d => d.children ? 'end' : 'start')
                     .text(d => getDisplayName(d))
                     .style('font-size', `${labelFontSize}px`)
@@ -3457,7 +3466,7 @@ function addInteractions(nodes, sample) {
     nodes
         .on('mouseover', function (event, d) {
             if (window._tooltipShowTimer) { clearTimeout(window._tooltipShowTimer); window._tooltipShowTimer = null; }
-            
+
             // Check if any overlay (context menu, modal) is active
             const isOverlayActive = () => {
                 // Check context menus
@@ -3478,7 +3487,7 @@ function addInteractions(nodes, sample) {
 
             const self = this;
             window._lastTooltipEvent = event;
-            
+
             window._tooltipShowTimer = setTimeout(() => {
                 // 高亮当前节点
                 d3.select(self).select('circle')
@@ -3567,38 +3576,38 @@ function addInteractions(nodes, sample) {
 }
 
 function showTooltipContent(event, d, sample) {
-            const abundance = d.data.abundances[sample] || 0;
-            // 节点的完整祖先路径（用于显示 full_path），如果外部提供函数则使用它
-            const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
-            // 根据项目提供的分隔符智能插入换行点（<wbr>），并对每段进行 HTML 转义
-            const delim = (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
-            let nodePathDisplay = nodePath ? escapeHtml(nodePath) : (d.data.fullName || 'Root');
-            try {
-                if (nodePath) {
-                    const esc = (s) => String(s).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch));
-                    const parts = String(nodePath).split(delim);
-                    nodePathDisplay = parts.map(p => esc(p ?? '')).reduce((acc, curr, idx) => {
-                        if (idx === 0) return curr;
-                        const original = parts[idx];
-                        if (original && original.startsWith('<') && original.endsWith('>')) {
-                            return acc + ' ' + curr;
-                        }
-                        return acc + esc(delim) + '<wbr>' + curr;
-                    }, '');
+    const abundance = d.data.abundances[sample] || 0;
+    // 节点的完整祖先路径（用于显示 full_path），如果外部提供函数则使用它
+    const nodePath = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+    // 根据项目提供的分隔符智能插入换行点（<wbr>），并对每段进行 HTML 转义
+    const delim = (typeof getTaxonRankDelimiter === 'function') ? getTaxonRankDelimiter() : '|';
+    let nodePathDisplay = nodePath ? escapeHtml(nodePath) : (d.data.fullName || 'Root');
+    try {
+        if (nodePath) {
+            const esc = (s) => String(s).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch));
+            const parts = String(nodePath).split(delim);
+            nodePathDisplay = parts.map(p => esc(p ?? '')).reduce((acc, curr, idx) => {
+                if (idx === 0) return curr;
+                const original = parts[idx];
+                if (original && original.startsWith('<') && original.endsWith('>')) {
+                    return acc + ' ' + curr;
                 }
-            } catch (_) { /* fallback uses escaped nodePath already set */ }
-            // If using combined_long (isCombinedLong) and stats are available, include pvalue/padj
-            const statForSample = (d.data && d.data.stats) ? d.data.stats[sample] : null;
-            let displayLabel = d.data.fullName || d.data.name || '';
-            // For function nodes (formatted as <Name>), strip the outer brackets
-            if (displayLabel.startsWith('<') && displayLabel.endsWith('>')) {
-                displayLabel = displayLabel.slice(1, -1);
-            }
+                return acc + esc(delim) + '<wbr>' + curr;
+            }, '');
+        }
+    } catch (_) { /* fallback uses escaped nodePath already set */ }
+    // If using combined_long (isCombinedLong) and stats are available, include pvalue/padj
+    const statForSample = (d.data && d.data.stats) ? d.data.stats[sample] : null;
+    let displayLabel = d.data.fullName || d.data.name || '';
+    // For function nodes (formatted as <Name>), strip the outer brackets
+    if (displayLabel.startsWith('<') && displayLabel.endsWith('>')) {
+        displayLabel = displayLabel.slice(1, -1);
+    }
 
-            // Escape HTML characters to ensure the label is displayed as text
-            displayLabel = String(displayLabel).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch));
+    // Escape HTML characters to ensure the label is displayed as text
+    displayLabel = String(displayLabel).replace(/[&<>\"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch] || ch));
 
-            let tooltipHtml = `
+    let tooltipHtml = `
                 <div class="tooltip-taxon">${displayLabel}</div>
                 <div><strong>Sample:</strong> ${sample}</div>
                 <div><strong>Lineage:</strong> ${nodePathDisplay}</div>
@@ -3606,98 +3615,98 @@ function showTooltipContent(event, d, sample) {
                 ${d.children ? `<div>Children: ${d.children.length}</div>` : ''}
                 <div class="tooltip-abundance">Value: ${abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 
-            if (isCombinedLong && statForSample) {
-                // show pvalue and padj (qvalue) when available
-                const pv = (Number.isFinite(statForSample.pvalue)) ? statForSample.pvalue : undefined;
-                const qv = (Number.isFinite(statForSample.qvalue)) ? statForSample.qvalue : statForSample.padj !== undefined ? statForSample.padj : undefined;
-                if (pv !== undefined) {
-                    tooltipHtml += ` <span style="font-size:11px; color: #ddd;">p=${pv.toExponential ? pv.toExponential(2) : pv.toFixed ? pv.toFixed(3) : pv}</span>`;
-                }
-                if (qv !== undefined) {
-                    tooltipHtml += ` <span style="font-size:11px; color: #ddd;">padj=${qv.toExponential ? qv.toExponential(2) : qv.toFixed ? qv.toFixed(3) : qv}</span>`;
-                }
-            }
-
-            tooltipHtml += `</div>`;
-
-            // 如果启用了同步缩放，则在所有 panel 中高亮相同节点并收集丰度信息
-            if (syncZoomEnabled && (visualizationMode === 'single' || visualizationMode === 'group')) {
-                // 使用完整的祖先路径来唯一标识节点
-                const nodeAncestorPath = getNodeAncestorPath(d);
-                let activeSamples;
-                if (visualizationMode === 'group') {
-                    activeSamples = selectedGroups.slice();
-                } else {
-                    activeSamples = (typeof getActiveSamples === 'function') ? getActiveSamples() : selectedSamples.slice();
-                }
-
-                // 收集所有样本的丰度信息
-                const otherAbundances = [];
-
-                activeSamples.forEach(otherSample => {
-                    // 跳过当前 sample - 只在其他 panel 中高亮
-                    if (otherSample === sample) return;
-
-                    const otherSvg = svgs[otherSample];
-                    if (!otherSvg) return;
-
-                    // 在其他 panel 中找到相同路径的节点并高亮
-                    otherSvg.selectAll('.node').each(function (nodeData) {
-                        const otherNodePath = getNodeAncestorPath(nodeData);
-                        // 只有完整路径完全匹配时才高亮
-                        if (otherNodePath === nodeAncestorPath) {
-                            // 高亮节点
-                            d3.select(this).select('circle')
-                                .transition()
-                                .duration(200)
-                                .attr('stroke', '#ff6b6b')
-                                .attr('stroke-width', 3);
-
-                            // 收集丰度信息以及该节点在目标样本/条件下的统计信息（若有）
-                            const otherAbund = nodeData.data.abundances[otherSample] || 0;
-                            const otherStat = (nodeData.data && nodeData.data.stats) ? nodeData.data.stats[otherSample] : null;
-                            otherAbundances.push({
-                                sample: otherSample,
-                                abundance: otherAbund,
-                                stat: otherStat
-                            });
-                        }
-                    });
-                });
-
-                // 如果有其他样本的丰度信息，添加到 tooltip
-                if (otherAbundances.length > 0) {
-                    tooltipHtml += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Other samples:</strong></div>';
-                    // Determine whether the UI has "Filter by significance" for single-sample mode enabled
-                    const singleFilterChecked = !!(document.getElementById('single-show-significance')?.checked);
-                    otherAbundances.forEach(info => {
-                        let suffix = '';
-                        if (singleFilterChecked && isCombinedLong) {
-                            // try to read stats for this node/sample to see if it passes single-sample significance
-                            const nodeStats = (d && d.data && d.data.stats) ? d.data.stats : null;
-                            // NOTE: nodeStats in this scope refers to current hovered node; we need the other sample's stats from the matched nodeData
-                            // Try to access stored stats that we may have on otherAbundances entries (if present)
-                            const otherStat = info.stat || null;
-                            try {
-                                if (otherStat && isSignificantBySingleThresholds(otherStat)) {
-                                    suffix = ' <span style="color:#e74c3c; font-weight:700;">(sig)</span>';
-                                }
-                            } catch (_) { /* ignore */ }
-                        }
-                        tooltipHtml += `<div style="font-size: 11px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}</div>`;
-                    });
-                }
-            }
-
-            try {
-                if (window._tooltipHideTimer) { clearTimeout(window._tooltipHideTimer); window._tooltipHideTimer = null; }
-            } catch (_) { }
-            tooltip
-                .html(tooltipHtml)
-                .classed('show', true)
-                .style('left', (event.pageX + 30) + 'px')
-                .style('top', (event.pageY - 30) + 'px');
+    if (isCombinedLong && statForSample) {
+        // show pvalue and padj (qvalue) when available
+        const pv = (Number.isFinite(statForSample.pvalue)) ? statForSample.pvalue : undefined;
+        const qv = (Number.isFinite(statForSample.qvalue)) ? statForSample.qvalue : statForSample.padj !== undefined ? statForSample.padj : undefined;
+        if (pv !== undefined) {
+            tooltipHtml += ` <span style="font-size:11px; color: #ddd;">p=${pv.toExponential ? pv.toExponential(2) : pv.toFixed ? pv.toFixed(3) : pv}</span>`;
+        }
+        if (qv !== undefined) {
+            tooltipHtml += ` <span style="font-size:11px; color: #ddd;">padj=${qv.toExponential ? qv.toExponential(2) : qv.toFixed ? qv.toFixed(3) : qv}</span>`;
+        }
     }
+
+    tooltipHtml += `</div>`;
+
+    // 如果启用了同步缩放，则在所有 panel 中高亮相同节点并收集丰度信息
+    if (syncZoomEnabled && (visualizationMode === 'single' || visualizationMode === 'group')) {
+        // 使用完整的祖先路径来唯一标识节点
+        const nodeAncestorPath = getNodeAncestorPath(d);
+        let activeSamples;
+        if (visualizationMode === 'group') {
+            activeSamples = selectedGroups.slice();
+        } else {
+            activeSamples = (typeof getActiveSamples === 'function') ? getActiveSamples() : selectedSamples.slice();
+        }
+
+        // 收集所有样本的丰度信息
+        const otherAbundances = [];
+
+        activeSamples.forEach(otherSample => {
+            // 跳过当前 sample - 只在其他 panel 中高亮
+            if (otherSample === sample) return;
+
+            const otherSvg = svgs[otherSample];
+            if (!otherSvg) return;
+
+            // 在其他 panel 中找到相同路径的节点并高亮
+            otherSvg.selectAll('.node').each(function (nodeData) {
+                const otherNodePath = getNodeAncestorPath(nodeData);
+                // 只有完整路径完全匹配时才高亮
+                if (otherNodePath === nodeAncestorPath) {
+                    // 高亮节点
+                    d3.select(this).select('circle')
+                        .transition()
+                        .duration(200)
+                        .attr('stroke', '#ff6b6b')
+                        .attr('stroke-width', 3);
+
+                    // 收集丰度信息以及该节点在目标样本/条件下的统计信息（若有）
+                    const otherAbund = nodeData.data.abundances[otherSample] || 0;
+                    const otherStat = (nodeData.data && nodeData.data.stats) ? nodeData.data.stats[otherSample] : null;
+                    otherAbundances.push({
+                        sample: otherSample,
+                        abundance: otherAbund,
+                        stat: otherStat
+                    });
+                }
+            });
+        });
+
+        // 如果有其他样本的丰度信息，添加到 tooltip
+        if (otherAbundances.length > 0) {
+            tooltipHtml += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Other samples:</strong></div>';
+            // Determine whether the UI has "Filter by significance" for single-sample mode enabled
+            const singleFilterChecked = !!(document.getElementById('single-show-significance')?.checked);
+            otherAbundances.forEach(info => {
+                let suffix = '';
+                if (singleFilterChecked && isCombinedLong) {
+                    // try to read stats for this node/sample to see if it passes single-sample significance
+                    const nodeStats = (d && d.data && d.data.stats) ? d.data.stats : null;
+                    // NOTE: nodeStats in this scope refers to current hovered node; we need the other sample's stats from the matched nodeData
+                    // Try to access stored stats that we may have on otherAbundances entries (if present)
+                    const otherStat = info.stat || null;
+                    try {
+                        if (otherStat && isSignificantBySingleThresholds(otherStat)) {
+                            suffix = ' <span style="color:#e74c3c; font-weight:700;">(sig)</span>';
+                        }
+                    } catch (_) { /* ignore */ }
+                }
+                tooltipHtml += `<div style="font-size: 11px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}</div>`;
+            });
+        }
+    }
+
+    try {
+        if (window._tooltipHideTimer) { clearTimeout(window._tooltipHideTimer); window._tooltipHideTimer = null; }
+    } catch (_) { }
+    tooltip
+        .html(tooltipHtml)
+        .classed('show', true)
+        .style('left', (event.pageX + 30) + 'px')
+        .style('top', (event.pageY - 30) + 'px');
+}
 
 function updateStats(hierarchy, sample) {
     if (selectedSamples.length === 0) {

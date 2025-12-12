@@ -155,15 +155,15 @@
       // Use provided dataToPath or build local one (fallback)
       let dataToPath = opts.dataToPath;
       if (!dataToPath) {
-          dataToPath = new Map();
-          if (root) {
-            root.each(d => {
-              if (d.data) {
-                const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
-                if (p) dataToPath.set(d.data, p);
-              }
-            });
-          }
+        dataToPath = new Map();
+        if (root) {
+          root.each(d => {
+            if (d.data) {
+              const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
+              if (p) dataToPath.set(d.data, p);
+            }
+          });
+        }
       }
 
       const packChildAccessor = (node) => (node && node.__collapsed) ? null : node && node.children;
@@ -199,20 +199,20 @@
         .padding(forMini ? 1.5 : 3);
       const packed = pack(packRoot);
       layout.nodes = packed.descendants();
-      
+
       // Propagate visibility flag from original data if filtering is active
       if (opts.filterBySignificance) {
-          const visibleSet = opts.visibleData;
-          layout.nodes.forEach(node => {
-              if (visibleSet && visibleSet.has(node.data)) {
-                  node._hasVisibleDesc = true;
-              } else if (!visibleSet) {
-                  // Fallback if set not provided but filtering requested (should not happen)
-                  node._hasVisibleDesc = false;
-              } else {
-                  node._hasVisibleDesc = false;
-              }
-          });
+        const visibleSet = opts.visibleData;
+        layout.nodes.forEach(node => {
+          if (visibleSet && visibleSet.has(node.data)) {
+            node._hasVisibleDesc = true;
+          } else if (!visibleSet) {
+            // Fallback if set not provided but filtering requested (should not happen)
+            node._hasVisibleDesc = false;
+          } else {
+            node._hasVisibleDesc = false;
+          }
+        });
       }
 
       layout.links = [];
@@ -233,26 +233,54 @@
     }
 
     if (mode === 'tree') {
+      const isVertical = (typeof treeLayoutDirection !== 'undefined' && treeLayoutDirection === 'vertical') ||
+        (typeof window !== 'undefined' && window.treeLayoutDirection === 'vertical');
+
       const margin = forMini
         ? { top: 10, right: 40, bottom: 10, left: 40 }
-        : { top: 40, right: 160, bottom: 40, left: 160 };
+        : (isVertical
+          ? { top: 40, right: 40, bottom: 160, left: 40 }
+          : { top: 40, right: 160, bottom: 40, left: 160 }
+        );
+
       const layoutWidth = Math.max(10, width - margin.left - margin.right);
       const layoutHeight = Math.max(10, height - margin.top - margin.bottom);
-      const tree = d3.tree().size([layoutHeight, layoutWidth]);
+
+      const tree = d3.tree().size(isVertical
+        ? [layoutWidth, layoutHeight]
+        : [layoutHeight, layoutWidth]
+      );
       tree(root);
+
       layout.nodes = root.descendants();
       layout.links = root.links();
       layout.collapsedNodes = layout.nodes.filter(d => d.data && d.data.__collapsed);
       layout.applyGroupTransform = (g) => g.attr('transform', `translate(${margin.left}, ${margin.top})`);
-      const linkGen = d3.linkHorizontal().x(d => d.y).y(d => d.x);
+
+      const linkGen = isVertical
+        ? d3.linkVertical().x(d => d.x).y(d => d.y)
+        : d3.linkHorizontal().x(d => d.y).y(d => d.x);
+
       layout.configureLinks = (sel) => sel.attr('d', linkGen);
-      layout.positionNode = (d) => `translate(${d.y},${d.x})`;
-      layout.configureLabels = (sel) => sel
-        .attr('x', d => d.children ? -10 : 10)
-        .attr('text-anchor', d => d.children ? 'end' : 'start')
-        .attr('transform', null);
+
+      layout.positionNode = (d) => isVertical
+        ? `translate(${d.x},${d.y})`
+        : `translate(${d.y},${d.x})`;
+
+      if (isVertical) {
+        layout.configureLabels = (sel) => sel
+          .attr('x', d => d.children ? -8 : 8)
+          .attr('text-anchor', d => d.children ? 'end' : 'start')
+          .attr('transform', 'rotate(90)');
+      } else {
+        layout.configureLabels = (sel) => sel
+          .attr('x', d => d.children ? -10 : 10)
+          .attr('text-anchor', d => d.children ? 'end' : 'start')
+          .attr('transform', null);
+      }
+
       layout.configureCollapse = (sel) => sel
-        .attr('transform', d => `translate(${d.y},${d.x})`)
+        .attr('transform', d => isVertical ? `translate(${d.x},${d.y})` : `translate(${d.y},${d.x})`)
         .attr('text-anchor', 'middle');
       layout.getVisualRadius = (_, base) => base;
       layout.getHoverRadius = (_, base) => base + (forMini ? 1 : 2);
@@ -331,15 +359,15 @@
     const onBack = typeof opts.onBack === 'function' ? opts.onBack : null;
 
     // Generate a unique ID for the SVG container to avoid conflicts (e.g. between hidden comparison mode and visible matrix inline mode)
-    const svgContainerId = useModal 
-        ? 'svg-container-comparison-modal' 
-        : (containerId === 'inline-comparison-body' ? 'svg-container-comparison-inline' : 'svg-container-comparison');
+    const svgContainerId = useModal
+      ? 'svg-container-comparison-modal'
+      : (containerId === 'inline-comparison-body' ? 'svg-container-comparison-inline' : 'svg-container-comparison');
 
     let vizContainer = document.getElementById(containerId);
-    
+
     // If targeting main container, redirect to sub-container for comparison mode
     if (containerId === 'viz-container' && typeof window.getVizSubContainer === 'function') {
-        vizContainer = window.getVizSubContainer('comparison');
+      vizContainer = window.getVizSubContainer('comparison');
     }
 
     if (!vizContainer) return;
@@ -485,16 +513,16 @@
     // Pre-calculate paths for data objects to support layouts that rebuild hierarchy (like packing)
     const dataToPath = new Map();
     if (root) {
-        root.each(d => {
-            if (d.data) {
-                const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
-                if (p) dataToPath.set(d.data, p);
-            }
-        });
+      root.each(d => {
+        if (d.data) {
+          const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
+          if (p) dataToPath.set(d.data, p);
+        }
+      });
     }
     const getPathForNode = (d) => {
-        if (d && d.data && dataToPath.has(d.data)) return dataToPath.get(d.data);
-        return (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      if (d && d.data && dataToPath.has(d.data)) return dataToPath.get(d.data);
+      return (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
     };
 
     // ========== 统一标签颜色（comparison 模式）==========
@@ -527,11 +555,11 @@
           const nodePath = getPathForNode(node);
           const st = nodePath ? comparisonStats[nodePath] : undefined;
           if (!st) return;
-          
+
           // 如果用户明确选择了层级，则忽略显著性过滤（只要节点可见）
           // 否则，如果启用了仅显示显著，则过滤非显著节点
           if (!selectedSet && typeof showOnlySignificant !== 'undefined' && showOnlySignificant && !isSignificantByThresholds(st)) return;
-          
+
           const depthFromLeaf = node.height;
           const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
           const mag = Math.abs(st.comparison_value || 0);
@@ -609,9 +637,9 @@
     // Collect visible data objects for packing mode (where nodes are recreated)
     const visibleData = new Set();
     if (filterBySignificance) {
-        root.each(d => {
-            if (d._hasVisibleDesc) visibleData.add(d.data);
-        });
+      root.each(d => {
+        if (d._hasVisibleDesc) visibleData.add(d.data);
+      });
     }
 
     const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false, dataToPath, visibleData, filterBySignificance });
@@ -770,29 +798,29 @@
       const selectedSet = Array.isArray(labelLevelsSelected) && labelLevelsSelected.length > 0 ? new Set(labelLevelsSelected) : null;
 
       const minPackLabelRadius = Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9), 10);
-      
+
       // 1. 筛选候选节点
       const candidates = nodesForRender.filter(d => {
-          const nodePath = getPathForNode(d);
-          const st = nodePath ? comparisonStats[nodePath] : undefined;
-          if (!st) return false;
-          
-          // 如果用户明确选择了层级，则忽略显著性过滤（只要节点可见）
-          // 否则，如果启用了仅显示显著，则过滤非显著节点
-          if (!selectedSet && showOnlySignificant && !isSignificantByThresholds(st)) return false;
+        const nodePath = getPathForNode(d);
+        const st = nodePath ? comparisonStats[nodePath] : undefined;
+        if (!st) return false;
 
-          const depthFromLeaf = d.height;
-          const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
-          const mag = Math.abs(st.comparison_value || 0);
-          if (!(levelOk && mag >= threshold)) return false;
-          if (layoutConfig.mode === 'packing') {
-            const isLeafLevel = depthFromLeaf === 0;
-            const minRadius = isLeafLevel
-              ? Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9) * 0.5, 4)
-              : minPackLabelRadius;
-            return typeof d.r === 'number' ? d.r >= minRadius : false;
-          }
-          return true;
+        // 如果用户明确选择了层级，则忽略显著性过滤（只要节点可见）
+        // 否则，如果启用了仅显示显著，则过滤非显著节点
+        if (!selectedSet && showOnlySignificant && !isSignificantByThresholds(st)) return false;
+
+        const depthFromLeaf = d.height;
+        const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
+        const mag = Math.abs(st.comparison_value || 0);
+        if (!(levelOk && mag >= threshold)) return false;
+        if (layoutConfig.mode === 'packing') {
+          const isLeafLevel = depthFromLeaf === 0;
+          const minRadius = isLeafLevel
+            ? Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9) * 0.5, 4)
+            : minPackLabelRadius;
+          return typeof d.r === 'number' ? d.r >= minRadius : false;
+        }
+        return true;
       });
 
       // 2. 应用 Auto-hide overlapping labels
@@ -802,158 +830,158 @@
 
       let visibleNodesSet = new Set();
       if (useSmartCulling && layoutConfig.mode !== 'packing') {
-          // Sort candidates by priority: Outer nodes (lower height) first, then magnitude
-          const sortedCandidates = [...candidates].sort((a, b) => {
-              if (a.height !== b.height) return a.height - b.height; // Leaves (0) first
-              const pathA = getPathForNode(a);
-              const pathB = getPathForNode(b);
-              const valA = pathA && comparisonStats[pathA] ? Math.abs(comparisonStats[pathA].comparison_value || 0) : 0;
-              const valB = pathB && comparisonStats[pathB] ? Math.abs(comparisonStats[pathB].comparison_value || 0) : 0;
-              return valB - valA;
-          });
+        // Sort candidates by priority: Outer nodes (lower height) first, then magnitude
+        const sortedCandidates = [...candidates].sort((a, b) => {
+          if (a.height !== b.height) return a.height - b.height; // Leaves (0) first
+          const pathA = getPathForNode(a);
+          const pathB = getPathForNode(b);
+          const valA = pathA && comparisonStats[pathA] ? Math.abs(comparisonStats[pathA].comparison_value || 0) : 0;
+          const valB = pathB && comparisonStats[pathB] ? Math.abs(comparisonStats[pathB].comparison_value || 0) : 0;
+          return valB - valA;
+        });
 
-          const placedLabels = []; // { angle, radius, startR, endR } for radial; { xMin, xMax, yMin, yMax } for tree
-          const currentLabelFontSize = (typeof labelFontSize === 'number') ? labelFontSize : (typeof window !== 'undefined' && typeof window.labelFontSize === 'number' ? window.labelFontSize : 9);
-          const charWidth = currentLabelFontSize * 0.6;
+        const placedLabels = []; // { angle, radius, startR, endR } for radial; { xMin, xMax, yMin, yMax } for tree
+        const currentLabelFontSize = (typeof labelFontSize === 'number') ? labelFontSize : (typeof window !== 'undefined' && typeof window.labelFontSize === 'number' ? window.labelFontSize : 9);
+        const charWidth = currentLabelFontSize * 0.6;
 
-          // Pre-calculate label angles with offset for single-child nodes
-          // Removed pre-calculation to apply offset conditionally on collision
-          // candidates.forEach(d => { ... });
+        // Pre-calculate label angles with offset for single-child nodes
+        // Removed pre-calculation to apply offset conditionally on collision
+        // candidates.forEach(d => { ... });
 
-          sortedCandidates.forEach(d => {
-              const labelText = (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || '');
-              const textLen = labelText.length * charWidth;
-              let overlaps = false;
+        sortedCandidates.forEach(d => {
+          const labelText = (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || '');
+          const textLen = labelText.length * charWidth;
+          let overlaps = false;
 
-              if (layoutConfig.mode === 'radial') {
-                  const radius = d.y;
-                  const originalAngle = d.x;
+          if (layoutConfig.mode === 'radial') {
+            const radius = d.y;
+            const originalAngle = d.x;
 
-                  const checkOverlap = (testAngle) => {
-                      const normAngle = (testAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                      const startR = radius + 6;
-                      const endR = startR + textLen;
-                      
-                      for (const p of placedLabels) {
-                          let diff = Math.abs(normAngle - p.angle);
-                          if (diff > Math.PI) diff = 2 * Math.PI - diff;
-                          const avgR = (radius + p.radius) / 2;
-                          const arcDist = diff * avgR;
+            const checkOverlap = (testAngle) => {
+              const normAngle = (testAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+              const startR = radius + 6;
+              const endR = startR + textLen;
 
-                          if (arcDist < currentLabelFontSize * 0.7) {
-                              const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
-                              if (overlapR) return true;
-                          }
-                      }
-                      return false;
-                  };
+              for (const p of placedLabels) {
+                let diff = Math.abs(normAngle - p.angle);
+                if (diff > Math.PI) diff = 2 * Math.PI - diff;
+                const avgR = (radius + p.radius) / 2;
+                const arcDist = diff * avgR;
 
-                  let finalAngle = originalAngle;
-                  let isOverlapping = checkOverlap(finalAngle);
-
-                  if (isOverlapping && d.children && d.children.length > 0) {
-                      const maxOffsetAngle = Math.PI / 6; // Max 30 degrees
-                      const stepArc = currentLabelFontSize * 0.5;
-                      const maxSteps = 10;
-                      
-                      for (let i = 1; i <= maxSteps; i++) {
-                          const currentOffsetArc = stepArc * i;
-                          const currentOffsetAngle = currentOffsetArc / Math.max(radius, 10);
-                          
-                          if (currentOffsetAngle > maxOffsetAngle) break;
-
-                          // 尝试正向偏移
-                          if (!checkOverlap(originalAngle + currentOffsetAngle)) {
-                              finalAngle = originalAngle + currentOffsetAngle;
-                              isOverlapping = false;
-                              break;
-                          } 
-                          // 尝试负向偏移
-                          if (!checkOverlap(originalAngle - currentOffsetAngle)) {
-                              finalAngle = originalAngle - currentOffsetAngle;
-                              isOverlapping = false;
-                              break;
-                          }
-                      }
-                  }
-
-                  if (!isOverlapping) {
-                      d._labelAngle = finalAngle;
-                      const normAngle = (finalAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                      const startR = radius + 6;
-                      const endR = startR + textLen;
-                      placedLabels.push({ angle: normAngle, radius, startR, endR });
-                      visibleNodesSet.add(d);
-                  }
-
-              } else if (layoutConfig.mode === 'tree') {
-                  const x = d.x; // Vertical
-                  const y = d.y; // Horizontal
-                  const isLeaf = !d.children;
-
-                  const xMin = x - currentLabelFontSize / 2;
-                  const xMax = x + currentLabelFontSize / 2;
-
-                  let yMin, yMax;
-                  if (isLeaf) {
-                      yMin = y + 10;
-                      yMax = yMin + textLen;
-                  } else {
-                      yMax = y - 10;
-                      yMin = yMax - textLen;
-                  }
-
-                  for (const p of placedLabels) {
-                      const intersectX = Math.max(xMin, p.xMin) < Math.min(xMax, p.xMax);
-                      const intersectY = Math.max(yMin, p.yMin) < Math.min(yMax, p.yMax);
-                      if (intersectX && intersectY) {
-                          overlaps = true;
-                          break;
-                      }
-                  }
-
-                  if (!overlaps) {
-                      placedLabels.push({ xMin, xMax, yMin, yMax });
-                      visibleNodesSet.add(d);
-                  }
-              } else {
-                  // Fallback for other modes
-                  visibleNodesSet.add(d);
+                if (arcDist < currentLabelFontSize * 0.7) {
+                  const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
+                  if (overlapR) return true;
+                }
               }
-          });
+              return false;
+            };
+
+            let finalAngle = originalAngle;
+            let isOverlapping = checkOverlap(finalAngle);
+
+            if (isOverlapping && d.children && d.children.length > 0) {
+              const maxOffsetAngle = Math.PI / 6; // Max 30 degrees
+              const stepArc = currentLabelFontSize * 0.5;
+              const maxSteps = 10;
+
+              for (let i = 1; i <= maxSteps; i++) {
+                const currentOffsetArc = stepArc * i;
+                const currentOffsetAngle = currentOffsetArc / Math.max(radius, 10);
+
+                if (currentOffsetAngle > maxOffsetAngle) break;
+
+                // 尝试正向偏移
+                if (!checkOverlap(originalAngle + currentOffsetAngle)) {
+                  finalAngle = originalAngle + currentOffsetAngle;
+                  isOverlapping = false;
+                  break;
+                }
+                // 尝试负向偏移
+                if (!checkOverlap(originalAngle - currentOffsetAngle)) {
+                  finalAngle = originalAngle - currentOffsetAngle;
+                  isOverlapping = false;
+                  break;
+                }
+              }
+            }
+
+            if (!isOverlapping) {
+              d._labelAngle = finalAngle;
+              const normAngle = (finalAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+              const startR = radius + 6;
+              const endR = startR + textLen;
+              placedLabels.push({ angle: normAngle, radius, startR, endR });
+              visibleNodesSet.add(d);
+            }
+
+          } else if (layoutConfig.mode === 'tree') {
+            const x = d.x; // Vertical
+            const y = d.y; // Horizontal
+            const isLeaf = !d.children;
+
+            const xMin = x - currentLabelFontSize / 2;
+            const xMax = x + currentLabelFontSize / 2;
+
+            let yMin, yMax;
+            if (isLeaf) {
+              yMin = y + 10;
+              yMax = yMin + textLen;
+            } else {
+              yMax = y - 10;
+              yMin = yMax - textLen;
+            }
+
+            for (const p of placedLabels) {
+              const intersectX = Math.max(xMin, p.xMin) < Math.min(xMax, p.xMax);
+              const intersectY = Math.max(yMin, p.yMin) < Math.min(yMax, p.yMax);
+              if (intersectX && intersectY) {
+                overlaps = true;
+                break;
+              }
+            }
+
+            if (!overlaps) {
+              placedLabels.push({ xMin, xMax, yMin, yMax });
+              visibleNodesSet.add(d);
+            }
+          } else {
+            // Fallback for other modes
+            visibleNodesSet.add(d);
+          }
+        });
       } else {
-          visibleNodesSet = new Set(candidates);
+        visibleNodesSet = new Set(candidates);
       }
 
       // 更新 UI 计数器
       const elCount = document.getElementById('label-visible-count');
       if (elCount) {
-          const totalVis = visibleNodesSet ? visibleNodesSet.size : 0;
-          const totalCand = candidates.length;
-          if (totalCand > 0) {
-              const pct = Math.round(totalVis / totalCand * 100);
-              elCount.textContent = `Showing ${totalVis.toLocaleString()} / ${totalCand.toLocaleString()} (${pct}%)`;
-          } else {
-              elCount.textContent = '';
-          }
+        const totalVis = visibleNodesSet ? visibleNodesSet.size : 0;
+        const totalCand = candidates.length;
+        if (totalCand > 0) {
+          const pct = Math.round(totalVis / totalCand * 100);
+          elCount.textContent = `Showing ${totalVis.toLocaleString()} / ${totalCand.toLocaleString()} (${pct}%)`;
+        } else {
+          elCount.textContent = '';
+        }
       }
 
       // Render labels in separate layer on top
       const labelLayer = g.append('g').attr('class', 'labels-layer');
-      
+
       const labels = labelLayer.selectAll('.node-label')
         .data(nodesForRender.filter(d => visibleNodesSet.has(d)))
         .join('text')
         .attr('class', 'node-label')
         .attr('dy', layoutConfig.mode === 'packing' ? '0.35em' : '0.31em');
-      
+
       try { layoutConfig.configureLabels(labels); } catch (_) { }
-      
+
       // Apply node transform to labels since they are no longer children of nodeGroup
-      labels.attr('transform', function(d) {
-          const nodePos = layoutConfig.positionNode(d); // "translate(x,y)"
-          const labelTrans = d3.select(this).attr('transform') || ''; 
-          return `${nodePos} ${labelTrans}`;
+      labels.attr('transform', function (d) {
+        const nodePos = layoutConfig.positionNode(d); // "translate(x,y)"
+        const labelTrans = d3.select(this).attr('transform') || '';
+        return `${nodePos} ${labelTrans}`;
       });
 
       labels
@@ -1103,11 +1131,11 @@
     }
 
     const vizContainer = (typeof window.getVizSubContainer === 'function')
-        ? window.getVizSubContainer('matrix')
-        : document.getElementById('viz-container');
-        
+      ? window.getVizSubContainer('matrix')
+      : document.getElementById('viz-container');
+
     if (vizContainer) vizContainer.innerHTML = '';
-    
+
     // For comparison matrix mode, allow the viz container to behave as a block so
     // the matrix container can size to its content (width = max-content). We
     // set display:block here and restore it when normal panel rendering runs.
@@ -1339,11 +1367,11 @@
   // New: draw a focused comparison view inline in the main container (no modal)
   function drawInlineFocusedComparison(comparison) {
     if (!comparison) return;
-    
+
     const vizContainer = (typeof window.getVizSubContainer === 'function')
-        ? window.getVizSubContainer('matrix')
-        : document.getElementById('viz-container');
-        
+      ? window.getVizSubContainer('matrix')
+      : document.getElementById('viz-container');
+
     if (!vizContainer) return;
     vizContainer.innerHTML = '';
 
@@ -1403,26 +1431,26 @@
     // Pre-calculate paths for data objects
     const dataToPath = new Map();
     if (root) {
-        root.each(d => {
-            if (d.data) {
-                const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
-                if (p) dataToPath.set(d.data, p);
-            }
-        });
+      root.each(d => {
+        if (d.data) {
+          const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
+          if (p) dataToPath.set(d.data, p);
+        }
+      });
     }
     const getPathForNode = (d) => {
-        if (d && d.data && dataToPath.has(d.data)) return dataToPath.get(d.data);
-        return (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
+      if (d && d.data && dataToPath.has(d.data)) return dataToPath.get(d.data);
+      return (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : (d && d.data ? d.data.name : null);
     };
 
     const { filterBySignificance: filterMini } = annotateComparisonAggregates(root, comparisonStats);
-    
+
     // Collect visible data objects for packing mode
     const visibleData = new Set();
     if (filterMini) {
-        root.each(d => {
-            if (d._hasVisibleDesc) visibleData.add(d.data);
-        });
+      root.each(d => {
+        if (d._hasVisibleDesc) visibleData.add(d.data);
+      });
     }
 
     const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true, dataToPath, visibleData, filterBySignificance: filterMini });

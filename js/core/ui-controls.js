@@ -1200,6 +1200,14 @@ function initEventListeners() {
     // 布局选择
     document.getElementById('layout-select').addEventListener('change', handleLayoutChange);
 
+    // Tree Layout Direction
+    document.querySelectorAll('input[name="tree-direction"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (typeof window !== 'undefined') window.treeLayoutDirection = e.target.value;
+            if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
+        });
+    });
+
     // 丰度转换选择
     document.getElementById('abundance-transform').addEventListener('change', handleAbundanceTransformChange);
 
@@ -2032,7 +2040,7 @@ function handleFileUpload(e) {
         }
     };
     reader.readAsText(file);
-    
+
     // Reset input value to allow reloading the same file
     e.target.value = '';
 }
@@ -2102,7 +2110,7 @@ function updateSampleCheckboxes() {
     samples.forEach((sample, index) => {
         const checkboxItem = document.createElement('div');
         checkboxItem.className = 'checkbox-item';
-        
+
         // Enable drag and drop
         addDragListeners(checkboxItem, 'sample');
 
@@ -2266,6 +2274,14 @@ function handleLayoutChange(e) {
     try { if (typeof window !== 'undefined') window.currentLayout = currentLayout; } catch (_) { }
     const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
     setLayoutPanelSettingsForContext(ctx, { layout: currentLayout });
+
+    // Show/hide tree direction control
+    const treeDirRow = document.getElementById('tree-direction-row');
+    if (treeDirRow) {
+        treeDirRow.style.display = (currentLayout === 'tree') ? 'flex' : 'none';
+        treeDirRow.setAttribute('aria-hidden', (currentLayout === 'tree') ? 'false' : 'true');
+    }
+
     if (typeof redrawCurrentViz === 'function') {
         try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after layout change', err); }
     }
@@ -2840,7 +2856,7 @@ function handleToggleSamples() {
 // ========== 比较模式事件处理 ==========
 
 // Helper to manage sub-containers for different modes to preserve state
-window.getVizSubContainer = function(mode) {
+window.getVizSubContainer = function (mode) {
     const container = document.getElementById('viz-container');
     if (!container) return null;
     const subId = `viz-panel-${mode}`;
@@ -2855,7 +2871,7 @@ window.getVizSubContainer = function(mode) {
     return sub;
 };
 
-window.updateVizContainerVisibility = function(mode) {
+window.updateVizContainerVisibility = function (mode) {
     const modes = ['single', 'group', 'comparison', 'matrix'];
     modes.forEach(m => {
         const sub = window.getVizSubContainer(m);
@@ -2872,7 +2888,7 @@ function handleVisualizationModeChange() {
         : visualizationMode;
     persistCurrentModeColorSettings(prevMode);
     visualizationMode = document.getElementById('viz-mode').value;
-    
+
     // Manage visibility instead of clearing to preserve state
     if (typeof window.updateVizContainerVisibility === 'function') {
         window.updateVizContainerVisibility(visualizationMode);
@@ -3486,7 +3502,7 @@ function handleRunComparison() {
                 runTests: true,
                 test: comparisonTest
             });
-            
+
             // Store results based on mode to prevent overwriting between modes
             if (visualizationMode === 'comparison') {
                 window.comparisonResults_comparison = results;
@@ -3552,7 +3568,7 @@ function handleRunComparison() {
  * @returns {Array|undefined} Comparison results array for the current mode (matrix or comparison)
  */
 function getComparisonResultsForMode() {
-    return (visualizationMode === 'matrix') 
+    return (visualizationMode === 'matrix')
         ? (window.comparisonResults_matrix || window.comparisonResults)
         : (window.comparisonResults_comparison || window.comparisonResults);
 }
@@ -4900,7 +4916,7 @@ function handleGroupMetaColumnChange(col) {
  */
 function updateGroupCheckboxes() {
     const container = document.getElementById('group-checkboxes');
-    
+
     const groups = getAllGroups();
     const groupCount = Object.keys(groups).length;
 
@@ -4973,7 +4989,7 @@ function updateGroupCheckboxes() {
         // Enable drag and drop for the group item wrapper
         const wrapper = checkbox.closest('div');
         if (wrapper) {
-             addDragListeners(wrapper, 'group');
+            addDragListeners(wrapper, 'group');
         }
     });
 
@@ -5779,17 +5795,17 @@ function addDragListeners(element, type) {
     element.setAttribute('draggable', 'true');
     element.style.cursor = 'move';
 
-    element.addEventListener('dragstart', function(e) {
+    element.addEventListener('dragstart', function (e) {
         draggedElement = this;
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', this.innerHTML);
         this.classList.add('dragging');
     });
 
-    element.addEventListener('dragend', function(e) {
+    element.addEventListener('dragend', function (e) {
         this.classList.remove('dragging');
         draggedElement = null;
-        
+
         // Trigger update after drop
         if (type === 'sample') {
             handleSampleOrderChange();
@@ -5798,24 +5814,24 @@ function addDragListeners(element, type) {
         }
     });
 
-    element.addEventListener('dragover', function(e) {
+    element.addEventListener('dragover', function (e) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'move';
-        
+
         if (this === draggedElement) return;
-        
+
         // Determine insert position
         const bounding = this.getBoundingClientRect();
         const offset = bounding.y + (bounding.height / 2);
-        
+
         if (e.clientY - offset > 0) {
             this.parentNode.insertBefore(draggedElement, this.nextSibling);
         } else {
             this.parentNode.insertBefore(draggedElement, this);
         }
     });
-    
-    element.addEventListener('dragenter', function(e) {
+
+    element.addEventListener('dragenter', function (e) {
         e.preventDefault();
     });
 }
@@ -5823,23 +5839,23 @@ function addDragListeners(element, type) {
 function handleSampleOrderChange() {
     const container = document.getElementById('sample-checkboxes');
     if (!container) return;
-    
+
     const newOrder = [];
     const checkboxes = container.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach(cb => {
         newOrder.push(cb.value);
     });
-    
+
     // Update global samples array to persist the order
     if (typeof samples !== 'undefined' && samples.length === newOrder.length) {
         samples = newOrder;
     }
-    
+
     // Update selectedSamples order
     if (typeof selectedSamples !== 'undefined') {
         const currentSelectedSet = new Set(selectedSamples);
         selectedSamples = newOrder.filter(s => currentSelectedSet.has(s));
-        
+
         // Redraw
         if (typeof initVisualization === 'function' && typeof drawAllTrees === 'function') {
             initVisualization();
@@ -5851,23 +5867,23 @@ function handleSampleOrderChange() {
 function handleGroupOrderChange() {
     const container = document.getElementById('group-checkboxes');
     if (!container) return;
-    
+
     const newOrder = [];
     const checkboxes = container.querySelectorAll('input[type="checkbox"]');
     checkboxes.forEach(cb => {
         newOrder.push(cb.value);
     });
-    
+
     // Update selectedGroups order
     if (typeof selectedGroups !== 'undefined') {
         const currentSelectedSet = new Set(selectedGroups);
         selectedGroups = newOrder.filter(g => currentSelectedSet.has(g));
-        
+
         // Also update activeSamples if in group mode
         if (typeof visualizationMode !== 'undefined' && visualizationMode === 'group') {
-             // activeSamples is usually local in initVisualization, but we update selectedGroups which is used there
+            // activeSamples is usually local in initVisualization, but we update selectedGroups which is used there
         }
-        
+
         if (typeof initVisualization === 'function' && typeof drawAllTrees === 'function') {
             initVisualization();
             drawAllTrees();
@@ -5881,7 +5897,7 @@ function handleGroupOrderChange() {
 function initModeSwitcher() {
     const select = document.getElementById('viz-mode');
     const buttons = document.querySelectorAll('.mode-btn');
-    
+
     if (!select || buttons.length === 0) return;
 
     // Function to update active state

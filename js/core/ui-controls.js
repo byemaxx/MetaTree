@@ -1495,6 +1495,7 @@ function initEventListeners() {
     const nodeOpacityInput = document.getElementById('node-opacity');
     if (nodeOpacityInput) nodeOpacityInput.addEventListener('input', handleNodeOpacityChange);
     document.getElementById('edge-width-multiplier').addEventListener('input', handleEdgeWidthMultiplierChange);
+    document.getElementById('min-edge-width').addEventListener('input', handleMinEdgeWidthChange);
     const edgeOpacityInput = document.getElementById('edge-opacity');
     if (edgeOpacityInput) edgeOpacityInput.addEventListener('input', handleEdgeOpacityChange);
 
@@ -2834,6 +2835,13 @@ function resetLabelsNodesToDefaults() {
             edgeWidthMultiplier = 1.0;
         }
 
+        const minEdgeW = document.getElementById('min-edge-width');
+        if (minEdgeW) {
+            minEdgeW.value = '0.5';
+            document.getElementById('min-edge-width-value').textContent = '0.5';
+            minEdgeWidth = 0.5;
+        }
+
         // 4.1) 边不透明度
         const edgeOp = document.getElementById('edge-opacity');
         if (edgeOp) {
@@ -2893,6 +2901,12 @@ function resetLabelsNodesToDefaults() {
 function handleEdgeWidthMultiplierChange(e) {
     edgeWidthMultiplier = parseFloat(e.target.value);
     document.getElementById('edge-width-value').textContent = edgeWidthMultiplier.toFixed(1) + 'x';
+    redrawCurrentViz();
+}
+
+function handleMinEdgeWidthChange(e) {
+    minEdgeWidth = parseFloat(e.target.value);
+    document.getElementById('min-edge-width-value').textContent = minEdgeWidth.toFixed(1);
     redrawCurrentViz();
 }
 
@@ -4493,7 +4507,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // 标签与节点
             'labels-panel', 'labels-toggle', 'label-threshold', 'label-threshold-value', 'label-font-size', 'label-font-size-value',
             'label-levels', 'labels-reset', 'node-size-multiplier', 'node-size-value', 'min-node-size', 'min-node-size-value',
-            'max-node-size', 'max-node-size-value', 'node-opacity', 'node-opacity-value', 'edge-width-multiplier', 'edge-width-value',
+            'max-node-size', 'max-node-size-value', 'node-opacity', 'node-opacity-value', 'edge-width-multiplier', 'edge-width-value', 'min-edge-width', 'min-edge-width-value',
             'edge-opacity', 'edge-opacity-value',
             // 新增：标签长度与溢出
             'label-max-length', 'label-overflow',

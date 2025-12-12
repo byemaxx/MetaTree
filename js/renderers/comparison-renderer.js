@@ -792,7 +792,7 @@
         .style('stroke-width', d => {
           const agg = d && d.target ? (d.target._agg || 0) : 0;
           const base = strokeScale(agg) * edgeWidthMultiplier * COMPARISON_EDGE_SCALE_BOOST;
-          return Math.max(0.5 * edgeWidthMultiplier, base);
+          return Math.max(minEdgeWidth * edgeWidthMultiplier, base);
         });
     }
 

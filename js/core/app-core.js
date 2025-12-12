@@ -70,6 +70,7 @@ let showLabels = true; // 是否显示标签（默认开启）
 let smartLabelCulling = true; // 是否启用智能标签碰撞检测
 let nodeSizeMultiplier = 1.0; // 节点大小倍数
 let edgeWidthMultiplier = 1.5; // 连线宽度倍数（全局轻微放大 1.5）
+let minEdgeWidth = 0.5; // 最小连线宽度
 let labelThreshold = 1.0; // 标签丰度阈值（0-1，0=不显示，1=显示全部）
 let labelFontSize = 9; // 标签字体大小（像素）
 let labelMaxLength = 15; // 标签最大长度（字符数）
@@ -2618,7 +2619,8 @@ function drawTree(sample, globalDomain) {
             .attr('stroke-width', d => {
                 const abundance = d.target.data.abundances[sample] || 0;
                 const t = transformAbundance(abundance);
-                return t === 0 ? 0.5 * edgeWidthMultiplier : strokeScale(Math.abs(t)) * edgeWidthMultiplier;
+                const w = t === 0 ? 0 : strokeScale(Math.abs(t));
+                return Math.max(minEdgeWidth, w) * edgeWidthMultiplier;
             })
             .attr('stroke-opacity', () => Math.max(0.05, Math.min(1, edgeOpacity)))
             .attr('fill', 'none')
@@ -3052,7 +3054,8 @@ function drawTree(sample, globalDomain) {
             .attr('stroke-width', d => {
                 const abundance = d.target.data.abundances[sample] || 0;
                 const t = transformAbundance(abundance);
-                return t === 0 ? 0.5 * edgeWidthMultiplier : strokeScale(Math.abs(t)) * edgeWidthMultiplier;
+                const w = t === 0 ? 0 : strokeScale(Math.abs(t));
+                return Math.max(minEdgeWidth, w) * edgeWidthMultiplier;
             })
             .attr('stroke-opacity', () => Math.max(0.05, Math.min(1, edgeOpacity)))
             .attr('fill', 'none')

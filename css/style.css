@@ -130,6 +130,7 @@ html, body {
 }
 
 body {
+    zoom: 0.9;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: var(--bg-body);
     min-height: 100vh;

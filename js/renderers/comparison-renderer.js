@@ -245,10 +245,9 @@
       if (pSort && pSort !== 'none') {
         root.sort((a, b) => {
           if (pSort === 'name') return d3.ascending(a.data.name, b.data.name);
-          if (typeof a.value === 'number' && typeof b.value === 'number') {
-            return pSort === 'value-asc' ? a.value - b.value : b.value - a.value;
-          }
-          return 0;
+          const valA = (typeof a._agg === 'number') ? a._agg : (a.value || 0);
+          const valB = (typeof b._agg === 'number') ? b._agg : (b.value || 0);
+          return pSort === 'value-asc' ? valA - valB : valB - valA;
         });
       }
 
@@ -339,10 +338,9 @@
     if (pSort && pSort !== 'none') {
       root.sort((a, b) => {
         if (pSort === 'name') return d3.ascending(a.data.name, b.data.name);
-        if (typeof a.value === 'number' && typeof b.value === 'number') {
-          return pSort === 'value-asc' ? a.value - b.value : b.value - a.value;
-        }
-        return 0;
+          const valA = (typeof a._agg === 'number') ? a._agg : (a.value || 0);
+          const valB = (typeof b._agg === 'number') ? b._agg : (b.value || 0);
+          return pSort === 'value-asc' ? valA - valB : valB - valA;
       });
     }
 

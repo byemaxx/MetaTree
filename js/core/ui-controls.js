@@ -976,6 +976,17 @@ function initDataParameterControls() {
         });
     }
 
+    // Duplicate ID Handling
+    const duplicateSelect = document.getElementById('duplicate-id-handling');
+    if (duplicateSelect) {
+        duplicateSelect.addEventListener('change', () => {
+            reparseCurrentData();
+            if (typeof showToast === 'function') {
+                showToast('Data re-parsed with new duplicate handling: ' + duplicateSelect.value);
+            }
+        });
+    }
+
     // Meta Delimiter Controls
     const metaSelect = document.getElementById('meta-delimiter-select');
     const metaCustomInput = document.getElementById('meta-delimiter-custom');
@@ -1717,7 +1728,9 @@ function loadDataFromText(text, options = {}) {
     // Explicit format check from options, or presence of mapping object
     if (options.format === 'long' || (options.mapping && typeof options.mapping === 'object')) {
         if (typeof parseLongFormatTSV === 'function') {
-            rawData = parseLongFormatTSV(text, null, options.mapping);
+            const duplicateHandlingSelect = document.getElementById('duplicate-id-handling');
+            const duplicateHandling = duplicateHandlingSelect ? duplicateHandlingSelect.value : 'sum';
+            rawData = parseLongFormatTSV(text, null, options.mapping, duplicateHandling);
         } else {
             // Fallback if not updated in time? Should be there.
             console.error('parseLongFormatTSV not found');
@@ -1725,7 +1738,9 @@ function loadDataFromText(text, options = {}) {
         }
     } else {
         // Default to Wide Table (standard matrix)
-        rawData = parseTSV(text);
+        const duplicateHandlingSelect = document.getElementById('duplicate-id-handling');
+        const duplicateHandling = duplicateHandlingSelect ? duplicateHandlingSelect.value : 'sum';
+        rawData = parseTSV(text, null, duplicateHandling);
     }
     treeData = buildHierarchy(rawData);
 

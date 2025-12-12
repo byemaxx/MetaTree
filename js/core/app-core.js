@@ -502,8 +502,134 @@ const COLOR_SCHEMES = {
 // 自定义颜色放在最后
 COLOR_SCHEMES['Custom'] = { name: 'Custom', interpolator: null };
 
+// Helper: Aggregate Wide Table Rows
+function aggregateWideTableRows(rows, headers, method) {
+    if (!rows.length || method === 'none') return rows;
+    const idCol = headers[0];
+    const sampleCols = headers.slice(1);
+    const map = new Map();
+    const counts = new Map(); // For mean
+
+    for (const row of rows) {
+        const id = (row[idCol] || '').trim();
+        if (!id) continue;
+
+        if (!map.has(id)) {
+            // Clone row to avoid mutating original if needed
+            // Convert values to numbers for aggregation
+            const newRow = { ...row };
+            sampleCols.forEach(col => {
+                newRow[col] = parseFloat(newRow[col]) || 0;
+            });
+            map.set(id, newRow);
+            if (method === 'mean') {
+                const countObj = {};
+                sampleCols.forEach(col => countObj[col] = 1);
+                counts.set(id, countObj);
+            }
+        } else {
+            if (method === 'first') continue;
+            
+            const existingRow = map.get(id);
+            const existingCounts = method === 'mean' ? counts.get(id) : null;
+
+            sampleCols.forEach(col => {
+                const val = parseFloat(row[col]) || 0;
+                const current = existingRow[col];
+
+                if (method === 'sum' || method === 'mean') {
+                    existingRow[col] = current + val;
+                    if (method === 'mean') existingCounts[col]++;
+                } else if (method === 'max') {
+                    existingRow[col] = Math.max(current, val);
+                } else if (method === 'min') {
+                    existingRow[col] = Math.min(current, val);
+                }
+            });
+        }
+    }
+
+    if (method === 'mean') {
+        for (const [id, row] of map) {
+            const countObj = counts.get(id);
+            sampleCols.forEach(col => {
+                if (countObj[col] > 1) row[col] /= countObj[col];
+            });
+        }
+    }
+
+    return Array.from(map.values());
+}
+
+// Helper: Aggregate Long Table Rows
+function aggregateLongTableRows(rows, mapping, method) {
+    if (!rows.length || method === 'none') return rows;
+    // mapping: { taxon, condition, value, pvalue... }
+    const keyFn = (r) => (r[mapping.taxon]||'').trim() + '@@@' + (r[mapping.condition]||'').trim();
+    const map = new Map();
+    const counts = new Map();
+
+    for (const row of rows) {
+        const key = keyFn(row);
+        if (!key) continue;
+
+        const val = parseFloat(row[mapping.value]) || 0;
+
+        if (!map.has(key)) {
+            const newRow = { ...row };
+            newRow[mapping.value] = val; // Ensure number
+            map.set(key, newRow);
+            if (method === 'mean') counts.set(key, 1);
+        } else {
+            if (method === 'first') continue;
+            
+            const existingRow = map.get(key);
+            const current = existingRow[mapping.value];
+
+            if (method === 'sum' || method === 'mean') {
+                existingRow[mapping.value] = current + val;
+                if (method === 'mean') counts.set(key, counts.get(key) + 1);
+                
+                // Handle stats (pvalue etc) - keep best?
+                // For now, let's keep the one with min pvalue if available
+                if (mapping.pvalue) {
+                    const pOld = parseFloat(existingRow[mapping.pvalue]);
+                    const pNew = parseFloat(row[mapping.pvalue]);
+                    if (!isNaN(pNew) && (isNaN(pOld) || pNew < pOld)) {
+                         existingRow[mapping.pvalue] = row[mapping.pvalue];
+                         if (mapping.qvalue) existingRow[mapping.qvalue] = row[mapping.qvalue];
+                    }
+                }
+
+            } else if (method === 'max') {
+                if (val > current) {
+                    existingRow[mapping.value] = val;
+                    // Update stats to match max value row
+                    if (mapping.pvalue) existingRow[mapping.pvalue] = row[mapping.pvalue];
+                    if (mapping.qvalue) existingRow[mapping.qvalue] = row[mapping.qvalue];
+                }
+            } else if (method === 'min') {
+                if (val < current) {
+                    existingRow[mapping.value] = val;
+                    if (mapping.pvalue) existingRow[mapping.pvalue] = row[mapping.pvalue];
+                    if (mapping.qvalue) existingRow[mapping.qvalue] = row[mapping.qvalue];
+                }
+            }
+        }
+    }
+
+    if (method === 'mean') {
+        for (const [key, row] of map) {
+            const n = counts.get(key);
+            if (n > 1) row[mapping.value] /= n;
+        }
+    }
+
+    return Array.from(map.values());
+}
+
 // ========== 数据解析模块 ==========
-function parseTSV(text, delimiter) {
+function parseTSV(text, delimiter, duplicateHandling = 'sum') {
     const separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
         : getDataFileDelimiter();
@@ -532,6 +658,19 @@ function parseTSV(text, delimiter) {
         }
     }
 
+    // Pre-process: Aggregate duplicate rows
+    if (duplicateHandling && duplicateHandling !== 'none') {
+         let originalCount = rows.length;
+        rows = aggregateWideTableRows(rows, headers, duplicateHandling);
+        let aggregatedCount = rows.length;
+        if (originalCount !== aggregatedCount) {
+            console.log(`[MetaTree] Aggregated wide table rows from ${originalCount} to ${aggregatedCount} using method: ${duplicateHandling}`);
+            // console.log('[MetaTree] Aggregated Rows:', rows);
+        }
+
+    }
+    if (typeof window !== 'undefined') window.currentParsedRows = rows;
+
     // 提取样本列（除了第一列的 Taxon）
     samples = headers.slice(1);
 
@@ -556,7 +695,7 @@ function parseTSV(text, delimiter) {
 }
 
 // 解析 Long Format TSV：使用用户指定的列映射
-function parseLongFormatTSV(text, delimiter, mapping) {
+function parseLongFormatTSV(text, delimiter, mapping, duplicateHandling = 'sum') {
     const separator = (typeof delimiter === 'string' && delimiter.length > 0)
         ? delimiter
         : getDataFileDelimiter();
@@ -597,6 +736,20 @@ function parseLongFormatTSV(text, delimiter, mapping) {
     const colValue = mapping.value;
     const colP = mapping.pvalue;
     const colQ = mapping.qvalue;
+
+    // Pre-process: Aggregate duplicate rows
+    if (duplicateHandling && duplicateHandling !== 'none') {
+        let originalCount = rows.length;
+        
+        console.log(`[MetaTree] Aggregating long table rows using method: ${duplicateHandling}. Original count: ${rows.length}`);
+        rows = aggregateLongTableRows(rows, mapping, duplicateHandling);
+        let aggregatedCount = rows.length;
+        if (originalCount !== aggregatedCount) {
+            console.log(`[MetaTree] Aggregated long table rows from ${originalCount} to ${aggregatedCount} using method: ${duplicateHandling}`);
+            // console.log('[MetaTree] Aggregated Rows:', rows);
+        }
+    }
+    if (typeof window !== 'undefined') window.currentParsedRows = rows;
 
     const byTaxon = new Map();
     const condSet = new Set();
@@ -1268,9 +1421,46 @@ function buildHierarchy(data) {
             if (item.stats) funcNode.stats = { ...item.stats };
         } else {
             // 没有功能层级，当前节点为叶
-            currentNode.isLeaf = true;
-            currentNode.abundances = { ...item.abundances };
-            if (item.stats) currentNode.stats = { ...item.stats };
+            // FIX: 检查是否已有子节点（即是否已作为中间节点出现过）
+            // e.g. 同时存在"r__Root;p__Firmicutes;c__Bacilli;o__Bacillales;f__Staphylococcaceae;g__Staphylococcus"
+            //  和 "r__Root;p__Firmicutes;c__Bacilli;o__Bacillales;f__Staphylococcaceae"
+            if (currentNode.children.length > 0) {
+                // 这是一个中间节点，不能标记为叶子，否则会丢失子节点数据
+                currentNode.isLeaf = false;
+                
+                // 如果当前行有非零数据，说明是混合层级数据（Mixed Rank）
+                // 创建一个 "Unclassified" 子节点来承载这些数据
+                const hasData = Object.values(item.abundances).some(v => v !== 0);
+                if (hasData) {
+                    const unclassifiedName = 'Unclassified'; // 或者 'Unclassified ' + currentNode.name
+                    let unclassifiedNode = currentNode.children.find(c => c.name === unclassifiedName);
+                    if (!unclassifiedNode) {
+                        unclassifiedNode = {
+                            name: unclassifiedName,
+                            fullName: currentNode.fullName + ' ' + unclassifiedName,
+                            rank: currentNode.rank,
+                            depth: (currentNode.depth || 0) + 1,
+                            children: [],
+                            abundances: { ...item.abundances },
+                            isLeaf: true,
+                            isUnclassified: true
+                        };
+                        if (item.stats) unclassifiedNode.stats = { ...item.stats };
+                        currentNode.children.push(unclassifiedNode);
+                    } else {
+                        // 累加（虽然理论上不应该有重复行，因为前面已经聚合过了）
+                        samples.forEach(s => {
+                            unclassifiedNode.abundances[s] = (unclassifiedNode.abundances[s] || 0) + (item.abundances[s] || 0);
+                        });
+                    }
+                }
+                // 如果全为0，则忽略该行数据，仅保留节点结构
+            } else {
+                // 确实是叶子节点
+                currentNode.isLeaf = true;
+                currentNode.abundances = { ...item.abundances };
+                if (item.stats) currentNode.stats = { ...item.stats };
+            }
         }
     });
 

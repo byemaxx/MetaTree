@@ -128,10 +128,10 @@
     justify-content: center;
     font-weight: 600;
     font-size: var(--font-base);
-    color: white;
+    color: var(--tree-panel-header-text, #ffffff);
     padding: var(--spacing-sm);
     text-align: center;
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, var(--tree-panel-header-start, var(--primary-color)) 0%, var(--tree-panel-header-end, var(--primary-dark)) 100%);
     border-radius: var(--radius-md);
     white-space: nowrap;
     overflow: hidden;

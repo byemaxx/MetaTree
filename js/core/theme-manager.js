@@ -17,7 +17,8 @@
         info: '#4fa8eb',
         danger: '#f76b6b',
         treeBackground: '#f5f7fa',
-        treeHeader: '#6b7fa8'
+        treeHeader: '#6b7fa8',
+        treeHeaderText: '#ffffff'
     };
 
     const BUILT_IN_THEME_CONFIGS = [
@@ -297,7 +298,8 @@
             surface: document.getElementById('custom-theme-surface'),
             text: document.getElementById('custom-theme-text'),
             treeBackground: document.getElementById('custom-theme-tree-bg'),
-            treeHeader: document.getElementById('custom-theme-tree-header')
+            treeHeader: document.getElementById('custom-theme-tree-header'),
+            treeHeaderText: document.getElementById('custom-theme-tree-header-text')
         };
         Object.entries(map).forEach(([key, input]) => {
             if (input && colors[key]) {
@@ -314,7 +316,8 @@
             surface: valueFromInput('custom-theme-surface'),
             text: valueFromInput('custom-theme-text'),
             treeBackground: valueFromInput('custom-theme-tree-bg'),
-            treeHeader: valueFromInput('custom-theme-tree-header')
+            treeHeader: valueFromInput('custom-theme-tree-header'),
+            treeHeaderText: valueFromInput('custom-theme-tree-header-text')
         };
     }
 
@@ -332,7 +335,8 @@
             surface: normalizeComputedValue(computed.getPropertyValue('--bg-white')),
             text: normalizeComputedValue(computed.getPropertyValue('--text-primary')),
             treeBackground: normalizeComputedValue(computed.getPropertyValue('--tree-panel-bg')),
-            treeHeader: normalizeComputedValue(computed.getPropertyValue('--tree-panel-header-start'))
+            treeHeader: normalizeComputedValue(computed.getPropertyValue('--tree-panel-header-start')),
+            treeHeaderText: normalizeComputedValue(computed.getPropertyValue('--tree-panel-header-text'))
         };
     }
 
@@ -426,6 +430,7 @@
         const danger = normalizeHex(colors.danger || DEFAULT_CUSTOM_COLORS.danger);
         const treeBackground = normalizeHex(colors.treeBackground || DEFAULT_CUSTOM_COLORS.treeBackground);
         const treeHeader = normalizeHex(colors.treeHeader || DEFAULT_CUSTOM_COLORS.treeHeader);
+        const treeHeaderText = normalizeHex(colors.treeHeaderText || DEFAULT_CUSTOM_COLORS.treeHeaderText || '#ffffff');
 
         const primaryDark = adjustColor(primary, -12);
         const primaryLight = adjustColor(primary, 18);
@@ -478,7 +483,7 @@
             '--tree-panel-hover-border': treeBorderHover,
             '--tree-panel-header-start': treeHeader,
             '--tree-panel-header-end': treeHeaderEnd,
-            '--tree-panel-header-text': '#ffffff',
+            '--tree-panel-header-text': treeHeaderText,
             '--shadow-primary': `0 4px 8px ${hexToRgba(primary, 0.18)}`,
             '--shadow-success': `0 4px 8px ${hexToRgba(success, 0.22)}`
         };

@@ -97,8 +97,9 @@
 }
 
 .matrix-cell.empty-cell {
-    background: var(--tree-panel-bg-alt, var(--bg-light));
-    border: 1px dashed var(--tree-panel-border, var(--border-color));
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 /* Hide the corner spacer cell so it doesn’t clash with theme backgrounds */
@@ -131,7 +132,7 @@
     color: var(--tree-panel-header-text, #ffffff);
     padding: var(--spacing-sm);
     text-align: center;
-    background: linear-gradient(135deg, var(--tree-panel-header-start, var(--primary-color)) 0%, var(--tree-panel-header-end, var(--primary-dark)) 100%);
+    background: var(--tree-panel-header-start, var(--primary-color));
     border-radius: var(--radius-md);
     white-space: nowrap;
     overflow: hidden;
@@ -153,7 +154,7 @@
     min-width: var(--matrix-label-size, 40px);
     max-width: var(--matrix-label-size, 40px);
     height: auto;
-    writing-mode: sideways-lr;
+    writing-mode: vertical-rl;
     text-orientation: mixed;
     transform-origin: center;
     display: flex;

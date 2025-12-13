@@ -1281,16 +1281,13 @@
     // Use the shared CSS variable for label size so row and column labels
     // are symmetric. Default to 40px when the variable isn't set.
     matrixGrid.style.gridTemplateColumns = colCount > 0
-      ? `var(--matrix-label-size, 40px) repeat(${colCount}, minmax(var(--matrix-cell-min-width, 150px), var(--matrix-cell-min-width, 150px)))`
+      ? `repeat(${colCount}, minmax(var(--matrix-cell-min-width, 150px), var(--matrix-cell-min-width, 150px))) var(--matrix-label-size, 40px)`
       : 'var(--matrix-label-size, 40px)';
     matrixGrid.style.gridTemplateRows = rowCount > 0
       ? `var(--matrix-label-size, 40px) repeat(${rowCount}, minmax(var(--matrix-cell-min-height, 150px), var(--matrix-cell-min-height, 150px)))`
       : 'var(--matrix-label-size, 40px)';
 
-    const cornerCell = createEmptyCell();
-    cornerCell.style.pointerEvents = 'none';
-    cornerCell.style.zIndex = '0';
-    matrixGrid.appendChild(cornerCell);
+    // Header Row: Column Labels then Corner Cell (Top-Right)
     for (let j = 1; j < n; j++) {
       const label = document.createElement('div');
       label.className = 'matrix-col-label';
@@ -1299,14 +1296,20 @@
       label.style.zIndex = '1';
       matrixGrid.appendChild(label);
     }
+    
+    const cornerCell = createEmptyCell();
+    cornerCell.style.pointerEvents = 'none';
+    cornerCell.style.zIndex = '0';
+    matrixGrid.appendChild(cornerCell);
 
+    // Data Rows: Cells then Row Label (Rightmost)
     for (let i = 0; i < n - 1; i++) {
       const rowLabel = document.createElement('div');
       rowLabel.className = 'matrix-row-label';
       rowLabel.textContent = treatments[i];
       rowLabel.title = treatments[i];
       rowLabel.style.zIndex = '1';
-      matrixGrid.appendChild(rowLabel);
+      // Note: rowLabel is appended AFTER the cells for this row
 
       for (let j = 1; j < n; j++) {
         if (i < j) {
@@ -1324,6 +1327,9 @@
           matrixGrid.appendChild(createEmptyCell());
         }
       }
+      
+      // Append row label at the end of the row
+      matrixGrid.appendChild(rowLabel);
     }
 
     matrixContainer.appendChild(matrixGrid);

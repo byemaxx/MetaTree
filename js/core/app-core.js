@@ -21,11 +21,11 @@ let tooltip;
 let abundanceTransform = 'none'; // 丰度转换方式: 'none', 'log', 'log2', 'sqrt', 'area' (默认改为 none)
 let colorScheme = 'Viridis'; // 颜色方案 - 改用高对比度的 Viridis
 let colorSchemeReversed = false; // 反转颜色映射
-let customColorStart = '#70706B'; // 自定义渐变起始颜色
-let customColorEnd = '#08519c'; // 自定义渐变结束颜色
-let customColorMid = '#ffd27f'; // 可选中间色
-// 默认自定义渐变：3 个停靠点（起点-中点-终点）
-let customColorStops = [customColorStart, customColorMid, customColorEnd];
+let customColorStart = '#01665e'; // 自定义渐变起始颜色 (BrBG Teal)
+let customColorEnd = '#8c510a'; // 自定义渐变结束颜色 (BrBG Brown)
+let customColorMid = '#f5f5f5'; // 可选中间色 (Light Grey)
+// 默认自定义渐变：5 个停靠点 (BrBG 风格)
+let customColorStops = ['#01665e', '#5ab4ac', '#f5f5f5', '#d8b365', '#8c510a'];
 let customZeroColor = null; // 自定义零值颜色（节点+连线）
 try { if (typeof window !== 'undefined') window.customZeroColor = customZeroColor; } catch (_) { }
 function isReverseColorsEnabled() {

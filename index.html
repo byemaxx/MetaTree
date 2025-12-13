@@ -777,15 +777,6 @@
                             <div class="control-group full-width" id="label-levels-group">
                                 <label>Levels (from leaf):</label>
                                 <div id="label-levels" class="flex flex-wrap gap-8"></div>
-                                <span class="help-icon"
-                                    title="Select levels by distance from leaf. 0=leaf (species/function), 1=genus, 2=family, etc. Applies to all modes.">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                                        <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                                        <circle cx="12" cy="8" r="1.2" fill="currentColor" />
-                                    </svg>
-                                </span>
                             </div>
                         </div>
                     </div>
@@ -992,27 +983,27 @@
                                 <div id="color-previews" class="flex gap-8 flex-wrap"></div>
                                 <div id="custom-color-controls" class="mt-8 gap-8 ai-center flex">
                                     <label class="fw-500">Custom gradient:</label>
-                                    <input type="color" id="custom-color-start" value="#70706B"
+                                    <input type="color" id="custom-color-start" value="#01665e"
                                         aria-label="Custom gradient start color">
                                     <span class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid" value="#ffd27f"
+                                    <input type="color" id="custom-color-mid" value="#5ab4ac"
                                         aria-label="Custom gradient midpoint color">
                                     <span id="custom-arrow-mid" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid2" value="#ffd27f"
+                                    <input type="color" id="custom-color-mid2" value="#f5f5f5"
                                         aria-label="Custom gradient midpoint color 2">
                                     <span id="custom-arrow-mid2" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-mid3" value="#ffd27f"
+                                    <input type="color" id="custom-color-mid3" value="#d8b365"
                                         aria-label="Custom gradient midpoint color 3">
                                     <span id="custom-arrow-mid3" class="mx-4">→</span>
-                                    <input type="color" id="custom-color-end" value="#08519c"
+                                    <input type="color" id="custom-color-end" value="#8c510a"
                                         aria-label="Custom gradient end color">
                                     <label class="ml-8 flex ai-center gap-6" for="custom-stops-count">
                                         <span class="fs-12">Stops</span>
                                         <select id="custom-stops-count">
                                             <option value="2">2</option>
-                                            <option value="3" selected>3</option>
+                                            <option value="3">3</option>
                                             <option value="4">4</option>
-                                            <option value="5">5</option>
+                                            <option value="5" selected>5</option>
                                         </select>
                                     </label>
                                     <button id="apply-custom-color" class="btn-secondary ml-8">Apply</button>

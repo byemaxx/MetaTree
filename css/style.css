@@ -1493,8 +1493,8 @@ button:disabled {
 }
 
 .color-preview .swatch {
-    width: 26px;
-    height: 14px;
+    width: 20px;
+    height: 10px;
 }
 
 .color-preview.selected .swatches {

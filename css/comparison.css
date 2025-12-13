@@ -48,13 +48,13 @@
 /* matrix label sizing: use a single CSS variable so row and column labels
    share the same size. Default to 40px (matches previous column label height). */
 :root {
-    --matrix-label-size: 40px;
+    --matrix-label-size: 36px;
 }
 
 @media (max-width: 1200px) {
     :root {
-        --matrix-cell-min-width: clamp(120px, 22vw, 200px);
-        --matrix-cell-min-height: clamp(130px, 24vw, 220px);
+        --matrix-cell-min-width: clamp(110px, 20vw, 180px);
+        --matrix-cell-min-height: clamp(120px, 22vw, 200px);
     }
 }
 

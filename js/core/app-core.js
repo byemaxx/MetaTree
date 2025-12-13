@@ -2668,7 +2668,7 @@ function drawTree(sample, globalDomain) {
             .attr('text-anchor', 'middle')
             .attr('dy', '0.35em')
             .text('+')
-            .style('font-size', '10px')
+            .style('font-size', '9px')
             .style('font-weight', '700')
             .attr('fill', '#2c3e50')
             .style('pointer-events', 'none');
@@ -2906,7 +2906,7 @@ function drawTree(sample, globalDomain) {
             .attr('text-anchor', 'middle')
             .attr('dy', '0.35em')
             .text('+')
-            .style('font-size', '10px')
+            .style('font-size', '9px')
             .style('font-weight', '700')
             .attr('fill', '#2c3e50')
             .style('pointer-events', 'none');
@@ -3097,7 +3097,7 @@ function drawTree(sample, globalDomain) {
             .attr('text-anchor', 'middle')
             .attr('dy', '0.35em')
             .text('+')
-            .style('font-size', '10px')
+            .style('font-size', '9px')
             .style('font-weight', '700')
             .attr('fill', '#2c3e50')
             .style('pointer-events', 'none');
@@ -3741,10 +3741,10 @@ function showTooltipContent(event, d, sample) {
         const pv = (Number.isFinite(statForSample.pvalue)) ? statForSample.pvalue : undefined;
         const qv = (Number.isFinite(statForSample.qvalue)) ? statForSample.qvalue : statForSample.padj !== undefined ? statForSample.padj : undefined;
         if (pv !== undefined) {
-            tooltipHtml += ` <span style="font-size:11px; color: #ddd;">p=${pv.toExponential ? pv.toExponential(2) : pv.toFixed ? pv.toFixed(3) : pv}</span>`;
+            tooltipHtml += ` <span style="font-size:10px; color: #ddd;">p=${pv.toExponential ? pv.toExponential(2) : pv.toFixed ? pv.toFixed(3) : pv}</span>`;
         }
         if (qv !== undefined) {
-            tooltipHtml += ` <span style="font-size:11px; color: #ddd;">padj=${qv.toExponential ? qv.toExponential(2) : qv.toFixed ? qv.toFixed(3) : qv}</span>`;
+            tooltipHtml += ` <span style="font-size:10px; color: #ddd;">padj=${qv.toExponential ? qv.toExponential(2) : qv.toFixed ? qv.toFixed(3) : qv}</span>`;
         }
     }
 
@@ -3797,7 +3797,7 @@ function showTooltipContent(event, d, sample) {
 
         // 如果有其他样本的丰度信息，添加到 tooltip
         if (otherAbundances.length > 0) {
-            tooltipHtml += '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Other samples:</strong></div>';
+            tooltipHtml += '<div style="margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(255,255,255,0.3);"><strong>Other samples:</strong></div>';
             // Determine whether the UI has "Filter by significance" for single-sample mode enabled
             const singleFilterChecked = !!(document.getElementById('single-show-significance')?.checked);
             otherAbundances.forEach(info => {
@@ -3814,7 +3814,7 @@ function showTooltipContent(event, d, sample) {
                         }
                     } catch (_) { /* ignore */ }
                 }
-                tooltipHtml += `<div style="font-size: 11px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}</div>`;
+                tooltipHtml += `<div style="font-size: 10px;"><strong>${info.sample}:</strong> ${info.abundance.toLocaleString(undefined, { maximumFractionDigits: 2 })}${suffix}</div>`;
             });
         }
     }

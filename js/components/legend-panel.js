@@ -140,17 +140,17 @@
 
   function createComparisonLegendSVG(svg, width, height, domain) {
     const scale = Math.min(1, Math.min(width, height) / 800);
-    const padding = 10 * scale;
-    const legendWidth = Math.max(140, 180 * scale);
-    const legendHeight = Math.max(46, 58 * scale);
+    const padding = 9 * scale;
+    const legendWidth = Math.max(125, 160 * scale);
+    const legendHeight = Math.max(42, 52 * scale);
     const barWidth = legendWidth - 2 * padding;
-    const barHeight = Math.max(10, 12 * scale);
-    const titleFont = Math.max(10, 12 * scale);
-    const labelFont = Math.max(9, 10 * scale);
+    const barHeight = Math.max(9, 11 * scale);
+    const titleFont = Math.max(9, 11 * scale);
+    const labelFont = Math.max(8, 9 * scale);
 
     const g = svg.append('g')
       .attr('class', 'comparison-legend-group')
-      .attr('transform', `translate(${12}, ${12})`);
+      .attr('transform', `translate(${11}, ${11})`);
 
     g.append('rect')
       .attr('width', legendWidth)

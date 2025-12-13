@@ -147,7 +147,7 @@
     };
 
     if (mode === 'packing') {
-      const padding = forMini ? 12 : 80;
+      const padding = forMini ? 10 : 70;
       const diameter = Math.max(10, Math.min(width, height) - padding);
       const offsetX = (width - diameter) / 2;
       const offsetY = (height - diameter) / 2;
@@ -196,7 +196,7 @@
         .sort((a, b) => (b.value || 0) - (a.value || 0));
       const pack = d3.pack()
         .size([diameter, diameter])
-        .padding(forMini ? 1.5 : 3);
+        .padding(forMini ? 1.3 : 2.5);
       const packed = pack(packRoot);
       layout.nodes = packed.descendants();
 
@@ -252,10 +252,10 @@
       }
 
       const margin = forMini
-        ? { top: 10, right: 40, bottom: 10, left: 40 }
+        ? { top: 9, right: 35, bottom: 9, left: 35 }
         : (isVertical
-          ? { top: 40, right: 40, bottom: 160, left: 40 }
-          : { top: 40, right: 160, bottom: 40, left: 160 }
+          ? { top: 35, right: 35, bottom: 140, left: 35 }
+          : { top: 35, right: 140, bottom: 35, left: 140 }
         );
 
       const layoutWidth = Math.max(10, width - margin.left - margin.right);

@@ -1061,11 +1061,11 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
 
     // Header with controls
     const controlsHtml = `
-        <div class="preview-toolbar flex ai-center justify-between mb-12" style="background:#f8f9fa; padding:12px; border-radius:6px; border:1px solid #edf2f7;">
+        <div class="preview-toolbar flex ai-center justify-between mb-12" style="background:#f8f9fa; padding:10px; border-radius:5px; border:1px solid #edf2f7;">
             <div class="flex ai-center gap-12">
-                <span class="fw-600 fs-13" style="color:#2d3748; background:#e2e8f0; padding:2px 6px; border-radius:4px;">${context === 'data' ? 'DATA FILE' : 'META FILE'}</span>
+                <span class="fw-600 fs-13" style="color:#2d3748; background:#e2e8f0; padding:2px 5px; border-radius:4px;">${context === 'data' ? 'DATA FILE' : 'META FILE'}</span>
                 <label for="preview-delim-select" class="fw-500 fs-13 ml-8">Preview Delimiter:</label>
-                <select id="preview-delim-select" style="padding:4px 8px; border-radius:4px; border:1px solid #cbd5e0; background:white;">
+                <select id="preview-delim-select" style="padding:3px 7px; border-radius:4px; border:1px solid #cbd5e0; background:white;">
                     <option value="\t" ${delimiter === '\t' ? 'selected' : ''}>Tab (\\t)</option>
                     <option value="," ${delimiter === ',' ? 'selected' : ''}>Comma (,)</option>
                     <option value=";" ${delimiter === ';' ? 'selected' : ''}>Semicolon (;)</option>
@@ -1079,12 +1079,12 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         </div>
     `;
 
-    let html = '<div style="overflow-x:auto; border:1px solid #e2e8f0; border-radius:6px;"><table class="info-sample-table" style="width:100%; font-size:12px; border-collapse: collapse;"><thead><tr style="background:#f5f7fa; border-bottom:1px solid #e2e8f0;">';
+    let html = '<div style="overflow-x:auto; border:1px solid #e2e8f0; border-radius:5px;"><table class="info-sample-table" style="width:100%; font-size:11px; border-collapse: collapse;"><thead><tr style="background:#f5f7fa; border-bottom:1px solid #e2e8f0;">';
 
     // Header (first non-empty line)
     const headers = (headerLine && typeof headerLine === 'string') ? headerLine.split(delimiter) : [];
     headers.forEach(h => {
-        html += `<th style="padding:8px 12px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${h}</th>`;
+        html += `<th style="padding:7px 10px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${h}</th>`;
     });
     html += '</tr></thead><tbody>';
 
@@ -1093,7 +1093,7 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         const cols = lines[i].split(delimiter);
         html += '<tr style="border-bottom:1px solid #eee;">';
         cols.forEach(c => {
-            html += `<td style="padding:6px 12px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
+            html += `<td style="padding:5px 10px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
         });
         html += '</tr>';
     }

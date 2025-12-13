@@ -50,20 +50,20 @@
     --tree-panel-header-text: #ffffff;
     
     /* 间距系统 */
-    --spacing-xs: 4px;
-    --spacing-sm: 8px;
-    --spacing-md: 12px;
-    --spacing-lg: 16px;
-    --spacing-xl: 20px;
-    --spacing-2xl: 24px;
-    --spacing-3xl: 30px;
+    --spacing-xs: 3px;
+    --spacing-sm: 7px;
+    --spacing-md: 10px;
+    --spacing-lg: 14px;
+    --spacing-xl: 18px;
+    --spacing-2xl: 21px;
+    --spacing-3xl: 26px;
     
     /* 圆角 - 更小更简洁 */
     --radius-sm: 3px;
-    --radius-md: 4px;
-    --radius-lg: 6px;
-    --radius-xl: 8px;
-    --radius-2xl: 10px;
+    --radius-md: 3px;
+    --radius-lg: 5px;
+    --radius-xl: 7px;
+    --radius-2xl: 9px;
     
     /* 阴影 - 更微妙 */
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -74,28 +74,28 @@
     --shadow-success: 0 4px 8px rgba(82, 199, 133, 0.22);
     
     /* 字体大小 */
-    --font-xs: 11px;
-    --font-sm: 12px;
-    --font-base: 13px;
-    --font-md: 14px;
-    --font-lg: 15px;
-    --font-xl: 16px;
-    --font-2xl: 18px;
-    --font-3xl: 20px;
-    --font-4xl: 24px;
-    --font-5xl: 28px;
+    --font-xs: 10px;
+    --font-sm: 11px;
+    --font-base: 12px;
+    --font-md: 12px;
+    --font-lg: 13px;
+    --font-xl: 14px;
+    --font-2xl: 15px;
+    --font-3xl: 16px;
+    --font-4xl: 18px;
+    --font-5xl: 22px;
     
     /* 过渡动画 */
     --transition-fast: all 0.2s ease;
     --transition-base: all 0.3s ease;
 
     /* Layout defaults */
-    --matrix-cell-min-width: clamp(120px, 18vw, 220px);
-    --matrix-cell-min-height: clamp(140px, 20vw, 240px);
+    --matrix-cell-min-width: clamp(110px, 16vw, 200px);
+    --matrix-cell-min-height: clamp(125px, 18vw, 215px);
 
     /* 新增：面板最小高度和 SVG 默认高度，方便统一调整 */
-    --panel-min-height: 420px;       /* 面板最小高度（可按需调整） */
-    --panel-svg-height: 520px;       /* SVG 面板默认高度（可按需调整） */
+    --panel-min-height: 380px;       /* 面板最小高度（可按需调整） */
+    --panel-svg-height: 470px;       /* SVG 面板默认高度（可按需调整） */
 }
 
 * {
@@ -106,8 +106,8 @@
 
 /* ========== 全局滚动条美化 ========== */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
 }
 
 ::-webkit-scrollbar-track {
@@ -116,7 +116,7 @@
 
 ::-webkit-scrollbar-thumb {
     background-color: rgba(152, 168, 196, 0.2);
-    border-radius: 5px;
+    border-radius: 4px;
     border: 2px solid transparent;
     background-clip: content-box;
 }
@@ -130,7 +130,7 @@ html, body {
 }
 
 body {
-    /* zoom: 0.9; */ /*! 使用缩放会影响所有元素的尺寸计算，改为调整字体大小 */
+    /* zoom: 0.9; */ /*! 使用缩放会影响所有元素的尺寸计算 */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: var(--bg-body);
     min-height: 100vh;
@@ -167,9 +167,9 @@ body.info-modal-open {
 }
 
 .sidebar {
-    width: 340px;
-    min-width: 240px;
-    max-width: 460px;
+    width: 300px;
+    min-width: 210px;
+    max-width: 410px;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xl);
@@ -184,16 +184,16 @@ body.info-modal-open {
     z-index: 2; /* ensure above main if any overlap occurs */
     resize: horizontal; /* allow users to widen the sidebar if needed */
     /* 在侧边栏局部覆盖字体变量，使侧边栏整体字体比全局小一号（每个字号都减 1px） */
-    --font-xs: 10px;
-    --font-sm: 11px;
-    --font-base: 12px;
-    --font-md: 13px;
-    --font-lg: 14px;
-    --font-xl: 15px;
-    --font-2xl: 17px;
-    --font-3xl: 19px;
-    --font-4xl: 23px;
-    --font-5xl: 27px;
+    --font-xs: 9px;
+    --font-sm: 10px;
+    --font-base: 11px;
+    --font-md: 12px;
+    --font-lg: 13px;
+    --font-xl: 14px;
+    --font-2xl: 15px;
+    --font-3xl: 17px;
+    --font-4xl: 20px;
+    --font-5xl: 24px;
 }
 
 .sidebar-toggle {
@@ -365,7 +365,7 @@ body.info-modal-open {
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-lg);
-    padding: var(--spacing-xl) 25px;
+    padding: var(--spacing-xl) 22px;
     background: var(--bg-white);
     border-bottom: none;
     align-items: flex-start;
@@ -397,7 +397,7 @@ body.info-modal-open {
 /* Ensure the toggle button in panel title aligns visually */
 .panel-title .toggle-btn {
     margin-left: var(--spacing-md);
-    padding: var(--spacing-sm) 10px;
+    padding: var(--spacing-sm) 9px;
 }
 
 /* Theme panel */
@@ -544,8 +544,8 @@ body.info-modal-open {
 }
 
 .custom-theme-field input[type="color"] {
-    width: 44px;
-    height: 28px;
+    width: 40px;
+    height: 25px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     background: var(--bg-white);
@@ -584,8 +584,8 @@ body.info-modal-open {
 }
 
 .zero-color-input {
-    width: 48px;
-    height: 30px;
+    width: 43px;
+    height: 27px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     cursor: pointer;
@@ -843,8 +843,8 @@ body.info-modal-open {
 }
 
 #custom-color-group input[type="color"] {
-    width: 50px;
-    height: 32px;
+    width: 45px;
+    height: 29px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     cursor: pointer;
@@ -928,8 +928,8 @@ input[type="range"] {
 }
 
 input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     cursor: pointer;
     margin-right: var(--spacing-sm);
     accent-color: var(--primary-color);
@@ -937,7 +937,7 @@ input[type="checkbox"] {
 
 input[type="number"],
 input[type="text"] {
-    padding: 8px 10px;
+    padding: 7px 9px;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     font-size: var(--font-base);
@@ -947,7 +947,7 @@ input[type="text"] {
 }
 
 input[type="number"] {
-    width: 60px;
+    width: 54px;
 }
 
 input[type="number"]:focus,

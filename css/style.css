@@ -2154,6 +2154,33 @@ button:disabled {
     background: var(--gradient-primary-hover);
 }
 
+/* ========== 选择分组/样本容器：半透明滚动条（覆盖上面的渐变样式） ========== */
+.group-display::-webkit-scrollbar-track,
+.sample-checkboxes::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.group-display::-webkit-scrollbar-thumb,
+.sample-checkboxes::-webkit-scrollbar-thumb {
+    background: rgba(152, 168, 196, 0.28);
+    border-radius: 4px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    transition: var(--transition-fast);
+}
+
+.group-display::-webkit-scrollbar-thumb:hover,
+.sample-checkboxes::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 127, 168, 0.75);
+}
+
+/* Firefox */
+.group-display,
+.sample-checkboxes {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(152, 168, 196, 0.35) transparent;
+}
+
 /* ========== 输入框焦点增强效果 ========== */
 input[type="range"]:focus,
 input[type="checkbox"]:focus {

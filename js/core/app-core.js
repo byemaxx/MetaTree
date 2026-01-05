@@ -343,10 +343,6 @@ function normalizeCustomZeroColor(value) {
     return /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
 }
 
-function hasCustomZeroColor() {
-    return !!normalizeCustomZeroColor(customZeroColor);
-}
-
 function resolveZeroColor(colorFn, fallback, signedDomain = dataHasNegatives) {
     const override = normalizeCustomZeroColor(customZeroColor);
     if (override) return override;
@@ -410,7 +406,6 @@ function getActiveComparisonStats() {
 
 // ========== Group模式变量 ==========
 let groupMetaColumn = '';           // 用于自动分组的meta列名
-let availableGroups = [];           // 从meta列提取的所有可用组名
 let selectedGroups = [];            // 用户选择的要可视化的组
 let groupedData = {};               // { groupName: aggregatedSampleData }
 let groupAggregation = 'mean';      // 分组聚合方式: 'mean' | 'median' | 'sum'（默认 mean）
@@ -1272,18 +1267,6 @@ function setCustomLabelColor(labelName, color) {
 }
 
 /**
- * 重置标签颜色为自动分配
- * @param {string} labelName - 标签名称
- */
-function resetLabelColor(labelName) {
-    customLabelColors.delete(labelName);
-    // 重新分配自动颜色
-    if (labelColorMap.has(labelName)) {
-        labelColorMap.delete(labelName);
-    }
-}
-
-/**
  * 重置所有标签颜色
  */
 function resetAllLabelColors() {
@@ -1592,26 +1575,6 @@ function aggregateDataByGroup(metaColumn, aggregation = 'mean') {
 /**
  * 更新group模式的可用组列表
  */
-function updateAvailableGroups() {
-    if (!groupMetaColumn || !metaData) {
-        availableGroups = [];
-        selectedGroups = [];
-        return;
-    }
-
-    // 提取唯一的group值
-    const groupSet = new Set();
-    samples.forEach(sample => {
-        const metaRow = metaData.bySample[sample];
-        if (metaRow && metaRow[groupMetaColumn]) {
-            groupSet.add(metaRow[groupMetaColumn]);
-        }
-    });
-
-    availableGroups = Array.from(groupSet).sort();
-    // 清空之前的选择
-    selectedGroups = [];
-}
 
 /**
  * 计算并缓存group数据
@@ -3852,53 +3815,8 @@ function updateStats(hierarchy, sample) {
 }
 
 // ========== 导出功能 ==========
-function exportSVG() {
-    const activeSamples = typeof getActiveSamples === 'function' ? getActiveSamples() : selectedSamples.slice();
-    if (activeSamples.length === 0) {
-        alert('Please select at least one sample');
-        return;
-    }
-    activeSamples.forEach(sample => {
-        const svgElement = document.querySelector(`#svg-container-${sample} svg`);
-        if (!svgElement) return;
 
-        const serializer = new XMLSerializer();
-        const svgString = serializer.serializeToString(svgElement);
-        const blob = new Blob([svgString], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `treemap_${sample}_${Date.now()}.svg`;
-        a.click();
-        URL.revokeObjectURL(url);
-    });
-}
-
-function exportPNG() {
-    const activeSamples = typeof getActiveSamples === 'function' ? getActiveSamples() : selectedSamples.slice();
-    if (activeSamples.length === 0) {
-        alert('Please select at least one sample');
-        return;
-    }
-    // Delegate to the centralized exporter which embeds DPI and supports 2x scaling.
-    activeSamples.forEach(sample => {
-        const containerId = `svg-container-${sample}`;
-        const prefix = `treemap_${sample}`;
-        if (typeof window !== 'undefined' && typeof window.exportPNGForContainer === 'function') {
-            // fire-and-forget; each export will trigger a download when ready
-            try { window.exportPNGForContainer(containerId, prefix).catch(err => console.warn('Export PNG failed', err)); }
-            catch (e) { /* ignore */ }
-        } else if (typeof exportPNGForContainer === 'function') {
-            try { exportPNGForContainer(containerId, prefix).catch(err => console.warn('Export PNG failed', err)); }
-            catch (e) { /* ignore */ }
-        } else {
-            console.warn('exportPNGForContainer is not available');
-        }
-    });
-}
-
-// Helpers: export a specific container by id (without #) with a filename prefix
-// moved to utils/export-tools.js (window.exportSVGForContainer, window.exportPNGForContainer)
+// Export helpers are provided by utils/export-tools.js (window.exportSVGForContainer, window.exportPNGForContainer)
 
 function ensurePanelsRenderedForExport() {
     try {

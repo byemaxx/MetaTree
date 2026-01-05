@@ -177,20 +177,6 @@ const manualColorDomainStore = (() => {
 
 try { if (typeof window !== 'undefined') window.manualColorDomainByMode = manualColorDomainStore; } catch (_) { }
 
-function getComparisonStoreForUI() {
-    if (typeof getComparisonRendererStore === 'function') {
-        try {
-            const store = getComparisonRendererStore();
-            if (store && typeof store.getSvg === 'function') {
-                return store;
-            }
-        } catch (err) {
-            console.warn('Comparison renderer store unavailable in UI', err);
-        }
-    }
-    return null;
-}
-
 function getModeColorKey(mode) {
     const modeName = mode
         || ((typeof window !== 'undefined' && window.visualizationMode) ? window.visualizationMode
@@ -1802,7 +1788,6 @@ function loadDataFromText(text, options = {}) {
     if (typeof text !== 'string' || text.trim().length === 0) {
         throw new Error('Empty data content');
     }
-    const firstLine = text.split(/\r?\n/)[0] || '';
 
     // Explicit format check from options, or presence of mapping object
     if (options.format === 'long' || (options.mapping && typeof options.mapping === 'object')) {
@@ -2364,32 +2349,6 @@ function handleLayoutChange(e) {
     }
 }
 
-function handleResetZoom() {
-    if (visualizationMode === 'single') {
-        selectedSamples.forEach(sample => {
-            if (svgs[sample] && zooms[sample]) {
-                svgs[sample].transition().duration(750).call(
-                    zooms[sample].transform,
-                    d3.zoomIdentity
-                );
-            }
-        });
-    } else if (visualizationMode === 'comparison' || visualizationMode === 'matrix') {
-        // 比较模式重置缩放
-        const store = getComparisonStoreForUI();
-        if (store && typeof store.getSvg === 'function' && typeof store.getZoom === 'function') {
-            const svgRef = store.getSvg();
-            const zoomRef = store.getZoom();
-            if (svgRef && zoomRef) {
-                svgRef.transition().duration(750).call(
-                    zoomRef.transform,
-                    d3.zoomIdentity
-                );
-            }
-        }
-    }
-}
-
 function handleAbundanceTransformChange(e) {
     abundanceTransform = e.target.value;
     if (selectedSamples.length > 0) {
@@ -2585,18 +2544,6 @@ function renderColorPreviews() {
     if (customControls) {
         customControls.style.display = (colorSchemeCategory === 'custom') ? 'flex' : 'none';
     }
-}
-
-function handleCustomColorChange(e) {
-    // 更新全局自定义颜色变量
-    if (e.target.id === 'custom-color-start') {
-        customColorStart = e.target.value;
-    } else if (e.target.id === 'custom-color-end') {
-        customColorEnd = e.target.value;
-    }
-
-    // 自定义颜色变化后按当前模式重绘（而非强制单样本）
-    if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
 }
 
 function handleLabelThresholdChange(e) {
@@ -3456,32 +3403,6 @@ function updateGroupSelectors() {
         select2.value = currentGroup2;
     } else if (filteredNames.length > 1) {
         select2.value = filteredNames[1]; // 默认选择第二个组
-    }
-}
-
-function updateMatrixGroupCheckboxes(groupNames) {
-    const container = document.getElementById('matrix-group-checkboxes');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    if (groupNames.length === 0) {
-        container.innerHTML = '<em style="color: #999; font-size: 12px;">No groups defined</em>';
-        return;
-    }
-    // groupNames 已经过滤为“仍有样本”的组
-    let added = 0;
-    groupNames.forEach(groupName => {
-        const label = document.createElement('label');
-        label.innerHTML = `
-            <input type="checkbox" class="matrix-group-checkbox" value="${groupName}" checked>
-            <span>${groupName}</span>
-        `;
-        container.appendChild(label);
-        added++;
-    });
-    if (added === 0) {
-        container.innerHTML = '<em style="color: #999; font-size: 12px;">No groups available after current filter</em>';
     }
 }
 

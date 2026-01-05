@@ -326,30 +326,6 @@
         return el ? el.value : null;
     }
 
-    function grabComputedColors() {
-        const computed = window.getComputedStyle(document.documentElement);
-        return {
-            primary: normalizeComputedValue(computed.getPropertyValue('--primary-color')),
-            secondary: normalizeComputedValue(computed.getPropertyValue('--secondary-color')),
-            background: normalizeComputedValue(computed.getPropertyValue('--bg-body')),
-            surface: normalizeComputedValue(computed.getPropertyValue('--bg-white')),
-            text: normalizeComputedValue(computed.getPropertyValue('--text-primary')),
-            treeBackground: normalizeComputedValue(computed.getPropertyValue('--tree-panel-bg')),
-            treeHeader: normalizeComputedValue(computed.getPropertyValue('--tree-panel-header-start')),
-            treeHeaderText: normalizeComputedValue(computed.getPropertyValue('--tree-panel-header-text'))
-        };
-    }
-
-    function normalizeComputedValue(value) {
-        if (!value) return null;
-        const trimmed = value.trim();
-        if (!trimmed) return null;
-        if (trimmed.startsWith('rgb')) {
-            return rgbStringToHex(trimmed);
-        }
-        return normalizeHex(trimmed);
-    }
-
     function loadThemePreference() {
         try {
             const raw = window.localStorage.getItem(THEME_STORAGE_KEY);
@@ -512,16 +488,6 @@
         });
     }
 
-    function rgbStringToHex(value) {
-        const match = value.replace(/\s+/g, '').match(/rgba?\((\d+),(\d+),(\d+)/i);
-        if (!match) return '#000000';
-        const [, r, g, b] = match;
-        return rgbToHex({
-            r: clamp(parseInt(r, 10), 0, 255),
-            g: clamp(parseInt(g, 10), 0, 255),
-            b: clamp(parseInt(b, 10), 0, 255)
-        });
-    }
 
     function hexToRgb(hex) {
         const normalized = normalizeHex(hex);

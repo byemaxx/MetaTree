@@ -265,15 +265,6 @@
     box-shadow: var(--shadow-inner, inset 0 1px 3px rgba(0, 0, 0, 0.08));
 }
 
-/* ========== 分组定义界面 ========== */
-.group-definition-container {
-    margin: var(--spacing-lg) 0;
-    padding: var(--spacing-lg);
-    background: var(--bg-white);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-color);
-}
-
 .group-item {
     display: flex;
     align-items: center;
@@ -307,63 +298,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-.group-actions {
-    display: flex;
-    gap: 5px;
-}
-
-.btn-group-action {
-    padding: var(--spacing-xs) var(--spacing-md);
-    font-size: var(--font-sm);
-    border-radius: var(--radius-sm);
-    border: none;
-    cursor: pointer;
-    transition: var(--transition-fast);
-    font-weight: 600;
-}
-
-.btn-group-edit {
-    background: var(--primary-color);
-    color: white;
-}
-
-.btn-group-edit:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-.btn-group-delete {
-    background: var(--danger-color);
-    color: white;
-}
-
-.btn-group-delete:hover {
-    background: var(--danger-dark);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-.btn-add-group {
-    width: 100%;
-    padding: 10px;
-    margin-top: 10px;
-    background: var(--success-color);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition-fast);
-}
-
-.btn-add-group:hover {
-    background: var(--success-dark);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-success);
-}
-
 
 /* ========== 分组定义模态框 ========== */
 .group-modal {

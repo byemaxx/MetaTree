@@ -299,6 +299,32 @@
     white-space: nowrap;
 }
 
+.group-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-group-action {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-sm);
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    font-weight: 600;
+}
+
+.btn-group-delete {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-group-delete:hover {
+    background: var(--danger-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
 /* ========== 分组定义模态框 ========== */
 .group-modal {
     display: none;

@@ -1608,7 +1608,6 @@
     // Note: annotateComparisonAggregates was already called above
     const miniNodes = getVisibleComparisonNodes(layoutConfig.nodes, filterMini);
     const miniNodeSet = new Set(miniNodes);
-    const miniLinks = getVisibleComparisonLinks(layoutConfig.links, miniNodeSet, filterMini);
     if (layoutConfig.mode === 'packing') {
       g.selectAll('.link').remove();
     } else {

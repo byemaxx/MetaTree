@@ -56,7 +56,6 @@
   const gradId = 'shared-legend-gradient';
   if (isDiverging) {
         const minLabel = legendDomain && legendDomain[0] != null ? fmt(legendDomain[0]) : '-1';
-        const midLabel = '0';
         const maxLabel = legendDomain && legendDomain[2] != null ? fmt(legendDomain[2]) : '1';
         wrapper.innerHTML = `
           <div class="legend-title">Color scale</div>

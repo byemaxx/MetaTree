@@ -643,27 +643,6 @@ function getAllGroups() {
 /**
  * 自动分组 - 根据样本名称前缀
  */
-function autoGroupBySamplePrefix(samples, separator = '_') {
-    const groups = {};
-    
-    samples.forEach(sample => {
-        const prefix = sample.split(separator)[0];
-        if (!groups[prefix]) {
-            groups[prefix] = [];
-        }
-        groups[prefix].push(sample);
-    });
-    
-    // 只保留有多个样本的组
-    Object.keys(groups).forEach(key => {
-        if (groups[key].length >= 2) {
-            groupDefinitions[key] = groups[key];
-        }
-    });
-    
-    return groupDefinitions;
-}
-
 /**
  * 根据 meta 列自动分组
  * @param {Object} meta - parseMetaTSV 生成的 metaData 对象

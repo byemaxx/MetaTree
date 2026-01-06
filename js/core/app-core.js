@@ -232,7 +232,8 @@ function getResponsiveTreePanelSize(container, options = {}) {
 
     const width = container.clientWidth || container.offsetWidth || 0;
     const autoHeight = options.autoHeight !== false;
-    const applyHeight = options.applyHeight !== false && autoHeight;
+    // Default: do NOT write inline width/height locks; callers must opt-in.
+    const applyHeight = options.applyHeight === true && autoHeight;
     const docStyle = (typeof window !== 'undefined' && window.getComputedStyle)
         ? window.getComputedStyle(document.documentElement)
         : null;
@@ -252,11 +253,10 @@ function getResponsiveTreePanelSize(container, options = {}) {
     if (!(configuredWidth > 0)) configuredWidth = 600;
 
     // Apply explicit width lock to the container so that its rendered width
-    // remains the configured panel width regardless of parent resizing
-    // (e.g., when sidebar is hidden or resized). This can be disabled by
-    // passing `options.lockWidth = false` when caller prefers responsive width.
+    // remains the configured panel width regardless of parent resizing.
+    // Default is disabled; enable by passing `options.lockWidth = true`.
     try {
-        if (configuredWidth > 0 && options.lockWidth !== false) {
+        if (configuredWidth > 0 && options.lockWidth === true) {
             container.style.minWidth = `${configuredWidth}px`;
             container.style.maxWidth = `${configuredWidth}px`;
             container.style.width = `${configuredWidth}px`;

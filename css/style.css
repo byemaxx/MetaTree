@@ -1233,7 +1233,7 @@ button:disabled {
         auto-fit,
         minmax(
             min(var(--panel-min-width, 600px), 100%),
-            1fr
+            var(--panel-min-width, 600px)
         )
     );
     gap: var(--panel-grid-gap);

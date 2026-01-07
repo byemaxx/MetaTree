@@ -564,7 +564,7 @@
     // empty margins (because the matrix wrapper may be centered within a wide
     // container). Prefer exporting the matrix content container directly.
     let exportEl = vizContainer;
-    let widthStrategy = undefined;
+    let widthStrategy;
     try {
       let mode = null;
       if (typeof window !== 'undefined' && window.visualizationMode) mode = window.visualizationMode;

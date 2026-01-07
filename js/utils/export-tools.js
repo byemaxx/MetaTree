@@ -344,8 +344,9 @@
     // - default: include rect.width so exports preserve on-screen container sizing
     // - shrink-to-content: prefer intrinsic content width to avoid exporting large
     //   empty margins (common for centered layouts like the comparison matrix)
+    const shrinkToContent = !!(opts && opts.widthStrategy === 'shrink-to-content');
     let baseWidth;
-    if (opts && opts.widthStrategy === 'shrink-to-content') {
+    if (shrinkToContent) {
       baseWidth = Math.max(el.scrollWidth || 0, el.offsetWidth || 0, 1);
       if (!baseWidth || !Number.isFinite(baseWidth)) baseWidth = Math.max(rect.width || 0, 1);
     } else {
@@ -353,7 +354,6 @@
     }
 
     const clone = el.cloneNode(true);
-    const shrinkToContent = !!(opts && opts.widthStrategy === 'shrink-to-content');
     clone.style.margin = '0';
     clone.style.boxSizing = 'border-box';
     clone.style.overflow = 'visible';

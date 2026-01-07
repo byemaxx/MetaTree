@@ -1394,8 +1394,6 @@
       }
     });
     resizeObserver.observe(matrixContainer);
-    // Also observe body to react to window resize (indirectly via reflow)
-    resizeObserver.observe(document.body);
 
     if (typeof window.requestLayoutPanelContextSync === 'function') {
       try { window.requestLayoutPanelContextSync(); } catch (_) { }

@@ -346,8 +346,14 @@
     //   empty margins (common for centered layouts like the comparison matrix)
     let baseWidth;
     if (opts && opts.widthStrategy === 'shrink-to-content') {
-      baseWidth = Math.max(el.scrollWidth || 0, el.offsetWidth || 0, 1);
-      if (!baseWidth || !Number.isFinite(baseWidth)) baseWidth = Math.max(rect.width || 0, 1);
+      // Prefer intrinsic content width (scrollWidth/offsetWidth) over bounding rect
+      baseWidth = Math.max(el.scrollWidth || 0, el.offsetWidth || 0);
+      // If both intrinsic measurements are 0 or invalid, try rect.width
+      if (!baseWidth || !Number.isFinite(baseWidth)) {
+        baseWidth = rect.width || 0;
+      }
+      // Absolute minimum fallback to prevent 0-width exports
+      baseWidth = Math.max(baseWidth, 1);
     } else {
       baseWidth = Math.max(rect.width || 0, el.scrollWidth || 0, el.offsetWidth || 0, 1);
     }

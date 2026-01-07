@@ -15,6 +15,12 @@
 
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
   const PACK_EPSILON = 1e-6;
+  
+  // Matrix alignment threshold: when sidebar is visible and the matrix fills less than
+  // this percentage of available width, left-align it to avoid a large empty band on the left.
+  // Value of 0.92 (92%) provides a good balance - matrices that are reasonably wide stay
+  // centered, while narrow matrices align left to improve visual appearance.
+  const MATRIX_FILL_RATIO_THRESHOLD = 0.92;
 
   function resolveReverseColorsFlag() {
     if (typeof colorSchemeReversed !== 'undefined') return !!colorSchemeReversed;
@@ -476,6 +482,13 @@
     }
 
     if (!vizContainer) return;
+    
+    // Clean up any existing ResizeObserver before clearing content
+    const cleanupStore = resolveComparisonRendererStore();
+    if (cleanupStore && typeof cleanupStore.disconnectResizeObserver === 'function') {
+      try { cleanupStore.disconnectResizeObserver(); } catch (_) { }
+    }
+    
     vizContainer.innerHTML = '';
 
     // 包裹面板与顶部栏（仅普通/内联模式使用）
@@ -1385,7 +1398,7 @@
       const fillRatio = availableWidth > 0 ? (containerWidth / availableWidth) : 1;
       const shouldAlignLeft = sidebarCollapsed
         ? (containerWidth > availableWidth)
-        : ((containerWidth > availableWidth) || (fillRatio < 0.92));
+        : ((containerWidth > availableWidth) || (fillRatio < MATRIX_FILL_RATIO_THRESHOLD));
 
       if (shouldAlignLeft) {
         matrixWrapper.classList.add('align-left');
@@ -1394,8 +1407,9 @@
       }
     });
     resizeObserver.observe(matrixContainer);
-    // Also observe body to react to window resize (indirectly via reflow)
-    resizeObserver.observe(document.body);
+    
+    // Store the observer reference for cleanup when view changes
+    matrixStore.setResizeObserver(resizeObserver);
 
     if (typeof window.requestLayoutPanelContextSync === 'function') {
       try { window.requestLayoutPanelContextSync(); } catch (_) { }
@@ -1540,6 +1554,13 @@
       : document.getElementById('viz-container');
 
     if (!vizContainer) return;
+    
+    // Clean up any existing ResizeObserver before clearing content
+    const cleanupStore = resolveComparisonRendererStore();
+    if (cleanupStore && typeof cleanupStore.disconnectResizeObserver === 'function') {
+      try { cleanupStore.disconnectResizeObserver(); } catch (_) { }
+    }
+    
     vizContainer.innerHTML = '';
 
     // Remember current focused item so redraws in matrix mode keep this view

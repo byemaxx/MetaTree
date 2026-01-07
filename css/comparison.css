@@ -121,7 +121,7 @@
 }
 
 /* Hide the corner spacer cell so it doesn’t clash with theme backgrounds */
-.comparison-matrix-grid>.matrix-cell.empty-cell:first-child {
+.comparison-matrix-grid > .matrix-cell.empty-cell:first-child {
     background: transparent;
     border: none;
     box-shadow: none;

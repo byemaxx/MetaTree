@@ -15,6 +15,12 @@
 
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
   const PACK_EPSILON = 1e-6;
+  
+  // Matrix alignment threshold: when sidebar is visible and the matrix fills less than
+  // this percentage of available width, left-align it to avoid a large empty band on the left.
+  // Value of 0.92 (92%) provides a good balance - matrices that are reasonably wide stay
+  // centered, while narrow matrices align left to improve visual appearance.
+  const MATRIX_FILL_RATIO_THRESHOLD = 0.92;
 
   function resolveReverseColorsFlag() {
     if (typeof colorSchemeReversed !== 'undefined') return !!colorSchemeReversed;
@@ -1385,7 +1391,7 @@
       const fillRatio = availableWidth > 0 ? (containerWidth / availableWidth) : 1;
       const shouldAlignLeft = sidebarCollapsed
         ? (containerWidth > availableWidth)
-        : ((containerWidth > availableWidth) || (fillRatio < 0.92));
+        : ((containerWidth > availableWidth) || (fillRatio < MATRIX_FILL_RATIO_THRESHOLD));
 
       if (shouldAlignLeft) {
         matrixWrapper.classList.add('align-left');

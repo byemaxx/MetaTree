@@ -476,6 +476,13 @@
     }
 
     if (!vizContainer) return;
+    
+    // Clean up any existing ResizeObserver before clearing content
+    const cleanupStore = resolveComparisonRendererStore();
+    if (cleanupStore && typeof cleanupStore.disconnectResizeObserver === 'function') {
+      try { cleanupStore.disconnectResizeObserver(); } catch (_) { }
+    }
+    
     vizContainer.innerHTML = '';
 
     // 包裹面板与顶部栏（仅普通/内联模式使用）
@@ -1394,6 +1401,9 @@
       }
     });
     resizeObserver.observe(matrixContainer);
+    
+    // Store the observer reference for cleanup when view changes
+    matrixStore.setResizeObserver(resizeObserver);
 
     if (typeof window.requestLayoutPanelContextSync === 'function') {
       try { window.requestLayoutPanelContextSync(); } catch (_) { }
@@ -1538,6 +1548,13 @@
       : document.getElementById('viz-container');
 
     if (!vizContainer) return;
+    
+    // Clean up any existing ResizeObserver before clearing content
+    const cleanupStore = resolveComparisonRendererStore();
+    if (cleanupStore && typeof cleanupStore.disconnectResizeObserver === 'function') {
+      try { cleanupStore.disconnectResizeObserver(); } catch (_) { }
+    }
+    
     vizContainer.innerHTML = '';
 
     // Remember current focused item so redraws in matrix mode keep this view

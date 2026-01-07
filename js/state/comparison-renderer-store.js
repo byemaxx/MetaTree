@@ -7,6 +7,7 @@
         let svg = null;
         let zoom = null;
         let stats = null;
+        let resizeObserver = null;
 
         return {
             getSvg() {
@@ -25,12 +26,30 @@
                 svg = null;
                 zoom = null;
                 stats = null;
+                this.disconnectResizeObserver();
             },
             getStats() {
                 return stats;
             },
             setStats(value) {
                 stats = value || null;
+            },
+            getResizeObserver() {
+                return resizeObserver;
+            },
+            setResizeObserver(value) {
+                this.disconnectResizeObserver();
+                resizeObserver = value || null;
+            },
+            disconnectResizeObserver() {
+                if (resizeObserver) {
+                    try {
+                        resizeObserver.disconnect();
+                    } catch (e) {
+                        console.warn('Failed to disconnect ResizeObserver:', e);
+                    }
+                    resizeObserver = null;
+                }
             }
         };
     })();

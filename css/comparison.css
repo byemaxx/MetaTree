@@ -5,19 +5,35 @@
  */
 
 /* ========== 比较矩阵容器 ========== */
+/* Wrapper to handle full-width layout */
+.comparison-matrix-wrapper {
+    width: calc(100% + 2 * var(--spacing-xl));
+    margin: 0 calc(0px - var(--spacing-xl));
+    display: flex;
+    flex-direction: column;
+    /* Default: Center the matrix when it fits in the screen */
+    align-items: center;
+}
+
+/* When the matrix overflows the screen, JS adds this class to switch alignment */
+.comparison-matrix-wrapper.align-left {
+    align-items: flex-start;
+}
+
 .comparison-matrix-container {
-    /* Allow the matrix to scroll horizontally on smaller screens while
-       still centering the content when space permits. */
-    width: 100%;
-    max-width: 100%;
-    margin: var(--spacing-lg) auto;
+    /* Container fits its content */
+    width: fit-content;
+    max-width: none;
+    /* Margin for vertical spacing only; horizontal alignment handled by wrapper */
+    margin: var(--spacing-lg) 0;
+
     padding: clamp(var(--spacing-lg), 3vw, var(--spacing-xl));
     background: var(--bg-light);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
+    box-sizing: border-box;
+    overflow-x: visible;
 }
 
 .matrix-title {
@@ -30,14 +46,16 @@
     background: var(--bg-white);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
+    /* Ensure title limits width to container */
+    max-width: 100%;
 }
 
 /* ========== 矩阵网格 ========== */
 .comparison-matrix-grid {
     display: grid;
     gap: var(--spacing-sm);
-    /* remove large vertical margins that can cause visual overflow; center horizontally */
-    margin: 0 auto;
+    /* Margin no longer needed for centering, handled by wrapper flex */
+    margin: 0;
     background: var(--bg-white);
     padding: var(--spacing-md);
     border-radius: var(--radius-lg);
@@ -103,7 +121,7 @@
 }
 
 /* Hide the corner spacer cell so it doesn’t clash with theme backgrounds */
-.comparison-matrix-grid > .matrix-cell.empty-cell:first-child {
+.comparison-matrix-grid>.matrix-cell.empty-cell:first-child {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -143,7 +161,8 @@
 .matrix-col-label {
     height: var(--matrix-label-size, 40px);
     line-height: var(--matrix-label-size, 40px);
-    writing-mode: horizontal-tb; /* keep column labels horizontal */
+    writing-mode: horizontal-tb;
+    /* keep column labels horizontal */
 }
 
 /* Row labels: make them match the column label size (width) and display
@@ -341,8 +360,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .group-modal-content {
@@ -364,6 +388,7 @@
         transform: translateY(-50px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -503,11 +528,11 @@
     .comparison-matrix-grid {
         gap: var(--spacing-sm);
     }
-    
+
     .matrix-cell {
         min-height: 150px;
     }
-    
+
     .matrix-row-label,
     .matrix-col-label {
         font-size: var(--font-xs);
@@ -519,26 +544,26 @@
     .comparison-matrix-container {
         padding: 10px;
     }
-    
+
     .matrix-title {
         font-size: var(--font-xl);
     }
-    
+
     .comparison-matrix-grid {
         gap: var(--spacing-xs);
         padding: 10px;
     }
-    
+
     .matrix-cell {
         min-height: 120px;
     }
-    
+
     .group-modal-content {
         width: 95%;
         margin: 10% auto;
         padding: var(--spacing-xl);
     }
-    
+
     .group-modal-header {
         font-size: var(--font-2xl);
     }

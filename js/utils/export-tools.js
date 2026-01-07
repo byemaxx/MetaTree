@@ -340,13 +340,26 @@
     } catch (_) {}
 
     const rect = el.getBoundingClientRect();
-    const baseWidth = Math.max(rect.width || 0, el.scrollWidth || 0, el.offsetWidth || 0, 1);
+    // Width strategy:
+    // - default: include rect.width so exports preserve on-screen container sizing
+    // - shrink-to-content: prefer intrinsic content width to avoid exporting large
+    //   empty margins (common for centered layouts like the comparison matrix)
+    let baseWidth;
+    if (opts && opts.widthStrategy === 'shrink-to-content') {
+      baseWidth = Math.max(el.scrollWidth || 0, el.offsetWidth || 0, 1);
+      if (!baseWidth || !Number.isFinite(baseWidth)) baseWidth = Math.max(rect.width || 0, 1);
+    } else {
+      baseWidth = Math.max(rect.width || 0, el.scrollWidth || 0, el.offsetWidth || 0, 1);
+    }
 
     const clone = el.cloneNode(true);
+    const shrinkToContent = !!(opts && opts.widthStrategy === 'shrink-to-content');
     clone.style.margin = '0';
     clone.style.boxSizing = 'border-box';
     clone.style.overflow = 'visible';
-    clone.style.width = baseWidth + 'px';
+    // Default snapshot keeps the on-screen container width; for shrink-to-content
+    // (matrix exports) we let the element wrap to its intrinsic content width.
+    clone.style.width = shrinkToContent ? 'fit-content' : (baseWidth + 'px');
     clone.style.maxWidth = 'none';
     clone.style.maxHeight = 'none';
 
@@ -375,8 +388,9 @@
     wrapper.style.margin = '0';
     wrapper.style.padding = '0';
     wrapper.style.boxSizing = 'border-box';
-    wrapper.style.display = 'block';
-    wrapper.style.width = baseWidth + 'px';
+    // Use inline-block when shrink-wrapping so bounding rect reflects content.
+    wrapper.style.display = shrinkToContent ? 'inline-block' : 'block';
+    wrapper.style.width = shrinkToContent ? 'fit-content' : (baseWidth + 'px');
     wrapper.style.maxWidth = 'none';
     wrapper.style.overflow = 'visible';
 
@@ -426,8 +440,14 @@
     wrapper.offsetHeight;
 
     const wrapperRect = wrapper.getBoundingClientRect();
-    const contentWidth = Math.max(wrapper.scrollWidth || 0, wrapperRect.width || 0, baseWidth, 1);
-    const contentHeight = Math.max(wrapper.scrollHeight || 0, wrapperRect.height || 0, 1);
+    // For shrink-to-content: rely on measured bounding box (scrollWidth is at
+    // least clientWidth and can retain empty space if the host is wide).
+    const contentWidth = shrinkToContent
+      ? Math.max(wrapperRect.width || 0, 1)
+      : Math.max(wrapper.scrollWidth || 0, wrapperRect.width || 0, baseWidth, 1);
+    const contentHeight = shrinkToContent
+      ? Math.max(wrapperRect.height || 0, 1)
+      : Math.max(wrapper.scrollHeight || 0, wrapperRect.height || 0, 1);
 
     const width = Math.max(1, Math.round(contentWidth));
     const height = Math.max(1, Math.round(contentHeight + 4));
@@ -539,7 +559,24 @@
   function buildVizContainerSnapshot() {
     const vizContainer = (typeof document !== 'undefined') ? document.getElementById('viz-container') : null;
     if (!vizContainer) return null;
-    return buildSnapshot(vizContainer, {
+
+    // In matrix mode, exporting the entire viz-container often includes large
+    // empty margins (because the matrix wrapper may be centered within a wide
+    // container). Prefer exporting the matrix content container directly.
+    let exportEl = vizContainer;
+    let widthStrategy = undefined;
+    try {
+      let mode = null;
+      if (typeof window !== 'undefined' && window.visualizationMode) mode = window.visualizationMode;
+      else if (typeof visualizationMode !== 'undefined') mode = visualizationMode;
+      if (mode === 'matrix') {
+        const matrix = document.getElementById('comparison-matrix');
+        if (matrix) exportEl = matrix;
+        widthStrategy = 'shrink-to-content';
+      }
+    } catch (_) { /* ignore */ }
+
+    return buildSnapshot(exportEl, {
       removeSelectors: [
         '.panel-actions',
         '.tree-panel-header .btn-back',
@@ -549,7 +586,8 @@
         '.modal-actions',
         '[data-export-exclude="1"]'
       ],
-      matchBackgroundFrom: vizContainer
+      matchBackgroundFrom: exportEl,
+      widthStrategy
     });
   }
 

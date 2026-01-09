@@ -15,6 +15,12 @@
 
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
   const PACK_EPSILON = 1e-6;
+  
+  // Matrix alignment threshold: when sidebar is visible and the matrix fills less than
+  // this percentage of available width, left-align it to avoid a large empty band on the left.
+  // Value of 0.92 (92%) provides a good balance - matrices that are reasonably wide stay
+  // centered, while narrow matrices align left to improve visual appearance.
+  const MATRIX_FILL_RATIO_THRESHOLD = 0.92;
 
   function resolveReverseColorsFlag() {
     if (typeof colorSchemeReversed !== 'undefined') return !!colorSchemeReversed;
@@ -338,9 +344,9 @@
     if (pSort && pSort !== 'none') {
       root.sort((a, b) => {
         if (pSort === 'name') return d3.ascending(a.data.name, b.data.name);
-          const valA = (typeof a._agg === 'number') ? a._agg : (a.value || 0);
-          const valB = (typeof b._agg === 'number') ? b._agg : (b.value || 0);
-          return pSort === 'value-asc' ? valA - valB : valB - valA;
+        const valA = (typeof a._agg === 'number') ? a._agg : (a.value || 0);
+        const valB = (typeof b._agg === 'number') ? b._agg : (b.value || 0);
+        return pSort === 'value-asc' ? valA - valB : valB - valA;
       });
     }
 
@@ -476,6 +482,13 @@
     }
 
     if (!vizContainer) return;
+    
+    // Clean up any existing ResizeObserver before clearing content
+    const cleanupStore = resolveComparisonRendererStore();
+    if (cleanupStore && typeof cleanupStore.disconnectResizeObserver === 'function') {
+      try { cleanupStore.disconnectResizeObserver(); } catch (_) { }
+    }
+    
     vizContainer.innerHTML = '';
 
     // 包裹面板与顶部栏（仅普通/内联模式使用）
@@ -1254,22 +1267,27 @@
 
     const treatments = [...new Set(comparisons.flatMap(c => [c.treatment_1, c.treatment_2]))];
     const n = treatments.length;
+
+    // Create a wrapper to handle the breakout layout (negative margins) and centering
+    const matrixWrapper = document.createElement('div');
+    matrixWrapper.className = 'comparison-matrix-wrapper';
+
     const matrixContainer = document.createElement('div');
     matrixContainer.className = 'comparison-matrix-container';
     matrixContainer.id = 'comparison-matrix';
     // Make the matrix container size to its inner grid so exports capture full width.
     try {
-      // set inline width to max-content to ensure render/export code sees correct size
-      matrixContainer.style.width = 'max-content';
-      matrixContainer.style.maxWidth = 'none';
       // keep centering via margin (CSS also sets this)
-      matrixContainer.style.margin = 'var(--spacing-lg) auto';
+      matrixContainer.style.margin = 'var(--spacing-lg) 0';
     } catch (_) { }
 
     const title = document.createElement('div');
     title.className = 'matrix-title';
     title.textContent = `Treatment Comparison Matrix (${n} groups, ${comparisons.length} comparisons)`;
     matrixContainer.appendChild(title);
+
+    // Append container to wrapper
+    matrixWrapper.appendChild(matrixContainer);
 
     const matrixGrid = document.createElement('div');
     matrixGrid.className = 'comparison-matrix-grid';
@@ -1296,7 +1314,7 @@
       label.style.zIndex = '1';
       matrixGrid.appendChild(label);
     }
-    
+
     const cornerCell = createEmptyCell();
     cornerCell.style.pointerEvents = 'none';
     cornerCell.style.zIndex = '0';
@@ -1327,7 +1345,7 @@
           matrixGrid.appendChild(createEmptyCell());
         }
       }
-      
+
       // Append row label at the end of the row
       matrixGrid.appendChild(rowLabel);
     }
@@ -1340,7 +1358,59 @@
       matrixContainer.appendChild(legend);
     }
 
-    vizContainer.appendChild(matrixContainer);
+    vizContainer.appendChild(matrixWrapper);
+
+    // Adaptive Alignment Logic:
+    // Center the matrix when it fits in the screen (default).
+    // Align left (flex-start) when it overflows to avoid left-side clipping.
+    const resizeObserver = new ResizeObserver(() => {
+      if (!matrixContainer || !matrixWrapper) return;
+      const containerWidth = matrixContainer.offsetWidth;
+      // IMPORTANT: use the actual width of the visualization area (right pane),
+      // not window.innerWidth. Otherwise, when the sidebar is visible (or DevTools
+      // shrinks the viewport), we may incorrectly keep centering and the left side
+      // gets hidden behind the sidebar due to z-index stacking.
+      let availableWidth = 0;
+      try {
+        availableWidth = (vizContainer && vizContainer.getBoundingClientRect)
+          ? vizContainer.getBoundingClientRect().width
+          : 0;
+      } catch (_) { availableWidth = 0; }
+      if (!availableWidth || !Number.isFinite(availableWidth)) {
+        try {
+          availableWidth = matrixWrapper.parentElement
+            ? matrixWrapper.parentElement.getBoundingClientRect().width
+            : 0;
+        } catch (_) { availableWidth = 0; }
+      }
+      if (!availableWidth || !Number.isFinite(availableWidth)) {
+        availableWidth = window.innerWidth;
+      }
+
+      // Alignment policy:
+      // - Sidebar visible: prefer left alignment when the matrix is narrow to avoid
+      //   a large empty band on the left (esp. when users shrink panel width).
+      // - Sidebar collapsed: centering is usually preferable; only left-align when
+      //   overflowing.
+      const appBodyEl = document.querySelector('.app-body');
+      const sidebarCollapsed = !!(appBodyEl && appBodyEl.classList && appBodyEl.classList.contains('sidebar-collapsed'));
+
+      const fillRatio = availableWidth > 0 ? (containerWidth / availableWidth) : 1;
+      const shouldAlignLeft = sidebarCollapsed
+        ? (containerWidth > availableWidth)
+        : ((containerWidth > availableWidth) || (fillRatio < MATRIX_FILL_RATIO_THRESHOLD));
+
+      if (shouldAlignLeft) {
+        matrixWrapper.classList.add('align-left');
+      } else {
+        matrixWrapper.classList.remove('align-left');
+      }
+    });
+    resizeObserver.observe(matrixContainer);
+    
+    // Store the observer reference for cleanup when view changes
+    matrixStore.setResizeObserver(resizeObserver);
+
     if (typeof window.requestLayoutPanelContextSync === 'function') {
       try { window.requestLayoutPanelContextSync(); } catch (_) { }
     }
@@ -1484,6 +1554,13 @@
       : document.getElementById('viz-container');
 
     if (!vizContainer) return;
+    
+    // Clean up any existing ResizeObserver before clearing content
+    const cleanupStore = resolveComparisonRendererStore();
+    if (cleanupStore && typeof cleanupStore.disconnectResizeObserver === 'function') {
+      try { cleanupStore.disconnectResizeObserver(); } catch (_) { }
+    }
+    
     vizContainer.innerHTML = '';
 
     // Remember current focused item so redraws in matrix mode keep this view

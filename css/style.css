@@ -1232,8 +1232,8 @@ button:disabled {
     grid-template-columns: repeat(
         auto-fit,
         minmax(
-            min(var(--panel-min-width, 600px), 100%),
-            var(--panel-min-width, 600px)
+            min(var(--panel-min-width, 560px), 100%),
+            var(--panel-min-width, 560px)
         )
     );
     gap: var(--panel-grid-gap);

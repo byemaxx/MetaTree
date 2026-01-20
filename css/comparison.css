@@ -255,9 +255,9 @@
     background: var(--tree-panel-bg, var(--bg-white));
     border: 1px solid var(--tree-panel-border, var(--border-color));
     box-shadow: var(--shadow-sm);
-    min-width: var(--panel-min-width, 600px);
-    max-width: var(--panel-min-width, 600px);
-    width: var(--panel-min-width, 600px);
+    min-width: var(--panel-min-width, 560px);
+    max-width: var(--panel-min-width, 560px);
+    width: var(--panel-min-width, 560px);
     margin-left: auto;
     margin-right: auto;
 }

@@ -274,7 +274,7 @@ const LAYOUT_PANEL_CONTEXTS = {
 };
 const VALID_LAYOUT_OPTIONS = new Set(['radial', 'tree', 'packing']);
 const LAYOUT_PANEL_DEFAULTS = {
-    [LAYOUT_PANEL_CONTEXTS.SAMPLES]: { layout: 'radial', panelWidth: 600, panelHeight: 500 },
+    [LAYOUT_PANEL_CONTEXTS.SAMPLES]: { layout: 'radial', panelWidth: 560, panelHeight: 500 },
     [LAYOUT_PANEL_CONTEXTS.COMPARISON]: { layout: 'radial', panelWidth: 900, panelHeight: 800 },
     [LAYOUT_PANEL_CONTEXTS.MATRIX]: { layout: 'radial', panelWidth: 200, panelHeight: 200 }
 };

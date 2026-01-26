@@ -166,6 +166,14 @@ In the **Labels & Sizing** section:
 *   **Node Size**: Adjust the base size of nodes.
 *   **Uniform label colors**: Check this to color labels the same as their nodes.
 
+#### UI Theme
+In the **UI Theme** section:
+*   **Preset themes**: Click a theme chip to apply a built-in theme.
+    *   **Classical**: white panel headers, black text, and stronger borders for a publication-style look.
+    *   **Void**: minimal framing and reduced shadows (tree panel header borders are hidden by default).
+*   **Custom palette**: Adjust individual colors and click **Apply custom colors**.
+    *   **Header border** controls the border line around each tree panel header. If you keep it equal to **Header** (background), the border is effectively invisible.
+
 ### Step 4: Exporting
 *   **Export Results**: In Comparison mode, use the **Export results** button to download the statistical table.
 *   **Save Image**: Use the browser's print function or look for specific export buttons (if available in the specific view) to save the visualization. *Note: The README mentions SVG/PNG export; typically this is found near the visualization or in the main controls.*

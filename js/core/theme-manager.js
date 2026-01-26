@@ -157,6 +157,94 @@
                 treeBackground: '#f6f6f7',
                 treeHeader: '#6e6f74'
             }
+        },
+        {
+            id: 'theme-classic',
+            name: 'Classical',
+            description: 'White header, black text, classic black frame',
+            colors: {
+                primary: '#000000',
+                secondary: '#4a4a4a',
+                background: '#ffffff',
+                surface: '#ffffff',
+                text: '#000000',
+                success: '#1b9e77',
+                info: '#377eb8',
+                danger: '#e41a1c',
+                treeBackground: '#ffffff',
+                treeHeader: '#ffffff',
+                treeHeaderText: '#000000',
+                treeHeaderBorder: '#000000'
+            },
+            previewColors: ['#000000', '#ffffff', '#ffffff'],
+            propertiesOverrides: {
+                '--border-color': '#000000',
+                '--border-light': '#000000',
+                '--tree-panel-border': '#000000',
+                '--tree-panel-hover-border': '#000000',
+                '--shadow-sm': 'none',
+                '--shadow-md': 'none',
+                '--shadow-lg': 'none',
+                '--shadow-xl': 'none',
+                '--app-header-bg': '#ffffff',
+                '--app-header-text': '#000000',
+                '--app-header-border': '2px solid #000000',
+                '--app-header-outline': 'rgba(0, 0, 0, 0.45)',
+                '--app-frame-border': '1px solid #000000',
+                '--app-frame-shadow': 'none',
+                '--comparison-modal-header-bg': '#ffffff',
+                '--comparison-modal-header-text': '#000000',
+                '--comparison-modal-header-border': '1px solid #000000',
+                '--comparison-modal-header-icon': '#000000',
+                '--comparison-modal-header-icon-hover': '#000000',
+                '--comparison-modal-header-icon-bg-hover': 'rgba(0, 0, 0, 0.06)',
+                /* Avoid double-thick overlap with panel border: keep only bottom header border */
+                '--tree-panel-header-border-top': '0',
+                '--tree-panel-header-border-right': '0',
+                '--tree-panel-header-border-left': '0',
+                '--tree-panel-header-border-bottom': '1px'
+            }
+        },
+        {
+            id: 'theme-void',
+            name: 'Void',
+            description: 'Minimal chrome, reduced shadows',
+            colors: {
+                primary: '#000000',
+                secondary: '#4a4a4a',
+                background: '#ffffff',
+                surface: '#ffffff',
+                text: '#000000',
+                success: '#1b9e77',
+                info: '#377eb8',
+                danger: '#e41a1c',
+                treeBackground: '#ffffff',
+                treeHeader: '#ffffff',
+                treeHeaderText: '#000000'
+            },
+            previewColors: ['#000000', '#ffffff', '#e5e5e5'],
+            propertiesOverrides: {
+                '--shadow-sm': 'none',
+                '--shadow-md': 'none',
+                '--shadow-lg': 'none',
+                '--shadow-xl': 'none',
+                '--app-header-bg': '#ffffff',
+                '--app-header-text': '#000000',
+                '--app-header-border': '1px solid #e5e5e5',
+                '--app-header-outline': 'rgba(0, 0, 0, 0.35)',
+                '--app-frame-border': 'none',
+                '--app-frame-shadow': 'none',
+                '--comparison-modal-header-bg': '#ffffff',
+                '--comparison-modal-header-text': '#000000',
+                '--comparison-modal-header-border': 'none',
+                '--comparison-modal-header-icon': '#000000',
+                '--comparison-modal-header-icon-hover': '#000000',
+                '--comparison-modal-header-icon-bg-hover': 'rgba(0, 0, 0, 0.06)',
+                '--tree-panel-border': 'transparent',
+                '--tree-panel-hover-border': '#d0d0d0',
+                /* Void: remove header strip framing by default */
+                '--tree-panel-header-border-color': 'transparent'
+            }
         }
     ];
 
@@ -299,13 +387,20 @@
             text: document.getElementById('custom-theme-text'),
             treeBackground: document.getElementById('custom-theme-tree-bg'),
             treeHeader: document.getElementById('custom-theme-tree-header'),
-            treeHeaderText: document.getElementById('custom-theme-tree-header-text')
+            treeHeaderText: document.getElementById('custom-theme-tree-header-text'),
+            treeHeaderBorder: document.getElementById('custom-theme-tree-header-border')
         };
         Object.entries(map).forEach(([key, input]) => {
             if (input && colors[key]) {
                 input.value = normalizeHex(colors[key]);
             }
         });
+
+        // Default: header border follows header background unless explicitly set.
+        if (map.treeHeaderBorder && !colors.treeHeaderBorder) {
+            const fallback = colors.treeHeader || DEFAULT_CUSTOM_COLORS.treeHeader || BASE_THEME_COLORS.treeHeader;
+            map.treeHeaderBorder.value = normalizeHex(fallback);
+        }
     }
 
     function readCustomColorInputs() {
@@ -317,7 +412,8 @@
             text: valueFromInput('custom-theme-text'),
             treeBackground: valueFromInput('custom-theme-tree-bg'),
             treeHeader: valueFromInput('custom-theme-tree-header'),
-            treeHeaderText: valueFromInput('custom-theme-tree-header-text')
+            treeHeaderText: valueFromInput('custom-theme-tree-header-text'),
+            treeHeaderBorder: valueFromInput('custom-theme-tree-header-border')
         };
     }
 
@@ -362,14 +458,29 @@
 
     function materializeThemeConfig(config) {
         const colors = sanitizeColors(Object.assign({}, BASE_THEME_COLORS, config.colors || {}));
+        const overrides = (config && config.propertiesOverrides && typeof config.propertiesOverrides === 'object')
+            ? config.propertiesOverrides
+            : null;
+        const properties = Object.assign({}, buildThemeProperties(colors), sanitizePropertiesOverrides(overrides));
         return {
             id: config.id,
             name: config.name,
             description: config.description,
             baseColors: colors,
             previewColors: config.previewColors || [colors.primary, colors.secondary, colors.background],
-            properties: buildThemeProperties(colors)
+            properties
         };
+    }
+
+    function sanitizePropertiesOverrides(overrides) {
+        const result = {};
+        if (!overrides) return result;
+        Object.entries(overrides).forEach(([key, value]) => {
+            if (!key || typeof key !== 'string') return;
+            if (typeof value !== 'string') return;
+            result[key] = value;
+        });
+        return result;
     }
 
     function sanitizeColors(colors) {
@@ -407,6 +518,8 @@
         const treeBackground = normalizeHex(colors.treeBackground || DEFAULT_CUSTOM_COLORS.treeBackground);
         const treeHeader = normalizeHex(colors.treeHeader || DEFAULT_CUSTOM_COLORS.treeHeader);
         const treeHeaderText = normalizeHex(colors.treeHeaderText || DEFAULT_CUSTOM_COLORS.treeHeaderText || '#ffffff');
+        // Default: border matches the header background (invisible). Classic can set it to black.
+        const treeHeaderBorder = normalizeHex(colors.treeHeaderBorder || treeHeader);
 
         const primaryDark = adjustColor(primary, -12);
         const primaryLight = adjustColor(primary, 18);
@@ -424,6 +537,15 @@
         const treeBorder = mixColors(treeBackground, text, 0.15);
         const treeBorderHover = mixColors(treeBorder, primary, 0.35);
         const treeHeaderEnd = adjustColor(treeHeader, -12);
+
+        // These tokens may be overridden by certain presets. Always emit them so theme switching
+        // resets prior overrides (inline CSS variables persist until explicitly overwritten).
+        const shadowSm = '0 1px 2px rgba(0, 0, 0, 0.04)';
+        const shadowMd = '0 2px 4px rgba(0, 0, 0, 0.06)';
+        const shadowLg = '0 4px 8px rgba(0, 0, 0, 0.08)';
+        const shadowXl = '0 8px 16px rgba(0, 0, 0, 0.1)';
+
+        const gradientPrimary = `linear-gradient(135deg, ${primary} 0%, ${primaryDark} 100%)`;
 
         return {
             '--primary-color': primary,
@@ -446,13 +568,36 @@
             '--bg-light': backgroundLight,
             '--bg-lighter': backgroundLighter,
             '--bg-body': background,
-            '--gradient-primary': `linear-gradient(135deg, ${primary} 0%, ${primaryDark} 100%)`,
+            '--gradient-primary': gradientPrimary,
             '--gradient-primary-hover': `linear-gradient(135deg, ${primaryDark} 0%, ${adjustColor(primaryDark, -12)} 100%)`,
             '--gradient-success': `linear-gradient(135deg, ${success} 0%, ${successDark} 100%)`,
             '--gradient-info': `linear-gradient(135deg, ${info} 0%, ${infoDark} 100%)`,
             '--gradient-danger': `linear-gradient(135deg, ${danger} 0%, ${dangerDark} 100%)`,
             '--gradient-bg': `linear-gradient(135deg, ${mixColors(background, surface, 0.6)} 0%, ${surface} 100%)`,
             '--gradient-accent': `linear-gradient(135deg, ${secondary} 0%, ${primary} 100%)`,
+
+            // Shadows: required for theme switching to undo presets that remove them.
+            '--shadow-sm': shadowSm,
+            '--shadow-md': shadowMd,
+            '--shadow-lg': shadowLg,
+            '--shadow-xl': shadowXl,
+
+            // App-level surfaces: default to original behavior; presets can override.
+            '--app-header-bg': gradientPrimary,
+            '--app-header-text': '#ffffff',
+            '--app-header-border': 'none',
+            '--app-header-outline': 'rgba(255, 255, 255, 0.6)',
+            '--app-frame-border': 'none',
+            '--app-frame-shadow': shadowLg,
+
+            // Comparison modal header: default matches previous CSS fallbacks.
+            '--comparison-modal-header-bg': backgroundLight,
+            '--comparison-modal-header-text': text,
+            '--comparison-modal-header-border': `1px solid ${borderLight}`,
+            '--comparison-modal-header-icon': textSecondary,
+            '--comparison-modal-header-icon-hover': text,
+            '--comparison-modal-header-icon-bg-hover': 'rgba(0, 0, 0, 0.06)',
+
             '--tree-panel-bg': treeBackground,
             '--tree-panel-bg-alt': treeBackgroundAlt,
             '--tree-panel-border': treeBorder,
@@ -460,6 +605,14 @@
             '--tree-panel-header-start': treeHeader,
             '--tree-panel-header-end': treeHeaderEnd,
             '--tree-panel-header-text': treeHeaderText,
+            '--tree-panel-header-border-color': treeHeaderBorder,
+            // Ensure per-side header border widths reset when switching themes.
+            // Classical overrides these to avoid double-thick overlap with panel borders.
+            '--tree-panel-header-border-width': '1px',
+            '--tree-panel-header-border-top': '1px',
+            '--tree-panel-header-border-right': '1px',
+            '--tree-panel-header-border-bottom': '1px',
+            '--tree-panel-header-border-left': '1px',
             '--shadow-primary': `0 4px 8px ${hexToRgba(primary, 0.18)}`,
             '--shadow-success': `0 4px 8px ${hexToRgba(success, 0.22)}`
         };

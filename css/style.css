@@ -149,8 +149,9 @@ body.info-modal-open {
     max-width: 100%;
     margin: 0 auto;
     background: var(--bg-white);
+    border: var(--app-frame-border, none);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--app-frame-shadow, var(--shadow-lg));
     overflow: visible; /* allow page scroll when sidebar grows */
     display: flex;
     flex-direction: column;
@@ -265,10 +266,11 @@ body.info-modal-open {
 }
 
 .header {
-    background: var(--gradient-primary);
-    color: white;
+    background: var(--app-header-bg, var(--gradient-primary));
+    color: var(--app-header-text, #ffffff);
     padding: var(--spacing-2xl);
     text-align: center;
+    border-bottom: var(--app-header-border, none);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
@@ -295,7 +297,7 @@ body.info-modal-open {
 }
 
 .header .title-row .title-link:focus {
-    outline: 2px dashed rgba(255,255,255,0.6);
+    outline: 2px dashed var(--app-header-outline, rgba(255, 255, 255, 0.6));
     outline-offset: 4px;
 }
 
@@ -597,8 +599,9 @@ body.info-modal-open {
     align-items: center;
     gap: var(--spacing-md);
     padding: 10px 14px;
-    border-bottom: 1px solid var(--border-light);
-    background: var(--bg-light);
+    border-bottom: var(--comparison-modal-header-border, 1px solid var(--border-light));
+    background: var(--comparison-modal-header-bg, var(--bg-light));
+    color: var(--comparison-modal-header-text, inherit);
     position: relative;
 }
 
@@ -614,15 +617,15 @@ body.info-modal-open {
     width: 28px;
     height: 28px;
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--comparison-modal-header-icon, var(--text-secondary));
     border: none;
     box-shadow: none;
     transition: color 0.15s ease, background 0.15s ease;
 }
 
 .comparison-modal-header .btn-icon:hover {
-    color: var(--text-primary);
-    background: rgba(0, 0, 0, 0.06);
+    color: var(--comparison-modal-header-icon-hover, var(--text-primary));
+    background: var(--comparison-modal-header-icon-bg-hover, rgba(0, 0, 0, 0.06));
 }
 
 .modal-title {
@@ -1271,6 +1274,16 @@ button:disabled {
     align-items: center;
     justify-content: space-between; /* title centered via absolute; actions right */
     position: relative;
+    /* Header border: defaults to 1px on all sides; color follows theme.
+       Classical theme can override to keep only bottom border to avoid overlapping
+       with the panel outer border. */
+    border-style: solid;
+    border-color: var(--tree-panel-header-border-color, transparent);
+    border-width:
+        var(--tree-panel-header-border-top, var(--tree-panel-header-border-width, 1px))
+        var(--tree-panel-header-border-right, var(--tree-panel-header-border-width, 1px))
+        var(--tree-panel-header-border-bottom, var(--tree-panel-header-border-width, 1px))
+        var(--tree-panel-header-border-left, var(--tree-panel-header-border-width, 1px));
 }
 
 /* Title text inside header */

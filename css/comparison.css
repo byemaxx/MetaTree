@@ -263,7 +263,7 @@
 }
 
 .comparison-panel .tree-panel-header {
-    color: white;
+    color: var(--tree-panel-header-text, #ffffff);
     font-size: var(--font-2xl);
     padding: var(--spacing-lg);
 }

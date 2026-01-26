@@ -171,6 +171,7 @@ In the **UI Theme** section:
 *   **Preset themes**: Click a theme chip to apply a built-in theme.
     *   **Classical**: white panel headers, black text, and stronger borders for a publication-style look.
     *   **Void**: minimal framing and reduced shadows (tree panel header borders are hidden by default).
+    *   And more...
 *   **Custom palette**: Adjust individual colors and click **Apply custom colors**.
     *   **Header border** controls the border line around each tree panel header. If you keep it equal to **Header** (background), the border is effectively invisible.
 

@@ -138,6 +138,25 @@
   function buildComparisonLayout(root, width, height, comparisonStats, opts = {}) {
     const mode = getActiveLayoutMode();
     const forMini = !!opts.mini;
+    let labelPadExtra = 0;
+    if (!forMini && root) {
+      try {
+        const fontSize = (typeof labelFontSize === 'number')
+          ? labelFontSize
+          : ((typeof window !== 'undefined' && typeof window.labelFontSize === 'number') ? window.labelFontSize : 9);
+        const charWidth = Math.max(6, fontSize * 0.6);
+        let maxLen = 0;
+        root.each(d => {
+          const raw = (d && d.data) ? (d.data.fullName || d.data.name || '') : '';
+          if (raw && raw.length > maxLen) maxLen = raw.length;
+        });
+        const estWidth = maxLen * charWidth;
+        labelPadExtra = Math.max(0, estWidth - 90);
+        const maxPad = Math.max(20, Math.min(width, height) * 0.25);
+        labelPadExtra = Math.min(labelPadExtra, maxPad);
+      } catch (_) { labelPadExtra = 0; }
+    }
+    const labelPadScaled = labelPadExtra * (mode === 'radial' ? 0.4 : 0.6);
     const layout = {
       mode,
       nodes: [],
@@ -153,7 +172,7 @@
     };
 
     if (mode === 'packing') {
-      const padding = forMini ? 10 : 70;
+      const padding = forMini ? 10 : (70 + labelPadScaled * 0.5);
       const diameter = Math.max(10, Math.min(width, height) - padding);
       const offsetX = (width - diameter) / 2;
       const offsetY = (height - diameter) / 2;
@@ -260,8 +279,8 @@
       const margin = forMini
         ? { top: 9, right: 35, bottom: 9, left: 35 }
         : (isVertical
-          ? { top: 35, right: 35, bottom: 140, left: 35 }
-          : { top: 35, right: 140, bottom: 35, left: 140 }
+          ? { top: 35, right: 35, bottom: 140 + labelPadScaled, left: 35 }
+          : { top: 35, right: 140 + labelPadScaled, bottom: 35, left: 140 + labelPadScaled }
         );
 
       const layoutWidth = Math.max(10, width - margin.left - margin.right);
@@ -350,7 +369,7 @@
       });
     }
 
-    const radialPadding = forMini ? 10 : 40;
+    const radialPadding = forMini ? 10 : (40 + labelPadScaled);
     const radius = Math.max(10, Math.min(width, height) / 2 - radialPadding) * pSep;
     const layoutFn = pAlign ? d3.cluster() : d3.tree();
 
@@ -494,6 +513,9 @@
     // 包裹面板与顶部栏（仅普通/内联模式使用）
     const panel = document.createElement('div');
     panel.className = 'tree-panel comparison-panel';
+    panel.id = useModal
+      ? 'comparison-panel-modal'
+      : (containerId === 'inline-comparison-body' ? 'comparison-panel-inline' : 'comparison-panel-main');
 
     if (!useModal) {
       const header = document.createElement('div');
@@ -543,7 +565,13 @@
       btnSvg.title = 'Export SVG';
       btnSvg.setAttribute('aria-label', 'Export SVG');
       btnSvg.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 9l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-      btnSvg.addEventListener('click', () => exportSVGForContainer(svgContainerId, `comparison_${group1}_vs_${group2}`));
+      btnSvg.addEventListener('click', () => {
+        if (typeof window !== 'undefined' && typeof window.exportPanelAsSVG === 'function') {
+          window.exportPanelAsSVG(panel.id, `comparison_${group1}_vs_${group2}`);
+        } else {
+          exportSVGForContainer(svgContainerId, `comparison_${group1}_vs_${group2}`);
+        }
+      });
 
       const btnPng = document.createElement('button');
       btnPng.className = 'btn-icon';
@@ -617,6 +645,7 @@
       store.setSvg(svg);
       store.setZoom(zoom);
     } catch (_) { }
+
 
     // 层级数据
     let root = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);

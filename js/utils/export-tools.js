@@ -556,6 +556,632 @@
     });
   }
 
+  function getCurrentVizContainer() {
+    try {
+      if (typeof window !== 'undefined' && typeof window.getVizSubContainer === 'function') {
+        const mode = (typeof window.visualizationMode !== 'undefined') ? window.visualizationMode : null;
+        const sub = window.getVizSubContainer(mode || 'single');
+        if (sub) return sub;
+      }
+    } catch (_) {}
+    return document.getElementById('viz-container');
+  }
+
+  function getPxNumber(value, fallback = 0) {
+    const n = parseFloat(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function normalizeRgbaColor(value) {
+    if (!value || typeof value !== 'string') return null;
+    const m = value.match(/^rgba?\(([^)]+)\)$/i);
+    if (!m) return null;
+    const parts = m[1].split(',').map(s => s.trim());
+    if (parts.length < 3) return null;
+    const r = parseFloat(parts[0]);
+    const g = parseFloat(parts[1]);
+    const b = parseFloat(parts[2]);
+    const a = parts.length >= 4 ? parseFloat(parts[3]) : 1;
+    if (![r, g, b, a].every(v => Number.isFinite(v))) return null;
+    return { color: `rgb(${r}, ${g}, ${b})`, opacity: Math.max(0, Math.min(1, a)) };
+  }
+
+  function isElementVisible(el) {
+    if (!el) return false;
+    const style = window.getComputedStyle(el);
+    const opacity = style ? parseFloat(style.opacity) : 1;
+    return style && style.display !== 'none' && style.visibility !== 'hidden' && opacity > 0;
+  }
+
+  function parseLinearGradientStops(gradientValue) {
+    if (!gradientValue || typeof gradientValue !== 'string') return null;
+    const match = gradientValue.match(/linear-gradient\((.*)\)/i);
+    if (!match) return null;
+    const body = match[1].trim();
+    const parts = [];
+    let current = '';
+    let depth = 0;
+    for (let i = 0; i < body.length; i++) {
+      const ch = body[i];
+      if (ch === '(') depth++;
+      if (ch === ')') depth--;
+      if (ch === ',' && depth === 0) {
+        parts.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    if (current.trim()) parts.push(current.trim());
+    if (parts.length < 2) return null;
+    const stopParts = (parts[0].includes('deg') || parts[0].includes('to ')) ? parts.slice(1) : parts;
+    const stops = stopParts.map((p) => {
+      let color = p.trim();
+      let offset = null;
+      const offsetMatch = p.match(/\s(\d+(?:\.\d+)?)%\s*$/);
+      if (offsetMatch) {
+        const v = parseFloat(offsetMatch[1]);
+        if (Number.isFinite(v)) offset = v / 100;
+        color = p.slice(0, offsetMatch.index).trim();
+      }
+      return { color, offset };
+    });
+    const missing = stops.filter(s => s.offset == null).length;
+    if (missing) {
+      const step = stops.length > 1 ? 1 / (stops.length - 1) : 1;
+      stops.forEach((s, i) => {
+        if (s.offset == null) s.offset = i * step;
+      });
+    }
+    return stops;
+  }
+
+  function appendTextFromElement(svg, el, x, y, align = 'start') {
+    if (!el) return;
+    const textValue = (el.textContent || '').trim();
+    if (!textValue) return;
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const text = document.createElementNS(svgNS, 'text');
+    text.textContent = textValue;
+    text.setAttribute('x', x);
+    text.setAttribute('y', y);
+    text.setAttribute('text-anchor', align);
+    text.setAttribute('dominant-baseline', 'middle');
+    try {
+      const cs = window.getComputedStyle(el);
+      if (cs) {
+        if (cs.fontFamily) text.setAttribute('font-family', cs.fontFamily);
+        if (cs.fontSize) text.setAttribute('font-size', cs.fontSize);
+        if (cs.fontWeight) text.setAttribute('font-weight', cs.fontWeight);
+        if (cs.letterSpacing && cs.letterSpacing !== 'normal') text.setAttribute('letter-spacing', cs.letterSpacing);
+        if (cs.color) text.setAttribute('fill', cs.color);
+      }
+    } catch (_) {}
+    svg.appendChild(text);
+  }
+
+  function appendRectFromElement(svg, el, x, y, width, height) {
+    if (!el) return;
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const rect = document.createElementNS(svgNS, 'rect');
+    rect.setAttribute('x', x);
+    rect.setAttribute('y', y);
+    rect.setAttribute('width', width);
+    rect.setAttribute('height', height);
+    try {
+      const cs = window.getComputedStyle(el);
+      if (cs) {
+        const bg = cs.backgroundColor;
+        const borderColor = cs.borderTopColor;
+        const borderWidth = getPxNumber(cs.borderTopWidth, 0);
+        const radius = getPxNumber(cs.borderRadius, 0);
+        if (radius) {
+          rect.setAttribute('rx', radius);
+          rect.setAttribute('ry', radius);
+        }
+        if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+          const norm = normalizeRgbaColor(bg);
+          if (norm) {
+            rect.setAttribute('fill', norm.color);
+            rect.setAttribute('fill-opacity', norm.opacity);
+          } else {
+            rect.setAttribute('fill', bg);
+          }
+        } else {
+          rect.setAttribute('fill', 'none');
+        }
+        let strokeWidth = borderWidth;
+        let strokeColor = borderColor || 'transparent';
+        if (!strokeWidth || strokeWidth <= 0) {
+          const shadow = cs.boxShadow;
+          if (shadow && shadow !== 'none') {
+            strokeWidth = 1;
+            strokeColor = 'rgba(0, 0, 0, 0.15)';
+          }
+        }
+        if (strokeWidth > 0) {
+          const norm = normalizeRgbaColor(strokeColor);
+          if (norm) {
+            rect.setAttribute('stroke', norm.color);
+            rect.setAttribute('stroke-opacity', norm.opacity);
+          } else {
+            rect.setAttribute('stroke', strokeColor);
+          }
+          rect.setAttribute('stroke-width', strokeWidth);
+        }
+      }
+    } catch (_) {}
+    svg.appendChild(rect);
+  }
+
+  function buildLegendSvgFromElement(legendEl, opts = {}) {
+    if (!legendEl || !isElementVisible(legendEl)) return null;
+    const rect = legendEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const g = document.createElementNS(svgNS, 'g');
+    appendRectFromElement(g, legendEl, 0, 0, rect.width, rect.height);
+    const centerTitle = !!opts.centerTitle;
+    const labelMode = opts.labelMode || 'dom';
+
+    const title = legendEl.querySelector('.legend-title');
+    if (title) {
+      const tRect = title.getBoundingClientRect();
+      const x = centerTitle ? (rect.width / 2) : (tRect.left - rect.left);
+      const y = tRect.top - rect.top + tRect.height / 2;
+      appendTextFromElement(g, title, x, y, centerTitle ? 'middle' : 'start');
+    }
+
+    const grad = legendEl.querySelector('.legend-gradient');
+    if (grad) {
+      const gRect = grad.getBoundingClientRect();
+      const x = gRect.left - rect.left;
+      const y = gRect.top - rect.top;
+      const w = gRect.width;
+      const h = gRect.height;
+      const gradStyle = window.getComputedStyle(grad);
+      const gradRadius = gradStyle ? getPxNumber(gradStyle.borderRadius, 0) : 0;
+      const defs = document.createElementNS(svgNS, 'defs');
+      const gradEl = document.createElementNS(svgNS, 'linearGradient');
+      const gradId = `legend-grad-${Math.random().toString(36).slice(2, 8)}`;
+      gradEl.setAttribute('id', gradId);
+      gradEl.setAttribute('x1', '0%');
+      gradEl.setAttribute('x2', '100%');
+      gradEl.setAttribute('y1', '0%');
+      gradEl.setAttribute('y2', '0%');
+
+      const bgImage = gradStyle ? gradStyle.backgroundImage : null;
+      const stops = parseLinearGradientStops(bgImage) || [];
+      if (stops.length) {
+        stops.forEach((s) => {
+          const stop = document.createElementNS(svgNS, 'stop');
+          stop.setAttribute('offset', `${Math.max(0, Math.min(1, s.offset)) * 100}%`);
+          stop.setAttribute('stop-color', s.color);
+          gradEl.appendChild(stop);
+        });
+      } else {
+        const stop1 = document.createElementNS(svgNS, 'stop');
+        stop1.setAttribute('offset', '0%');
+        stop1.setAttribute('stop-color', '#2166ac');
+        const stop2 = document.createElementNS(svgNS, 'stop');
+        stop2.setAttribute('offset', '100%');
+        stop2.setAttribute('stop-color', '#b2182b');
+        gradEl.appendChild(stop1);
+        gradEl.appendChild(stop2);
+      }
+
+      defs.appendChild(gradEl);
+      g.appendChild(defs);
+      const rectEl = document.createElementNS(svgNS, 'rect');
+      rectEl.setAttribute('x', x);
+      rectEl.setAttribute('y', y);
+      rectEl.setAttribute('width', w);
+      rectEl.setAttribute('height', h);
+      if (gradRadius) {
+        rectEl.setAttribute('rx', gradRadius);
+        rectEl.setAttribute('ry', gradRadius);
+      }
+      rectEl.setAttribute('fill', `url(#${gradId})`);
+      g.appendChild(rectEl);
+    }
+
+    const labels = legendEl.querySelector('.legend-labels');
+    if (labels) {
+      const labelNodes = Array.from(labels.children);
+      const pad = 10;
+      const count = labelNodes.length;
+      labelNodes.forEach((node, i) => {
+        const lRect = node.getBoundingClientRect();
+        let x = lRect.left - rect.left + lRect.width / 2;
+        let anchor = 'middle';
+        if (labelMode === 'spread' && count > 1) {
+          if (i === 0) {
+            x = pad;
+            anchor = 'start';
+          } else if (i === count - 1) {
+            x = rect.width - pad;
+            anchor = 'end';
+          } else {
+            x = rect.width / 2;
+            anchor = 'middle';
+          }
+        }
+        const y = lRect.top - rect.top + lRect.height / 2;
+        appendTextFromElement(g, node, x, y, anchor);
+      });
+    }
+
+    const desc = legendEl.querySelector('.legend-description');
+    if (desc) {
+      const dRect = desc.getBoundingClientRect();
+      const x = dRect.left - rect.left + dRect.width / 2;
+      const y = dRect.top - rect.top + dRect.height / 2;
+      appendTextFromElement(g, desc, x, y, 'middle');
+    }
+
+    return { group: g, width: rect.width, height: rect.height };
+  }
+
+  function cloneSvgWithInlineStyles(svgEl) {
+    const clone = svgEl.cloneNode(true);
+    try {
+      const props = [
+        'fill',
+        'stroke',
+        'stroke-width',
+        'stroke-linecap',
+        'stroke-linejoin',
+        'stroke-dasharray',
+        'stroke-dashoffset',
+        'opacity',
+        'fill-opacity',
+        'stroke-opacity',
+        'font-family',
+        'font-size',
+        'font-weight',
+        'font-style',
+        'letter-spacing',
+        'text-anchor',
+        'dominant-baseline',
+        'paint-order',
+        'shape-rendering'
+      ];
+      const srcNodes = [svgEl, ...Array.from(svgEl.querySelectorAll('*'))];
+      const dstNodes = [clone, ...Array.from(clone.querySelectorAll('*'))];
+      const len = Math.min(srcNodes.length, dstNodes.length);
+      for (let i = 0; i < len; i++) {
+        const src = srcNodes[i];
+        const dst = dstNodes[i];
+        const cs = window.getComputedStyle(src);
+        if (!cs) continue;
+        props.forEach((prop) => {
+          const v = cs.getPropertyValue(prop);
+          if (!v) return;
+          if (prop === 'fill' || prop === 'stroke') {
+            const norm = normalizeRgbaColor(v);
+            if (norm) {
+              dst.style.setProperty(prop, norm.color);
+              dst.style.setProperty(prop === 'fill' ? 'fill-opacity' : 'stroke-opacity', String(norm.opacity));
+              return;
+            }
+          }
+          dst.style.setProperty(prop, v);
+        });
+      }
+      const dstNodesAll = [clone, ...Array.from(clone.querySelectorAll('*'))];
+      dstNodesAll.forEach((node) => {
+        ['fill', 'stroke'].forEach((attr) => {
+          const val = node.getAttribute(attr);
+          const norm = normalizeRgbaColor(val);
+          if (norm) {
+            node.setAttribute(attr, norm.color);
+            node.setAttribute(attr === 'fill' ? 'fill-opacity' : 'stroke-opacity', String(norm.opacity));
+          }
+        });
+      });
+    } catch (_) {
+      // best-effort
+    }
+    if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    if (!clone.getAttribute('xmlns:xlink')) clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    return clone;
+  }
+
+  function buildVectorPanelSvg(panelEl, opts = {}) {
+    if (!panelEl) return null;
+    const panelRect = panelEl.getBoundingClientRect();
+    if (!panelRect || !panelRect.width || !panelRect.height) return null;
+
+    const headerEl = panelEl.querySelector('.tree-panel-header');
+    const headerRect = headerEl ? headerEl.getBoundingClientRect() : null;
+    const headerHeight = headerRect ? Math.round(headerRect.height) : 0;
+
+    const svgContainer = panelEl.querySelector('.tree-svg-container');
+    const svgEl = svgContainer ? svgContainer.querySelector('svg') : panelEl.querySelector('svg');
+
+    const svgContainerRect = svgContainer ? svgContainer.getBoundingClientRect() : null;
+    const innerWidth = svgContainerRect ? Math.round(svgContainerRect.width) : Math.round(panelRect.width);
+    const innerHeight = svgContainerRect ? Math.round(svgContainerRect.height) : Math.max(1, Math.round(panelRect.height - headerHeight));
+
+    const panelStyle = window.getComputedStyle(panelEl);
+    const panelBg = (panelStyle && panelStyle.backgroundColor) ? panelStyle.backgroundColor : '#ffffff';
+    const borderColor = (panelStyle && panelStyle.borderTopColor) ? panelStyle.borderTopColor : 'transparent';
+    const borderWidth = panelStyle ? getPxNumber(panelStyle.borderTopWidth, 0) : 0;
+    const radius = panelStyle ? getPxNumber(panelStyle.borderRadius, 0) : 0;
+
+    let headerBg = panelBg;
+    if (headerEl) {
+      const headerStyle = window.getComputedStyle(headerEl);
+      if (headerStyle && headerStyle.backgroundColor) headerBg = headerStyle.backgroundColor;
+    }
+
+    let titleText = '';
+    let titleStyle = null;
+    const titleEl = headerEl ? headerEl.querySelector('.panel-title-text') : null;
+    if (titleEl) {
+      titleText = (titleEl.textContent || '').trim();
+      titleStyle = window.getComputedStyle(titleEl);
+    }
+
+    const legendEl = opts.includeSharedLegend ? document.getElementById('shared-legend') : null;
+    const legendSvg = (legendEl && isElementVisible(legendEl))
+      ? buildLegendSvgFromElement(legendEl, { centerTitle: true, labelMode: 'spread' })
+      : null;
+    const legendPadding = legendSvg ? 12 : 0;
+    const legendWidth = legendSvg ? Math.round(legendSvg.width) : 0;
+    const totalWidth = Math.round(Math.max(panelRect.width, legendWidth || 0));
+    const totalHeight = Math.round(panelRect.height + (legendSvg ? (legendSvg.height + legendPadding) : 0));
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('xmlns', svgNS);
+    svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    svg.setAttribute('width', totalWidth);
+    svg.setAttribute('height', totalHeight);
+    svg.setAttribute('viewBox', `0 0 ${totalWidth} ${totalHeight}`);
+
+    // Panel background and border
+    const panelRectEl = document.createElementNS(svgNS, 'rect');
+    panelRectEl.setAttribute('x', '0');
+    panelRectEl.setAttribute('y', '0');
+    panelRectEl.setAttribute('width', Math.round(panelRect.width));
+    panelRectEl.setAttribute('height', Math.round(panelRect.height));
+    if (radius) {
+      panelRectEl.setAttribute('rx', radius);
+      panelRectEl.setAttribute('ry', radius);
+    }
+    panelRectEl.setAttribute('fill', panelBg);
+    if (borderWidth > 0) {
+      panelRectEl.setAttribute('stroke', borderColor);
+      panelRectEl.setAttribute('stroke-width', borderWidth);
+    }
+    svg.appendChild(panelRectEl);
+
+    // Header
+    if (headerHeight > 0) {
+      const headerRectEl = document.createElementNS(svgNS, 'rect');
+      headerRectEl.setAttribute('x', '0');
+      headerRectEl.setAttribute('y', '0');
+      headerRectEl.setAttribute('width', Math.round(panelRect.width));
+      headerRectEl.setAttribute('height', headerHeight);
+      headerRectEl.setAttribute('fill', headerBg || '#333333');
+      svg.appendChild(headerRectEl);
+
+      if (titleText) {
+        const title = document.createElementNS(svgNS, 'text');
+        title.textContent = titleText;
+        title.setAttribute('x', Math.round(panelRect.width / 2));
+        title.setAttribute('y', Math.round(headerHeight / 2));
+        title.setAttribute('text-anchor', 'middle');
+        title.setAttribute('dominant-baseline', 'middle');
+        if (titleStyle) {
+          if (titleStyle.fontFamily) title.setAttribute('font-family', titleStyle.fontFamily);
+          if (titleStyle.fontSize) title.setAttribute('font-size', titleStyle.fontSize);
+          if (titleStyle.fontWeight) title.setAttribute('font-weight', titleStyle.fontWeight);
+          if (titleStyle.letterSpacing && titleStyle.letterSpacing !== 'normal') {
+            title.setAttribute('letter-spacing', titleStyle.letterSpacing);
+          }
+          if (titleStyle.color) title.setAttribute('fill', titleStyle.color);
+        } else {
+          title.setAttribute('fill', '#ffffff');
+        }
+        svg.appendChild(title);
+      }
+    }
+
+    // Inner SVG (vector content)
+    if (svgEl) {
+      const clone = cloneSvgWithInlineStyles(svgEl);
+      clone.setAttribute('x', '0');
+      clone.setAttribute('y', '0');
+      clone.setAttribute('width', String(innerWidth));
+      clone.setAttribute('height', String(innerHeight));
+      const innerGroup = document.createElementNS(svgNS, 'g');
+      innerGroup.setAttribute('transform', `translate(0 ${headerHeight})`);
+      innerGroup.appendChild(clone);
+      svg.appendChild(innerGroup);
+    }
+
+    if (legendSvg && legendSvg.group) {
+      const legendGroup = legendSvg.group;
+      const legendX = Math.round((totalWidth - legendWidth) / 2);
+      legendGroup.setAttribute('transform', `translate(${legendX}, ${Math.round(panelRect.height + legendPadding)})`);
+      svg.appendChild(legendGroup);
+    }
+
+    const svgString = new XMLSerializer().serializeToString(svg);
+    return { svgString, width: totalWidth, height: totalHeight };
+  }
+
+  function buildVectorPanelsSvg(vizContainer) {
+    const container = vizContainer || getCurrentVizContainer();
+    if (!container) return null;
+    const panels = Array.from(container.querySelectorAll('.tree-panel, .comparison-panel'));
+    if (!panels.length) return null;
+
+    const containerRect = container.getBoundingClientRect();
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    const panelData = panels.map((panel) => {
+      const rect = panel.getBoundingClientRect();
+      const x = rect.left - containerRect.left + (container.scrollLeft || 0);
+      const y = rect.top - containerRect.top + (container.scrollTop || 0);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + rect.width);
+      maxY = Math.max(maxY, y + rect.height);
+      return { panel, x, y, width: rect.width, height: rect.height };
+    });
+
+    if (!Number.isFinite(minX) || !Number.isFinite(minY)) return null;
+    const width = Math.max(1, Math.round(maxX - minX));
+    const height = Math.max(1, Math.round(maxY - minY));
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const root = document.createElementNS(svgNS, 'svg');
+    root.setAttribute('xmlns', svgNS);
+    root.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    root.setAttribute('width', width);
+    root.setAttribute('height', height);
+    root.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    panelData.forEach((item) => {
+      const sub = buildVectorPanelSvg(item.panel);
+      if (!sub) return;
+      const g = document.createElementNS(svgNS, 'g');
+      const tx = Math.round(item.x - minX);
+      const ty = Math.round(item.y - minY);
+      g.setAttribute('transform', `translate(${tx}, ${ty})`);
+      const frag = new DOMParser().parseFromString(sub.svgString, 'image/svg+xml');
+      const subSvg = frag.documentElement;
+      if (subSvg) g.appendChild(subSvg);
+      root.appendChild(g);
+    });
+
+    let finalWidth = width;
+    let finalHeight = height;
+
+    const sharedLegend = document.getElementById('shared-legend');
+    if (sharedLegend && isElementVisible(sharedLegend)) {
+      const legendSvg = buildLegendSvgFromElement(sharedLegend, { centerTitle: true, labelMode: 'spread' });
+      if (legendSvg && legendSvg.group) {
+        const legendPadding = 12;
+        const x = Math.round((width - legendSvg.width) / 2);
+        const y = height + legendPadding;
+        const g = legendSvg.group;
+        g.setAttribute('transform', `translate(${x}, ${y})`);
+        root.appendChild(g);
+
+        finalWidth = Math.max(width, x + legendSvg.width);
+        finalHeight = Math.max(height, y + legendSvg.height + legendPadding);
+        root.setAttribute('width', finalWidth);
+        root.setAttribute('height', finalHeight);
+        root.setAttribute('viewBox', `0 0 ${finalWidth} ${finalHeight}`);
+      }
+    }
+
+    const svgString = new XMLSerializer().serializeToString(root);
+    return { svgString, width: finalWidth, height: finalHeight };
+  }
+
+  function buildMatrixVectorSvg() {
+    const matrix = document.getElementById('comparison-matrix');
+    if (!matrix) return null;
+    const rect = matrix.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const root = document.createElementNS(svgNS, 'svg');
+    root.setAttribute('xmlns', svgNS);
+    root.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    root.setAttribute('width', Math.round(rect.width));
+    root.setAttribute('height', Math.round(rect.height));
+    root.setAttribute('viewBox', `0 0 ${Math.round(rect.width)} ${Math.round(rect.height)}`);
+
+    const title = matrix.querySelector('.matrix-title');
+    if (title) {
+      const tRect = title.getBoundingClientRect();
+      const x = tRect.left - rect.left + tRect.width / 2;
+      const y = tRect.top - rect.top + tRect.height / 2;
+      appendRectFromElement(root, title, tRect.left - rect.left, tRect.top - rect.top, tRect.width, tRect.height);
+      appendTextFromElement(root, title, x, y, 'middle');
+    }
+
+    const grid = matrix.querySelector('.comparison-matrix-grid');
+    if (grid) {
+      const gRect = grid.getBoundingClientRect();
+      appendRectFromElement(root, grid, gRect.left - rect.left, gRect.top - rect.top, gRect.width, gRect.height);
+    }
+
+    const labels = Array.from(matrix.querySelectorAll('.matrix-row-label, .matrix-col-label'));
+    labels.forEach((label) => {
+      const lRect = label.getBoundingClientRect();
+      const x = lRect.left - rect.left + lRect.width / 2;
+      const y = lRect.top - rect.top + lRect.height / 2;
+      appendRectFromElement(root, label, lRect.left - rect.left, lRect.top - rect.top, lRect.width, lRect.height);
+      const cs = window.getComputedStyle(label);
+      const writingMode = cs ? cs.writingMode || cs.getPropertyValue('writing-mode') : '';
+      if (writingMode && writingMode.includes('vertical')) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const text = document.createElementNS(svgNS, 'text');
+        text.textContent = (label.textContent || '').trim();
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+        text.setAttribute('transform', `rotate(-90 ${x} ${y})`);
+        try {
+          if (cs) {
+            if (cs.fontFamily) text.setAttribute('font-family', cs.fontFamily);
+            if (cs.fontSize) text.setAttribute('font-size', cs.fontSize);
+            if (cs.fontWeight) text.setAttribute('font-weight', cs.fontWeight);
+            if (cs.letterSpacing && cs.letterSpacing !== 'normal') text.setAttribute('letter-spacing', cs.letterSpacing);
+            if (cs.color) text.setAttribute('fill', cs.color);
+          }
+        } catch (_) {}
+        root.appendChild(text);
+      } else {
+        appendTextFromElement(root, label, x, y, 'middle');
+      }
+    });
+
+    const cells = Array.from(matrix.querySelectorAll('.matrix-cell'));
+    cells.forEach((cell) => {
+      if (cell.classList && cell.classList.contains('empty-cell')) return;
+      const cellRect = cell.getBoundingClientRect();
+      const x = cellRect.left - rect.left;
+      const y = cellRect.top - rect.top;
+      if (cellRect.width > 0 && cellRect.height > 0) {
+        appendRectFromElement(root, cell, x, y, cellRect.width, cellRect.height);
+      }
+      const svgEl = cell.querySelector('svg');
+      if (!svgEl) return;
+      const clone = cloneSvgWithInlineStyles(svgEl);
+      clone.setAttribute('x', x);
+      clone.setAttribute('y', y);
+      clone.setAttribute('width', cellRect.width);
+      clone.setAttribute('height', cellRect.height);
+      root.appendChild(clone);
+    });
+
+    const legend = matrix.querySelector('.comparison-legend');
+    if (legend && isElementVisible(legend)) {
+      const legendSvg = buildLegendSvgFromElement(legend);
+      if (legendSvg && legendSvg.group) {
+        const lRect = legend.getBoundingClientRect();
+        const x = lRect.left - rect.left;
+        const y = lRect.top - rect.top;
+        legendSvg.group.setAttribute('transform', `translate(${Math.round(x)}, ${Math.round(y)})`);
+        root.appendChild(legendSvg.group);
+      }
+    }
+
+    const svgString = new XMLSerializer().serializeToString(root);
+    return { svgString, width: Math.round(rect.width), height: Math.round(rect.height) };
+  }
+
   function buildVizContainerSnapshot() {
     const vizContainer = (typeof document !== 'undefined') ? document.getElementById('viz-container') : null;
     if (!vizContainer) return null;
@@ -609,12 +1235,24 @@
   }
 
   function exportVizContainerAsSVG(filenamePrefix) {
+    const prefix = resolveVizExportPrefix(filenamePrefix);
+    let vector = null;
+    try {
+      if (typeof window !== 'undefined' && window.visualizationMode === 'matrix') {
+        vector = buildMatrixVectorSvg();
+      }
+    } catch (_) {}
+    if (!vector) vector = buildVectorPanelsSvg(getCurrentVizContainer());
+    if (vector && vector.svgString) {
+      const blob = new Blob([vector.svgString], { type: 'image/svg+xml;charset=utf-8' });
+      downloadBlob(blob, `${prefix}_${formatTimestamp()}.svg`);
+      return;
+    }
     const snapshot = buildVizContainerSnapshot();
     if (!snapshot) {
       console.warn('No viz-container snapshot available for SVG export');
       return;
     }
-    const prefix = resolveVizExportPrefix(filenamePrefix);
     const blob = new Blob([snapshot.svgString], { type: 'image/svg+xml;charset=utf-8' });
     downloadBlob(blob, `${prefix}_${formatTimestamp()}.svg`);
   }
@@ -649,12 +1287,21 @@
   }
 
   function exportPanelAsSVG(panelId, filenamePrefix) {
+    const prefix = filenamePrefix || (panelId || 'panel_export');
+    const panel = (typeof document !== 'undefined') ? document.getElementById(panelId) : null;
+    const includeShared = (typeof window !== 'undefined')
+      && (window.visualizationMode === 'single' || window.visualizationMode === 'group');
+    const vector = panel ? buildVectorPanelSvg(panel, { includeSharedLegend: includeShared }) : null;
+    if (vector && vector.svgString) {
+      const blob = new Blob([vector.svgString], { type: 'image/svg+xml;charset=utf-8' });
+      downloadBlob(blob, `${prefix}_${formatTimestamp()}.svg`);
+      return;
+    }
     const snapshot = buildPanelSnapshot(panelId);
     if (!snapshot) {
       console.warn('No panel snapshot available for export:', panelId);
       return;
     }
-    const prefix = filenamePrefix || (panelId || 'panel_export');
     const blob = new Blob([snapshot.svgString], { type: 'image/svg+xml;charset=utf-8' });
     downloadBlob(blob, `${prefix}_${formatTimestamp()}.svg`);
   }

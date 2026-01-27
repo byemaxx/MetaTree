@@ -50,5 +50,13 @@ For detailed instructions on input formats, usage, and integration, please refer
 *   **[Programmatic Integration](./doc/USER_MANUAL.md#6-advanced-features)**: API for external tools (Python, Jupyter, etc.).
 *   **[Statistical Methods](./doc/USER_MANUAL.md#7-statistical-methods)**: Details on hypothesis testing and effect size calculations.
 
+## Preprint
+
+If you use MetaTree in your research, please cite our preprint:
+
+Wu Q, Zhang A, Ning Z, et al. MetaTree: an interactive web platform for hierarchical data visualization and multi-group comparison[J]. bioRxiv, 2026: 2026.01.22.701099.
+
+https://www.biorxiv.org/content/10.64898/2026.01.22.701099v1
+
 ---
 *Designed for microbiome, metaproteomics, and any tree-structured datasets.*

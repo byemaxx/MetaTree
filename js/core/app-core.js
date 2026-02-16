@@ -1157,6 +1157,255 @@ function applyLabelOverflow(textSelection) {
     });
 }
 
+const LABEL_METRICS_CACHE_LIMIT = 8000;
+let labelMeasureCanvas = null;
+const labelMeasureCache = new Map();
+const labelLayoutCache = new Map();
+
+function normalizeAngle(angle) {
+    if (!Number.isFinite(angle)) return 0;
+    const twoPi = 2 * Math.PI;
+    return ((angle % twoPi) + twoPi) % twoPi;
+}
+
+function splitLabelLinesForWrap(text, maxChars) {
+    const full = String(text || '');
+    if (!full) return [''];
+    if (!Number.isFinite(maxChars) || maxChars < 4 || full.length <= maxChars) return [full];
+
+    const words = full.split(/\s+/).filter(w => w.length > 0);
+    const lines = [];
+
+    if (words.length <= 1) {
+        for (let i = 0; i < full.length; i += maxChars) {
+            lines.push(full.slice(i, i + maxChars));
+        }
+    } else {
+        let line = '';
+        words.forEach((w) => {
+            const test = line ? `${line} ${w}` : w;
+            if (test.length > maxChars && line) {
+                lines.push(line);
+                line = w;
+            } else {
+                line = test;
+            }
+        });
+        if (line) lines.push(line);
+    }
+
+    return lines.length > 0 ? lines : [full];
+}
+
+function measureLabelTextWidth(text, fontSize, fontWeight = 500) {
+    const safeText = String(text || '');
+    const size = Number.isFinite(fontSize) ? fontSize : 9;
+    const key = `${fontWeight}|${size}|${safeText}`;
+
+    if (labelMeasureCache.has(key)) return labelMeasureCache.get(key);
+
+    let width = safeText.length * size * 0.6;
+    try {
+        if (!labelMeasureCanvas && typeof document !== 'undefined') {
+            labelMeasureCanvas = document.createElement('canvas');
+        }
+        const ctx = labelMeasureCanvas ? labelMeasureCanvas.getContext('2d') : null;
+        if (ctx) {
+            ctx.font = `${fontWeight} ${size}px sans-serif`;
+            const measured = ctx.measureText(safeText).width;
+            if (Number.isFinite(measured) && measured > 0) width = measured;
+        }
+    } catch (_) { }
+
+    if (labelMeasureCache.size > LABEL_METRICS_CACHE_LIMIT) labelMeasureCache.clear();
+    labelMeasureCache.set(key, width);
+    return width;
+}
+
+function getLabelTextMetrics(labelText, fontSize, overflowMode = labelOverflowMode, maxLength = labelMaxLength) {
+    const text = String(labelText || '');
+    const size = Number.isFinite(fontSize) ? fontSize : 9;
+    const cacheKey = `${size}|${overflowMode}|${maxLength}|${text}`;
+    if (labelLayoutCache.has(cacheKey)) return labelLayoutCache.get(cacheKey);
+
+    let lines = [text];
+    if (overflowMode === 'wrap') {
+        const maxChars = (Number.isFinite(maxLength) && maxLength >= 4) ? Math.floor(maxLength) : 15;
+        lines = splitLabelLinesForWrap(text, maxChars);
+    }
+
+    const width = lines.reduce((w, line) => Math.max(w, measureLabelTextWidth(line, size, 500)), 0);
+    const lineHeight = size * 1.1;
+    const height = size + Math.max(0, lines.length - 1) * lineHeight;
+    const metrics = { width, height, lineHeight, lineCount: lines.length };
+
+    if (labelLayoutCache.size > LABEL_METRICS_CACHE_LIMIT) labelLayoutCache.clear();
+    labelLayoutCache.set(cacheKey, metrics);
+    return metrics;
+}
+
+function createOrientedLabelBox(originX, originY, rotationRad, anchor, offset, metrics, fontSize) {
+    const safeFontSize = Number.isFinite(fontSize) ? fontSize : 9;
+    const width = Math.max(0, metrics && Number.isFinite(metrics.width) ? metrics.width : 0);
+    const height = Math.max(safeFontSize * 0.9, metrics && Number.isFinite(metrics.height) ? metrics.height : safeFontSize);
+    const safeOffset = Number.isFinite(offset) ? Math.abs(offset) : 0;
+    const dy = safeFontSize * 0.31;
+
+    let xMin;
+    let xMax;
+    if (anchor === 'end') {
+        xMax = -safeOffset;
+        xMin = xMax - width;
+    } else if (anchor === 'middle') {
+        xMin = -width / 2;
+        xMax = width / 2;
+    } else {
+        xMin = safeOffset;
+        xMax = xMin + width;
+    }
+
+    const yMin = dy - safeFontSize * 0.8;
+    const yMax = yMin + height;
+    const pad = Math.max(0.8, safeFontSize * 0.12);
+    const localCx = (xMin + xMax) / 2;
+    const localCy = (yMin + yMax) / 2;
+    const cosR = Math.cos(rotationRad);
+    const sinR = Math.sin(rotationRad);
+    const centerX = originX + localCx * cosR - localCy * sinR;
+    const centerY = originY + localCx * sinR + localCy * cosR;
+    const hx = (xMax - xMin) / 2 + pad;
+    const hy = (yMax - yMin) / 2 + pad;
+    const uX = cosR;
+    const uY = sinR;
+    const vX = -sinR;
+    const vY = cosR;
+    const extX = Math.abs(uX) * hx + Math.abs(vX) * hy;
+    const extY = Math.abs(uY) * hx + Math.abs(vY) * hy;
+
+    return {
+        cx: centerX,
+        cy: centerY,
+        hx,
+        hy,
+        uX,
+        uY,
+        vX,
+        vY,
+        aabb: {
+            xMin: centerX - extX,
+            xMax: centerX + extX,
+            yMin: centerY - extY,
+            yMax: centerY + extY
+        }
+    };
+}
+
+function orientedBoxIntersects(a, b) {
+    if (!a || !b) return false;
+    if (a.aabb.xMax < b.aabb.xMin || b.aabb.xMax < a.aabb.xMin || a.aabb.yMax < b.aabb.yMin || b.aabb.yMax < a.aabb.yMin) {
+        return false;
+    }
+
+    const tx = b.cx - a.cx;
+    const ty = b.cy - a.cy;
+    const axes = [
+        [a.uX, a.uY],
+        [a.vX, a.vY],
+        [b.uX, b.uY],
+        [b.vX, b.vY]
+    ];
+
+    for (let i = 0; i < axes.length; i++) {
+        const ax = axes[i][0];
+        const ay = axes[i][1];
+        const projT = Math.abs(tx * ax + ty * ay);
+        const ra = a.hx * Math.abs(a.uX * ax + a.uY * ay) + a.hy * Math.abs(a.vX * ax + a.vY * ay);
+        const rb = b.hx * Math.abs(b.uX * ax + b.uY * ay) + b.hy * Math.abs(b.vX * ax + b.vY * ay);
+        if (projT > ra + rb) return false;
+    }
+
+    return true;
+}
+
+function collidesWithPlacedBoxes(candidateBox, placedBoxes) {
+    for (let i = 0; i < placedBoxes.length; i++) {
+        if (orientedBoxIntersects(candidateBox, placedBoxes[i])) return true;
+    }
+    return false;
+}
+
+function createRadialLabelBox(node, labelAngle, metrics, fontSize) {
+    if (!node || !node.parent) {
+        return createOrientedLabelBox(0, 0, 0, 'middle', 0, metrics, fontSize);
+    }
+
+    const nodeAngle = Number.isFinite(node.x) ? node.x : 0;
+    const radius = Number.isFinite(node.y) ? node.y : 0;
+    const baseX = radius * Math.cos(nodeAngle - Math.PI / 2);
+    const baseY = radius * Math.sin(nodeAngle - Math.PI / 2);
+    const normalized = normalizeAngle(labelAngle);
+    const isRightSide = normalized < Math.PI;
+    const rotation = isRightSide ? (normalized - Math.PI / 2) : (normalized + Math.PI / 2);
+    const anchor = isRightSide ? 'start' : 'end';
+    return createOrientedLabelBox(baseX, baseY, rotation, anchor, 6, metrics, fontSize);
+}
+
+function resolveRadialLabelPlacement(node, metrics, placedBoxes, fontSize, options = {}) {
+    const originalAngle = Number.isFinite(node && node.x) ? node.x : 0;
+    const initialBox = createRadialLabelBox(node, originalAngle, metrics, fontSize);
+    if (!collidesWithPlacedBoxes(initialBox, placedBoxes)) {
+        return { angle: normalizeAngle(originalAngle), box: initialBox };
+    }
+
+    const canAdjust = !!options.allowAngleAdjustment;
+    if (!canAdjust) return null;
+
+    const radius = Math.max(10, Number.isFinite(node && node.y) ? node.y : 10);
+    const maxOffsetAngle = Number.isFinite(options.maxOffsetAngle) ? options.maxOffsetAngle : (Math.PI / 5);
+    const stepArc = Number.isFinite(options.stepArc) ? options.stepArc : (fontSize * 0.6);
+    const maxSteps = Number.isFinite(options.maxSteps) ? options.maxSteps : 14;
+
+    for (let i = 1; i <= maxSteps; i++) {
+        const offsetAngle = (stepArc * i) / radius;
+        if (offsetAngle > maxOffsetAngle) break;
+
+        const posAngle = originalAngle + offsetAngle;
+        const posBox = createRadialLabelBox(node, posAngle, metrics, fontSize);
+        if (!collidesWithPlacedBoxes(posBox, placedBoxes)) {
+            return { angle: normalizeAngle(posAngle), box: posBox };
+        }
+
+        const negAngle = originalAngle - offsetAngle;
+        const negBox = createRadialLabelBox(node, negAngle, metrics, fontSize);
+        if (!collidesWithPlacedBoxes(negBox, placedBoxes)) {
+            return { angle: normalizeAngle(negAngle), box: negBox };
+        }
+    }
+
+    return null;
+}
+
+function createTreeLabelBox(node, metrics, fontSize, isVertical) {
+    const hasChildren = !!(node && node.children && node.children.length > 0);
+    const anchor = hasChildren ? 'end' : 'start';
+    const offset = isVertical ? 8 : 10;
+    const baseX = isVertical ? (Number.isFinite(node && node.x) ? node.x : 0) : (Number.isFinite(node && node.y) ? node.y : 0);
+    const baseY = isVertical ? (Number.isFinite(node && node.y) ? node.y : 0) : (Number.isFinite(node && node.x) ? node.x : 0);
+    const rotation = isVertical ? (Math.PI / 2) : 0;
+    return createOrientedLabelBox(baseX, baseY, rotation, anchor, offset, metrics, fontSize);
+}
+
+try {
+    if (typeof window !== 'undefined') {
+        window.smartLabelCullingHelpers = {
+            getLabelTextMetrics,
+            resolveRadialLabelPlacement,
+            createTreeLabelBox,
+            collidesWithPlacedBoxes
+        };
+    }
+} catch (_) { }
+
 /**
  * 获取标签颜色
  * @param {Object|string} nodeOrLabel - 节点对象或标签名称
@@ -2694,77 +2943,27 @@ function drawTree(sample, globalDomain) {
                     return abB - abA;
                 });
 
-                const placedLabels = []; // { angle, radius, startR, endR }
+                const placedBoxes = [];
                 const currentLabelFontSize = (labelFontSize || 10);
-                const charWidth = currentLabelFontSize * 0.6;
+                sortedCandidates.forEach(d => { delete d._labelAngle; });
 
                 sortedCandidates.forEach(d => {
-                    const radius = d.y;
-
                     const labelText = getDisplayName(d);
-                    const textLen = labelText.length * charWidth;
-
-                    // 初始角度（原始位置）
-                    const originalAngle = d.x;
-
-                    // 检查重叠的辅助函数
-                    const checkOverlap = (testAngle) => {
-                        const normAngle = (testAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                        const startR = radius + 6;
-                        const endR = startR + textLen;
-
-                        for (const p of placedLabels) {
-                            let diff = Math.abs(normAngle - p.angle);
-                            if (diff > Math.PI) diff = 2 * Math.PI - diff;
-                            const avgR = (radius + p.radius) / 2;
-                            const arcDist = diff * avgR;
-
-                            if (arcDist < currentLabelFontSize * 0.7) {
-                                const overlapR = Math.max(startR, p.startR) < Math.min(endR, p.endR);
-                                if (overlapR) return true;
-                            }
+                    const metrics = getLabelTextMetrics(labelText, currentLabelFontSize);
+                    const placement = resolveRadialLabelPlacement(
+                        d,
+                        metrics,
+                        placedBoxes,
+                        currentLabelFontSize,
+                        {
+                            allowAngleAdjustment: !!(d && d.children && d.children.length > 0),
+                            maxOffsetAngle: Math.PI / 5
                         }
-                        return false;
-                    };
-
-                    let finalAngle = originalAngle;
-                    let isOverlapping = checkOverlap(finalAngle);
-
-                    // 如果重叠且是内部节点，尝试偏移
-                    if (isOverlapping && d.children && d.children.length > 0) {
-                        const maxOffsetAngle = Math.PI / 6; // Max 30 degrees
-                        const stepArc = currentLabelFontSize * 0.5;
-                        const maxSteps = 10;
-
-                        for (let i = 1; i <= maxSteps; i++) {
-                            const currentOffsetArc = stepArc * i;
-                            const currentOffsetAngle = currentOffsetArc / Math.max(radius, 10);
-
-                            if (currentOffsetAngle > maxOffsetAngle) break;
-
-                            // 尝试正向偏移
-                            if (!checkOverlap(originalAngle + currentOffsetAngle)) {
-                                finalAngle = originalAngle + currentOffsetAngle;
-                                isOverlapping = false;
-                                break;
-                            }
-                            // 尝试负向偏移
-                            if (!checkOverlap(originalAngle - currentOffsetAngle)) {
-                                finalAngle = originalAngle - currentOffsetAngle;
-                                isOverlapping = false;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!isOverlapping) {
-                        d._labelAngle = finalAngle;
-                        const normAngle = (finalAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-                        const startR = radius + 6;
-                        const endR = startR + textLen;
-                        placedLabels.push({ angle: normAngle, radius, startR, endR });
-                        visibleNodesSet.add(d);
-                    }
+                    );
+                    if (!placement) return;
+                    d._labelAngle = placement.angle;
+                    placedBoxes.push(placement.box);
+                    visibleNodesSet.add(d);
                 });
 
                 // 3. 绘制通过碰撞检测的标签 (Render in separate layer on top)
@@ -3118,49 +3317,16 @@ function drawTree(sample, globalDomain) {
                     return abB - abA;
                 });
 
-                const placedLabels = []; // { xMin, xMax, yMin, yMax }
+                const placedBoxes = [];
                 const currentLabelFontSize = (labelFontSize || 10);
-                const charWidth = currentLabelFontSize * 0.6;
 
                 sortedCandidates.forEach(d => {
-                    const x = d.x; // Breadth (Vertical in HorizLayout, Horiz in VertLayout)
-                    const y = d.y; // Depth (Horizontal in HorizLayout, Vert in VertLayout)
-                    const isLeaf = !d.children;
                     const labelText = getDisplayName(d);
-                    const textLen = labelText.length * charWidth;
-
-                    // Bounding box calculation
-                    // x is breadth center. Height is approx fontSize.
-                    const xMin = x - currentLabelFontSize / 2;
-                    const xMax = x + currentLabelFontSize / 2;
-
-                    let yMin, yMax;
-                    if (isLeaf) {
-                        // Anchor start (left/down), x offset +8/+10.
-                        const offset = isVertical ? 8 : 10;
-                        yMin = y + offset;
-                        yMax = yMin + textLen;
-                    } else {
-                        // Anchor end (right/up), x offset -8/-10.
-                        const offset = isVertical ? 8 : 10;
-                        yMax = y - offset;
-                        yMin = yMax - textLen;
-                    }
-
-                    let overlaps = false;
-                    for (const p of placedLabels) {
-                        const intersectX = Math.max(xMin, p.xMin) < Math.min(xMax, p.xMax);
-                        const intersectY = Math.max(yMin, p.yMin) < Math.min(yMax, p.yMax);
-                        if (intersectX && intersectY) {
-                            overlaps = true;
-                            break;
-                        }
-                    }
-
-                    if (!overlaps) {
-                        placedLabels.push({ xMin, xMax, yMin, yMax });
-                        visibleNodesSet.add(d);
-                    }
+                    const metrics = getLabelTextMetrics(labelText, currentLabelFontSize);
+                    const labelBox = createTreeLabelBox(d, metrics, currentLabelFontSize, isVertical);
+                    if (collidesWithPlacedBoxes(labelBox, placedBoxes)) return;
+                    placedBoxes.push(labelBox);
+                    visibleNodesSet.add(d);
                 });
 
                 // Render labels in separate layer (must handle transform manually)

@@ -3511,6 +3511,8 @@ function handleRunComparison() {
     comparisonMetric = document.getElementById('comparison-metric').value;
     // divergingPalette is now managed by clickable previews (setDivergingPalette)
     showOnlySignificant = document.getElementById('show-significance').checked;
+    comparisonBaseNonZeroOnly = !!document.getElementById('comparison-base-nonzero-only')?.checked;
+    try { if (typeof window !== 'undefined') window.comparisonBaseNonZeroOnly = comparisonBaseNonZeroOnly; } catch (_) { }
     const comparisonTest = (document.getElementById('comparison-test') && document.getElementById('comparison-test').value) ? document.getElementById('comparison-test').value : 'wilcoxon';
 
     // 使用单一域输入：M（默认5）；比较模式下为 [-M, 0, M]
@@ -4009,6 +4011,14 @@ function handleSignificanceChange() {
     }
 }
 
+function handleComparisonBaseFilterChange() {
+    const isChecked = !!document.getElementById('comparison-base-nonzero-only')?.checked;
+    comparisonBaseNonZeroOnly = isChecked;
+    try { if (typeof window !== 'undefined') window.comparisonBaseNonZeroOnly = isChecked; } catch (_) { }
+
+    if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
+}
+
 function handleThresholdChange() {
     // 立即重绘比较视图
     if (visualizationMode === 'comparison' || visualizationMode === 'matrix') {
@@ -4332,6 +4342,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('export-comparison').addEventListener('click', handleViewResults);
     document.getElementById('comparison-metric').addEventListener('change', handleComparisonMetricChange);
     document.getElementById('show-significance').addEventListener('change', handleSignificanceChange);
+    document.getElementById('comparison-base-nonzero-only').addEventListener('change', handleComparisonBaseFilterChange);
     const colorDomainAbs = document.getElementById('color-domain-abs');
     if (colorDomainAbs) colorDomainAbs.addEventListener('change', handleColorDomainChange);
     const colorDomainReset = document.getElementById('color-domain-reset');
@@ -4475,7 +4486,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'comparison-controls', 'meta-group-column', 'meta-status', 'unified-group-display',
             'group-selection-row', 'select-group1', 'select-group2',
             'show-significance', 'significance-thresholds-row', 'pvalue-threshold', 'qvalue-threshold', 'logfc-threshold',
-            'comparison-metric',
+            'comparison-base-nonzero-only', 'comparison-metric',
             'color-domain-abs', 'color-domain-reset', 'run-comparison', 'export-comparison', 'colors-toggle',
             // 分组模态框
             'group-modal', 'group-name-input', 'sample-checklist', 'existing-groups-list', 'save-group-btn', 'cancel-group-btn', 'close-group-modal',

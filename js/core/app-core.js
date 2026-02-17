@@ -378,6 +378,8 @@ try { if (typeof window !== 'undefined') window.visualizationMode = visualizatio
 let comparisonMetric = 'log2_median_ratio';  // 比较指标
 let divergingPalette = 'blueRed';  // 分歧色板
 let showOnlySignificant = false;  // 只显示显著差异
+let comparisonBaseNonZeroOnly = false;  // 所有模式：base 结构仅保留当前显示样本/分组中的非零节点
+try { if (typeof window !== 'undefined') window.comparisonBaseNonZeroOnly = comparisonBaseNonZeroOnly; } catch (_) { }
 let comparisonColorDomain = [-5, 0, 5];  // 比较颜色域（默认 -5 到 5）
 
 function getComparisonRendererStoreSafe() {
@@ -2159,6 +2161,55 @@ function buildTreeWithGroupData() {
     return groupTree;
 }
 
+function shouldFilterBaseByNonZero() {
+    if (typeof comparisonBaseNonZeroOnly !== 'undefined') return !!comparisonBaseNonZeroOnly;
+    if (typeof window !== 'undefined' && typeof window.comparisonBaseNonZeroOnly !== 'undefined') {
+        return !!window.comparisonBaseNonZeroOnly;
+    }
+    return false;
+}
+
+function hasNonZeroAbundanceForTargets(node, targets) {
+    if (!node || !node.abundances || !Array.isArray(targets) || targets.length === 0) return false;
+    for (const target of targets) {
+        const v = Number(node.abundances[target]);
+        if (isFinite(v) && v !== 0) return true;
+    }
+    return false;
+}
+
+function buildNonZeroBaseTree(sourceTree, targets) {
+    if (!sourceTree) return sourceTree;
+    if (!shouldFilterBaseByNonZero()) return sourceTree;
+
+    const activeTargets = Array.isArray(targets) ? targets.filter(Boolean) : [];
+    if (activeTargets.length === 0) return sourceTree;
+
+    const cloneFilteredNode = (node) => {
+        if (!node || typeof node !== 'object') return null;
+        const children = Array.isArray(node.children) ? node.children : [];
+        const keptChildren = children.map(cloneFilteredNode).filter(Boolean);
+        const keepSelf = hasNonZeroAbundanceForTargets(node, activeTargets);
+        if (!keepSelf && keptChildren.length === 0) return null;
+
+        const cloned = { ...node };
+        if (keptChildren.length > 0) {
+            cloned.children = keptChildren;
+        } else {
+            delete cloned.children;
+        }
+        return cloned;
+    };
+
+    const filtered = cloneFilteredNode(sourceTree);
+    if (filtered) return filtered;
+
+    // All selected samples/groups are zero: keep root node only to avoid empty-tree rendering issues.
+    const rootOnly = { ...sourceTree };
+    delete rootOnly.children;
+    return rootOnly;
+}
+
 // ========== 可视化模块 ==========
 function initVisualization() {
     const vizContainer = (typeof window.getVizSubContainer === 'function')
@@ -2328,6 +2379,16 @@ function drawAllTrees() {
         activeTreeData = treeData;
     }
 
+    // 根据模式获取当前要显示的样本/分组，并据此可选裁剪 base 结构
+    let activeSamples;
+    if (visualizationMode === 'group') {
+        activeSamples = selectedGroups.slice();
+    } else {
+        activeSamples = typeof getActiveSamples === 'function' ? getActiveSamples() : selectedSamples.slice();
+    }
+    activeTreeData = buildNonZeroBaseTree(activeTreeData, activeSamples);
+    if (!activeTreeData) return;
+
     // ========== 重新分配标签颜色（仅对当前显示的标签） ==========
     if (uniformLabelColors && activeTreeData) {
         // 收集所有当前会被实际渲染的唯一标签名称
@@ -2345,8 +2406,8 @@ function drawAllTrees() {
             const selectedSet = getLabelLevelSet();
 
             // 如果在 single 模式，需要对每个样本计算阈值
-            if (visualizationMode === 'single' && selectedSamples && selectedSamples.length > 0) {
-                selectedSamples.forEach(sample => {
+            if (visualizationMode === 'single' && Array.isArray(activeSamples) && activeSamples.length > 0) {
+                activeSamples.forEach(sample => {
                     const thresholdValue = calculateLabelThreshold(hierarchy, sample);
 
                     // 收集会被渲染的标签
@@ -2490,14 +2551,6 @@ function drawAllTrees() {
             // 传递 leafCount 以便 UI 根据叶子数量调整标签默认显示（性能优化）
             window.updateLabelLevelsOptions(maxLeafHeight, hasFunctionLeaf, namesFromLeafDynamic, leafCount);
         }
-    }
-
-    // 根据模式获取要绘制的项目
-    let activeSamples;
-    if (visualizationMode === 'group') {
-        activeSamples = selectedGroups.slice();
-    } else {
-        activeSamples = typeof getActiveSamples === 'function' ? getActiveSamples() : selectedSamples.slice();
     }
 
     activeSamples.forEach(sample => {

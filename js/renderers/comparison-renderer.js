@@ -53,6 +53,127 @@
     return VALID_LAYOUTS.has(layout) ? layout : 'radial';
   }
 
+  function shouldUseNonZeroComparisonBase() {
+    if (typeof comparisonBaseNonZeroOnly !== 'undefined') return !!comparisonBaseNonZeroOnly;
+    if (typeof window !== 'undefined' && typeof window.comparisonBaseNonZeroOnly !== 'undefined') {
+      return !!window.comparisonBaseNonZeroOnly;
+    }
+    return false;
+  }
+
+  function hasNonZeroComparisonAbundance(stats) {
+    if (!stats || typeof stats !== 'object') return false;
+    const mean1 = Number(stats.mean_1) || 0;
+    const mean2 = Number(stats.mean_2) || 0;
+    return mean1 !== 0 || mean2 !== 0;
+  }
+
+  function getComparisonStatsPoolsForBase(comparisonStats) {
+    const pools = [];
+    const activeMode = (typeof visualizationMode === 'string')
+      ? visualizationMode
+      : ((typeof window !== 'undefined' && typeof window.visualizationMode === 'string') ? window.visualizationMode : null);
+
+    if (activeMode === 'matrix' && typeof window !== 'undefined') {
+      const matrixResults = window.comparisonResults_matrix || window.comparisonResults;
+      if (Array.isArray(matrixResults)) {
+        matrixResults.forEach(comp => {
+          if (comp && comp.stats && typeof comp.stats === 'object') {
+            pools.push(comp.stats);
+          }
+        });
+      }
+    }
+
+    if (pools.length === 0 && comparisonStats && typeof comparisonStats === 'object') {
+      pools.push(comparisonStats);
+    }
+    return pools;
+  }
+
+  function buildComparisonSourceTree(comparisonStats) {
+    if (!treeData) return null;
+    if (!shouldUseNonZeroComparisonBase()) {
+      return treeData;
+    }
+    const statsPools = getComparisonStatsPoolsForBase(comparisonStats);
+    if (statsPools.length === 0) return treeData;
+
+    const nonZeroPaths = new Set();
+    statsPools.forEach(statsObj => {
+      Object.entries(statsObj).forEach(([path, stats]) => {
+        if (hasNonZeroComparisonAbundance(stats)) nonZeroPaths.add(path);
+      });
+    });
+
+    let sourceHierarchy = null;
+    try {
+      sourceHierarchy = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);
+    } catch (_) {
+      sourceHierarchy = null;
+    }
+    if (!sourceHierarchy) return treeData;
+
+    const keepMap = new Map();
+    sourceHierarchy.eachAfter(node => {
+      const nodePath = (typeof getNodeAncestorPath === 'function')
+        ? getNodeAncestorPath(node)
+        : (node && node.data ? node.data.name : null);
+      const keepSelf = !!(nodePath && nonZeroPaths.has(nodePath));
+      let keepDescendant = false;
+      if (Array.isArray(node.children)) {
+        for (const child of node.children) {
+          if (keepMap.get(child)) {
+            keepDescendant = true;
+            break;
+          }
+        }
+      }
+      keepMap.set(node, keepSelf || keepDescendant);
+    });
+
+    const cloneKeptNode = (node) => {
+      if (!node || !keepMap.get(node)) return null;
+      const original = node.data || {};
+      const cloned = { ...original };
+      if (Array.isArray(node.children) && node.children.length > 0) {
+        const keptChildren = node.children
+          .map(child => cloneKeptNode(child))
+          .filter(Boolean);
+        if (keptChildren.length > 0) cloned.children = keptChildren;
+        else delete cloned.children;
+      } else {
+        delete cloned.children;
+      }
+      return cloned;
+    };
+
+    const prunedTree = cloneKeptNode(sourceHierarchy);
+    if (prunedTree) return prunedTree;
+
+    // If path mapping unexpectedly fails while non-zero nodes exist, fallback to the original tree.
+    if (nonZeroPaths.size > 0) return treeData;
+
+    // If selected groups are all zero at every node, keep a root-only tree to avoid renderer errors.
+    const rootOnly = { ...(sourceHierarchy.data || {}) };
+    delete rootOnly.children;
+    return rootOnly;
+  }
+
+  function buildComparisonHierarchy(comparisonStats) {
+    const sourceTree = buildComparisonSourceTree(comparisonStats);
+    if (!sourceTree) return null;
+    let root = d3.hierarchy(sourceTree, d => d.__collapsed ? null : d.children);
+    try {
+      if (typeof stripToFirstBranch === 'function') {
+        root = stripToFirstBranch(root);
+      } else if (root && root.children && root.children.length === 1) {
+        root = root.children[0];
+      }
+    } catch (_) { }
+    return root;
+  }
+
   function computePackMetric(stats) {
     if (!stats) return PACK_EPSILON;
     const mean1 = Math.max(0, stats.mean_1 || 0);
@@ -202,9 +323,10 @@
         }
       }
       if (!packRoot) {
-        packRoot = (typeof root.copy === 'function')
+        const sourceTree = opts.sourceTreeData || (root && root.data) || treeData;
+        packRoot = (root && typeof root.copy === 'function')
           ? root.copy()
-          : d3.hierarchy(treeData, packChildAccessor);
+          : d3.hierarchy(sourceTree, packChildAccessor);
       }
       try {
         if (typeof stripUnaryChainToFirstBranch === 'function') {
@@ -664,14 +786,8 @@
 
 
     // 层级数据
-    let root = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);
-    try {
-      if (typeof stripToFirstBranch === 'function') {
-        root = stripToFirstBranch(root);
-      } else if (root && root.children && root.children.length === 1) {
-        root = root.children[0];
-      }
-    } catch (_) { }
+    const root = buildComparisonHierarchy(comparisonStats);
+    if (!root) return;
 
     // Pre-calculate paths for data objects to support layouts that rebuild hierarchy (like packing)
     const dataToPath = new Map();
@@ -805,7 +921,13 @@
       });
     }
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: false, dataToPath, visibleData, filterBySignificance });
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, {
+      mini: false,
+      dataToPath,
+      visibleData,
+      filterBySignificance,
+      sourceTreeData: root.data
+    });
     try { layoutConfig.applyGroupTransform(g); } catch (_) { }
     const nodesForRender = getVisibleComparisonNodes(layoutConfig.nodes, filterBySignificance);
 
@@ -1642,15 +1764,8 @@
 
     const g = svg.append('g');
 
-    let root = d3.hierarchy(treeData, d => d.__collapsed ? null : d.children);
-    // 仅剥离根一层（如有）
-    try {
-      if (typeof stripToFirstBranch === 'function') {
-        root = stripToFirstBranch(root);
-      } else if (root && root.children && root.children.length === 1) {
-        root = root.children[0];
-      }
-    } catch (_) { }
+    const root = buildComparisonHierarchy(comparisonStats);
+    if (!root) return;
 
     // Pre-calculate paths for data objects
     const dataToPath = new Map();
@@ -1677,7 +1792,13 @@
       });
     }
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, { mini: true, dataToPath, visibleData, filterBySignificance: filterMini });
+    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, {
+      mini: true,
+      dataToPath,
+      visibleData,
+      filterBySignificance: filterMini,
+      sourceTreeData: root.data
+    });
     try { layoutConfig.applyGroupTransform(g); } catch (_) { }
 
     const reverseColorsEnabled = resolveReverseColorsFlag();

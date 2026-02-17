@@ -443,11 +443,25 @@
       .attr('x', d => {
         if (d === root) return 0;
         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+        const helper = (typeof window !== 'undefined' && window.smartLabelCullingHelpers && typeof window.smartLabelCullingHelpers.getRadialLabelPlacementConfig === 'function')
+          ? window.smartLabelCullingHelpers.getRadialLabelPlacementConfig
+          : null;
+        if (helper) {
+          const cfg = helper(finalAngle, d._labelDirection || 'outward');
+          return cfg.x;
+        }
         return finalAngle < Math.PI ? 6 : -6;
       })
       .attr('text-anchor', d => {
         if (d === root) return 'middle';
         const finalAngle = d._labelAngle !== undefined ? d._labelAngle : d.x;
+        const helper = (typeof window !== 'undefined' && window.smartLabelCullingHelpers && typeof window.smartLabelCullingHelpers.getRadialLabelPlacementConfig === 'function')
+          ? window.smartLabelCullingHelpers.getRadialLabelPlacementConfig
+          : null;
+        if (helper) {
+          const cfg = helper(finalAngle, d._labelDirection || 'outward');
+          return cfg.textAnchor;
+        }
         return finalAngle < Math.PI ? 'start' : 'end';
       })
       .attr('transform', d => {
@@ -976,40 +990,77 @@
       // 尝试从 DOM 获取状态，因为 comparison-renderer 可能无法访问 app-core 的变量
       const smartCullingCheckbox = document.getElementById('smart-label-culling');
       const useSmartCulling = smartCullingCheckbox ? smartCullingCheckbox.checked : (typeof smartLabelCulling !== 'undefined' ? smartLabelCulling : true);
-      candidates.forEach(d => { delete d._labelAngle; });
+      candidates.forEach(d => {
+        delete d._labelAngle;
+        delete d._labelDirection;
+      });
 
       let visibleNodesSet = new Set();
       if (useSmartCulling && layoutConfig.mode !== 'packing') {
         // Sort candidates by priority: Outer nodes (lower height) first, then magnitude
+        const currentLabelFontSize = (typeof labelFontSize === 'number')
+          ? labelFontSize
+          : ((typeof window !== 'undefined' && typeof window.labelFontSize === 'number') ? window.labelFontSize : 9);
+        const helpers = (typeof window !== 'undefined') ? window.smartLabelCullingHelpers : null;
+        const overflowMode = (typeof labelOverflowMode === 'string') ? labelOverflowMode : 'ellipsis';
+        const maxLen = (typeof labelMaxLength !== 'undefined' && Number.isFinite(labelMaxLength)) ? labelMaxLength : 15;
+        const cullingStrengthRaw = (typeof labelCullingStrength !== 'undefined')
+          ? labelCullingStrength
+          : ((typeof window !== 'undefined' && typeof window.labelCullingStrength !== 'undefined') ? window.labelCullingStrength : undefined);
+        const cullingStrength = (helpers && typeof helpers.resolveCurrentCullingStrength === 'function')
+          ? helpers.resolveCurrentCullingStrength(cullingStrengthRaw)
+          : ((helpers && typeof helpers.normalizeLabelCullingStrength === 'function')
+            ? helpers.normalizeLabelCullingStrength(cullingStrengthRaw)
+            : 50);
+        const labelMeta = new Map();
+        const ensureMeta = (node) => {
+          if (labelMeta.has(node)) return labelMeta.get(node);
+          const text = (typeof window !== 'undefined' && typeof window.getDisplayName === 'function')
+            ? window.getDisplayName(node)
+            : (node && node.data ? (node.data.name || '') : '');
+          const metrics = (helpers && typeof helpers.getLabelTextMetrics === 'function')
+            ? helpers.getLabelTextMetrics(text, currentLabelFontSize, overflowMode, maxLen)
+            : { width: text.length * currentLabelFontSize * 0.6, height: currentLabelFontSize };
+          const info = { text, metrics, width: metrics && Number.isFinite(metrics.width) ? metrics.width : 0 };
+          labelMeta.set(node, info);
+          return info;
+        };
         const sortedCandidates = [...candidates].sort((a, b) => {
           if (a.height !== b.height) return a.height - b.height; // Leaves (0) first
           const pathA = getPathForNode(a);
           const pathB = getPathForNode(b);
           const valA = pathA && comparisonStats[pathA] ? Math.abs(comparisonStats[pathA].comparison_value || 0) : 0;
           const valB = pathB && comparisonStats[pathB] ? Math.abs(comparisonStats[pathB].comparison_value || 0) : 0;
-          return valB - valA;
+          if (valA !== valB) return valB - valA;
+          return ensureMeta(a).width - ensureMeta(b).width;
         });
-
-        const helpers = (typeof window !== 'undefined') ? window.smartLabelCullingHelpers : null;
-        const currentLabelFontSize = (typeof labelFontSize === 'number')
-          ? labelFontSize
-          : ((typeof window !== 'undefined' && typeof window.labelFontSize === 'number') ? window.labelFontSize : 9);
 
         if (!helpers || typeof helpers.getLabelTextMetrics !== 'function' || typeof helpers.collidesWithPlacedBoxes !== 'function') {
           visibleNodesSet = new Set(candidates);
         } else {
           const placedBoxes = [];
-          const overflowMode = (typeof labelOverflowMode === 'string') ? labelOverflowMode : 'ellipsis';
-          const maxLen = (typeof labelMaxLength !== 'undefined' && Number.isFinite(labelMaxLength)) ? labelMaxLength : 15;
           const isTreeVertical = !!layoutConfig.isTreeVertical;
 
-          sortedCandidates.forEach(d => { delete d._labelAngle; });
+          sortedCandidates.forEach(d => {
+            delete d._labelAngle;
+            delete d._labelDirection;
+          });
 
           sortedCandidates.forEach(d => {
-            const labelText = (typeof window !== 'undefined' && typeof window.getDisplayName === 'function')
-              ? window.getDisplayName(d)
-              : (d.data.name || '');
-            const metrics = helpers.getLabelTextMetrics(labelText, currentLabelFontSize, overflowMode, maxLen);
+            const meta = ensureMeta(d);
+            const metrics = meta.metrics;
+            const hasChildren = !!(d && d.children && d.children.length > 0);
+            const directions = (helpers && typeof helpers.getRadialDirectionCandidatesForNode === 'function')
+              ? helpers.getRadialDirectionCandidatesForNode(d, cullingStrength)
+              : ['outward'];
+            const profile = (helpers && typeof helpers.resolveLabelCullingProfile === 'function')
+              ? helpers.resolveLabelCullingProfile(hasChildren, currentLabelFontSize, cullingStrength)
+              : {
+                maxOffsetAngle: hasChildren ? (Math.PI / 4.5) : (Math.PI / 16),
+                stepArc: currentLabelFontSize * (hasChildren ? 0.6 : 0.35),
+                maxSteps: hasChildren ? 16 : 10,
+                collisionPadScale: 1.0
+              };
 
             if (layoutConfig.mode === 'radial' && typeof helpers.resolveRadialLabelPlacement === 'function') {
               const placement = helpers.resolveRadialLabelPlacement(
@@ -1018,19 +1069,31 @@
                 placedBoxes,
                 currentLabelFontSize,
                 {
-                  allowAngleAdjustment: !!(d && d.children && d.children.length > 0),
-                  maxOffsetAngle: Math.PI / 5
+                  allowAngleAdjustment: true,
+                  maxOffsetAngle: profile.maxOffsetAngle,
+                  stepArc: profile.stepArc,
+                  maxSteps: profile.maxSteps,
+                  collisionPadScale: profile.collisionPadScale,
+                  directions,
+                  keepHemisphere: true
                 }
               );
               if (!placement) return;
               d._labelAngle = placement.angle;
+              d._labelDirection = placement.direction || 'outward';
               placedBoxes.push(placement.box);
               visibleNodesSet.add(d);
               return;
             }
 
             if (layoutConfig.mode === 'tree' && typeof helpers.createTreeLabelBox === 'function') {
-              const labelBox = helpers.createTreeLabelBox(d, metrics, currentLabelFontSize, isTreeVertical);
+              const labelBox = helpers.createTreeLabelBox(
+                d,
+                metrics,
+                currentLabelFontSize,
+                isTreeVertical,
+                { collisionPadScale: profile.collisionPadScale }
+              );
               if (helpers.collidesWithPlacedBoxes(labelBox, placedBoxes)) return;
               placedBoxes.push(labelBox);
               visibleNodesSet.add(d);

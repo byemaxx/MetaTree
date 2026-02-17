@@ -1464,6 +1464,14 @@ function initEventListeners() {
     }
     const lblOverflow = document.getElementById('label-overflow');
     if (lblOverflow) lblOverflow.addEventListener('change', handleLabelOverflowChange);
+    const lblCulling = document.getElementById('label-culling-strength');
+    if (lblCulling) {
+        const initStrength = Math.max(0, Math.min(100, Number.isFinite(labelCullingStrength) ? Math.round(labelCullingStrength) : 50));
+        lblCulling.value = String(initStrength);
+        const lblCullingValue = document.getElementById('label-culling-strength-value');
+        if (lblCullingValue) lblCullingValue.textContent = formatCullingStrengthLabel(initStrength);
+        lblCulling.addEventListener('input', handleLabelCullingStrengthChange);
+    }
     // 分位数控制
     const qLowInput = document.getElementById('quantile-low');
     const qHighInput = document.getElementById('quantile-high');
@@ -2673,6 +2681,26 @@ function handleLabelOverflowChange(e) {
     if (showLabels) redrawCurrentViz();
 }
 
+function formatCullingStrengthLabel(strength) {
+    const s = Math.max(0, Math.min(100, Number.isFinite(strength) ? Math.round(strength) : 50));
+    const tone = (s <= 33) ? 'Conservative' : (s >= 67 ? 'Aggressive' : 'Balanced');
+    return `${s} (${tone})`;
+}
+
+function handleLabelCullingStrengthChange(e) {
+    const raw = parseInt(e.target.value, 10);
+    const s = Math.max(0, Math.min(100, Number.isFinite(raw) ? raw : 50));
+    labelCullingStrength = s;
+    try {
+        if (typeof window !== 'undefined') {
+            window.labelCullingStrength = labelCullingStrength;
+        }
+    } catch (_) { }
+    const valEl = document.getElementById('label-culling-strength-value');
+    if (valEl) valEl.textContent = formatCullingStrengthLabel(s);
+    if (showLabels) redrawCurrentViz();
+}
+
 function handleQuantileInputsChange() {
     let low = parseFloat(document.getElementById('quantile-low').value);
     let high = parseFloat(document.getElementById('quantile-high').value);
@@ -2740,6 +2768,16 @@ function resetLabelsNodesToDefaults() {
         const overflowSel = document.getElementById('label-overflow');
         if (overflowSel) overflowSel.value = 'ellipsis';
         labelOverflowMode = 'ellipsis';
+        const cullingSlider = document.getElementById('label-culling-strength');
+        if (cullingSlider) cullingSlider.value = '50';
+        const cullingValue = document.getElementById('label-culling-strength-value');
+        if (cullingValue) cullingValue.textContent = formatCullingStrengthLabel(50);
+        labelCullingStrength = 50;
+        try {
+            if (typeof window !== 'undefined') {
+                window.labelCullingStrength = labelCullingStrength;
+            }
+        } catch (_) { }
         if (font) {
             font.value = '9';
             document.getElementById('label-font-size-value').textContent = '9px';
@@ -4432,7 +4470,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'max-node-size', 'max-node-size-value', 'node-opacity', 'node-opacity-value', 'edge-width-multiplier', 'edge-width-value', 'min-edge-width', 'min-edge-width-value',
             'edge-opacity', 'edge-opacity-value',
             // 新增：标签长度与溢出
-            'label-max-length', 'label-overflow',
+            'label-max-length', 'label-overflow', 'label-culling-strength', 'label-culling-strength-value',
             // 比较模式
             'comparison-controls', 'meta-group-column', 'meta-status', 'unified-group-display',
             'group-selection-row', 'select-group1', 'select-group2',
@@ -5589,11 +5627,18 @@ function initUniformLabelColors() {
     }
 
     const smartCullingCheckbox = document.getElementById('smart-label-culling');
+    const cullingStrengthSlider = document.getElementById('label-culling-strength');
+    const syncCullingModeState = () => {
+        if (!cullingStrengthSlider) return;
+        cullingStrengthSlider.disabled = !(smartCullingCheckbox && smartCullingCheckbox.checked);
+    };
     if (smartCullingCheckbox) {
         smartCullingCheckbox.addEventListener('change', function () {
             smartLabelCulling = this.checked;
+            syncCullingModeState();
             redrawCurrentVisualization();
         });
+        syncCullingModeState();
     }
 
     // 右键菜单事件
@@ -5976,5 +6021,3 @@ function initTabs() {
         });
     });
 }
-
-

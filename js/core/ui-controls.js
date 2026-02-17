@@ -2565,6 +2565,16 @@ window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dyna
     const container = document.getElementById('label-levels');
     if (!container) return;
 
+    // Preserve current selection when options are regenerated (e.g. after base filtering).
+    // We read from existing DOM first so explicit user choices (including selecting none) survive.
+    const hadExistingOptions = !!container.querySelector('input[type="checkbox"]');
+    const preservedSelected = hadExistingOptions
+        ? Array.from(container.querySelectorAll('input[type="checkbox"]'))
+            .filter(el => el.checked)
+            .map(el => parseInt(el.value, 10))
+            .filter(v => Number.isInteger(v) && v >= 0)
+        : null;
+
     // 如果层级数量、功能叶标志和叶子计数都无变化且已有选项，则不重复渲染
     // 这样可以保证当 leafCount 发生变化（例如通过过滤）时，仍会重新计算并更新性能提示
     const prevMax = container.dataset.maxHeight ? parseInt(container.dataset.maxHeight) : undefined;
@@ -2593,12 +2603,12 @@ window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dyna
         ? dynamicNamesFromLeaf
         : fallbackNames;
 
-    // 默认勾选“最外两层”（从叶：0和1）；若层级较少，做边界处理
-    const defaultSelected = [];
-    if (maxLeafHeight >= 0) defaultSelected.push(0);
-    // if (maxLeafHeight >= 1) defaultSelected.push(1);
-    labelLevelsSelected = defaultSelected.slice();
-    // 根据默认选中项决定初始 showLabels（空数组 => 不显示）
+    // Keep previously selected levels when possible; fall back to default only on first initialization.
+    const selectedLevels = (preservedSelected !== null)
+        ? preservedSelected.filter(v => v <= maxLeafHeight)
+        : (maxLeafHeight >= 0 ? [0] : []);
+    labelLevelsSelected = selectedLevels.slice();
+    // 根据当前选中项决定 showLabels（空数组 => 不显示）
     if (Array.isArray(labelLevelsSelected)) {
         showLabels = labelLevelsSelected.length > 0;
     }
@@ -2634,7 +2644,7 @@ window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dyna
         cb.type = 'checkbox';
         cb.id = id;
         cb.value = String(k);
-        cb.checked = defaultSelected.includes(k); // 默认仅勾选最外两层
+        cb.checked = selectedLevels.includes(k);
 
         const text = document.createElement('span');
         const name = namesFromLeaf[k] || `Level ${k}`;

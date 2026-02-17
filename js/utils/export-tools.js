@@ -714,6 +714,88 @@
     svg.appendChild(rect);
   }
 
+  function setSvgPaintFromCssColor(el, attr, cssColor) {
+    if (!el || !attr || !cssColor) return false;
+    const norm = normalizeRgbaColor(cssColor);
+    if (norm) {
+      el.setAttribute(attr, norm.color);
+      el.setAttribute(attr === 'fill' ? 'fill-opacity' : 'stroke-opacity', String(norm.opacity));
+      return norm.opacity > 0;
+    }
+    const lower = String(cssColor).trim().toLowerCase();
+    if (!lower || lower === 'transparent' || lower === 'none') return false;
+    el.setAttribute(attr, cssColor);
+    return true;
+  }
+
+  function appendHeaderBorderFromElement(svg, headerEl, width, height) {
+    if (!svg || !headerEl || !width || !height) return { hasBottom: false };
+    let cs = null;
+    try { cs = window.getComputedStyle(headerEl); } catch (_) { cs = null; }
+    if (!cs) return { hasBottom: false };
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const sides = [
+      {
+        key: 'top',
+        size: getPxNumber(cs.borderTopWidth, 0),
+        style: cs.borderTopStyle,
+        color: cs.borderTopColor,
+        x: 0,
+        y: 0
+      },
+      {
+        key: 'right',
+        size: getPxNumber(cs.borderRightWidth, 0),
+        style: cs.borderRightStyle,
+        color: cs.borderRightColor,
+        x: 0,
+        y: 0
+      },
+      {
+        key: 'bottom',
+        size: getPxNumber(cs.borderBottomWidth, 0),
+        style: cs.borderBottomStyle,
+        color: cs.borderBottomColor,
+        x: 0,
+        y: 0
+      },
+      {
+        key: 'left',
+        size: getPxNumber(cs.borderLeftWidth, 0),
+        style: cs.borderLeftStyle,
+        color: cs.borderLeftColor,
+        x: 0,
+        y: 0
+      }
+    ];
+
+    const drawn = { hasBottom: false };
+    sides.forEach((side) => {
+      const bw = side.size;
+      if (!(bw > 0)) return;
+      const style = (side.style || '').toLowerCase();
+      if (style === 'none' || style === 'hidden') return;
+
+      const rect = document.createElementNS(svgNS, 'rect');
+      const rectW = (side.key === 'top' || side.key === 'bottom') ? width : bw;
+      const rectH = (side.key === 'left' || side.key === 'right') ? height : bw;
+      const x = (side.key === 'right') ? (width - bw) : side.x;
+      const y = (side.key === 'bottom') ? (height - bw) : side.y;
+
+      rect.setAttribute('x', String(Math.max(0, x)));
+      rect.setAttribute('y', String(Math.max(0, y)));
+      rect.setAttribute('width', String(Math.max(0, rectW)));
+      rect.setAttribute('height', String(Math.max(0, rectH)));
+
+      const visible = setSvgPaintFromCssColor(rect, 'fill', side.color);
+      if (!visible) return;
+      svg.appendChild(rect);
+      if (side.key === 'bottom') drawn.hasBottom = true;
+    });
+    return drawn;
+  }
+
   function buildLegendSvgFromElement(legendEl, opts = {}) {
     if (!legendEl || !isElementVisible(legendEl)) return null;
     const rect = legendEl.getBoundingClientRect();
@@ -940,7 +1022,7 @@
     svg.setAttribute('height', totalHeight);
     svg.setAttribute('viewBox', `0 0 ${totalWidth} ${totalHeight}`);
 
-    // Panel background and border
+    // Panel background fill
     const panelRectEl = document.createElementNS(svgNS, 'rect');
     panelRectEl.setAttribute('x', '0');
     panelRectEl.setAttribute('y', '0');
@@ -951,11 +1033,9 @@
       panelRectEl.setAttribute('ry', radius);
     }
     panelRectEl.setAttribute('fill', panelBg);
-    if (borderWidth > 0) {
-      panelRectEl.setAttribute('stroke', borderColor);
-      panelRectEl.setAttribute('stroke-width', borderWidth);
-    }
     svg.appendChild(panelRectEl);
+
+    let fallbackHeaderDivider = null;
 
     // Header
     if (headerHeight > 0) {
@@ -966,6 +1046,37 @@
       headerRectEl.setAttribute('height', headerHeight);
       headerRectEl.setAttribute('fill', headerBg || '#333333');
       svg.appendChild(headerRectEl);
+
+      // Render per-side header borders from computed CSS (e.g. bottom-only in Classical theme).
+      const headerBorderState = appendHeaderBorderFromElement(svg, headerEl, Math.round(panelRect.width), headerHeight);
+
+      // Fallback divider: if header bottom border is hidden/transparent, use svg-container top border
+      // (or panel border color) so the header/content separator is still visible in exported SVG.
+      if (!headerBorderState.hasBottom) {
+        let dividerWidth = 0;
+        let dividerColor = null;
+        if (svgContainer) {
+          try {
+            const scs = window.getComputedStyle(svgContainer);
+            if (scs) {
+              const style = (scs.borderTopStyle || '').toLowerCase();
+              const bw = getPxNumber(scs.borderTopWidth, 0);
+              if (bw > 0 && style !== 'none' && style !== 'hidden') {
+                dividerWidth = bw;
+                dividerColor = scs.borderTopColor;
+              }
+            }
+          } catch (_) {}
+        }
+        if (!(dividerWidth > 0)) {
+          dividerWidth = Math.max(1, borderWidth || 1);
+          dividerColor = borderColor;
+        }
+        fallbackHeaderDivider = {
+          width: Math.max(1, Math.round(dividerWidth)),
+          color: dividerColor || 'rgba(0, 0, 0, 0.25)'
+        };
+      }
 
       if (titleText) {
         const title = document.createElementNS(svgNS, 'text');
@@ -1002,11 +1113,42 @@
       svg.appendChild(innerGroup);
     }
 
+    // Draw fallback divider after inner content so it's guaranteed visible.
+    if (fallbackHeaderDivider && headerHeight > 0) {
+      const dividerRect = document.createElementNS(svgNS, 'rect');
+      const dividerW = Math.max(1, fallbackHeaderDivider.width || 1);
+      const dividerY = Math.max(0, Math.round(headerHeight - dividerW));
+      dividerRect.setAttribute('x', '0');
+      dividerRect.setAttribute('y', String(dividerY));
+      dividerRect.setAttribute('width', String(Math.round(panelRect.width)));
+      dividerRect.setAttribute('height', String(dividerW));
+      if (setSvgPaintFromCssColor(dividerRect, 'fill', fallbackHeaderDivider.color)) {
+        svg.appendChild(dividerRect);
+      }
+    }
+
     if (legendSvg && legendSvg.group) {
       const legendGroup = legendSvg.group;
       const legendX = Math.round((totalWidth - legendWidth) / 2);
       legendGroup.setAttribute('transform', `translate(${legendX}, ${Math.round(panelRect.height + legendPadding)})`);
       svg.appendChild(legendGroup);
+    }
+
+    // Draw panel outer border last so header background/content never hides the frame.
+    if (borderWidth > 0) {
+      const panelBorderEl = document.createElementNS(svgNS, 'rect');
+      panelBorderEl.setAttribute('x', '0');
+      panelBorderEl.setAttribute('y', '0');
+      panelBorderEl.setAttribute('width', Math.round(panelRect.width));
+      panelBorderEl.setAttribute('height', Math.round(panelRect.height));
+      panelBorderEl.setAttribute('fill', 'none');
+      if (radius) {
+        panelBorderEl.setAttribute('rx', radius);
+        panelBorderEl.setAttribute('ry', radius);
+      }
+      panelBorderEl.setAttribute('stroke', borderColor);
+      panelBorderEl.setAttribute('stroke-width', borderWidth);
+      svg.appendChild(panelBorderEl);
     }
 
     const svgString = new XMLSerializer().serializeToString(svg);

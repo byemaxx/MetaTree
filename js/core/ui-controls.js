@@ -4320,6 +4320,12 @@ function bootstrapMetaTreeFromWindowPayload() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Capture whether the host page provided an inline bootstrap payload.
+    // We must read this BEFORE bootstrapMetaTreeFromWindowPayload() deletes it.
+    const __hasBootstrapPayload = (typeof window !== 'undefined')
+        ? !!(window.MetaTreeBootstrap || window.metaTreeBootstrap)
+        : false;
+
     initEventListeners();
     initSidebarCollapseControl();
     initSidebarToggleScrollProxy();
@@ -4456,7 +4462,7 @@ document.addEventListener('DOMContentLoaded', function () {
             modal.style.display = 'none';
         }
     });
-    // 不再自动加载示例数据；用户可手动点击“Load Example”或导入 meta
+    // 页面打开时自动加载示例数据（若没有外部 bootstrap 数据且当前未加载任何数据）
 
     // 同步一次初始模式可见性（默认 single），避免两个面板同时可见
     try { handleVisualizationModeChange(); } catch (_) { }
@@ -4512,6 +4518,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     dispatchMetaTreeReadyEvent();
     bootstrapMetaTreeFromWindowPayload();
+
+    // Auto-load the built-in example dataset for a ready-to-use first view.
+    // Guardrails:
+    // - If the host page provided a bootstrap payload, do NOT override it.
+    // - If user already loaded something (cached or parsed), do NOT override it.
+    // - Only attempt fetch when served over http(s) to avoid noisy file:// errors.
+    try {
+        const protocol = (typeof location !== 'undefined' && location && location.protocol) ? location.protocol : '';
+        const isHttp = protocol === 'http:' || protocol === 'https:';
+        const hasCachedData = (typeof window !== 'undefined')
+            ? (typeof window.cachedDataContent === 'string' && window.cachedDataContent.trim().length > 0)
+            : false;
+        const hasParsedData = (typeof treeData !== 'undefined' && treeData);
+
+        if (isHttp && !__hasBootstrapPayload && !hasCachedData && !hasParsedData) {
+            // Fire and forget.
+            handleLoadExampleClick();
+        }
+    } catch (err) {
+        console.warn('[MetaTree] Auto-load example skipped due to error:', err);
+    }
 });
 
 // ========== 示例数据自动加载与 meta 集成 ==========

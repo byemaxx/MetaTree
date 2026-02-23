@@ -1004,34 +1004,46 @@ button:disabled {
 .label-with-help {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
 }
 
 .info-icon-btn {
-    border: none;
-    background: transparent;
-    padding: 2px;
-    width: 22px;
-    height: 22px;
+    border: 1px solid rgba(102, 116, 219, 0.22);
+    background: linear-gradient(135deg, #f4f7ff 0%, #eef2ff 100%);
+    padding: 4px 10px 4px 8px;
+    min-height: 26px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-light);
+    gap: 6px;
+    color: var(--secondary-dark);
     cursor: pointer;
-    border-radius: 50%;
+    border-radius: 999px;
     transition: var(--transition-fast);
-    box-shadow: none;
+    box-shadow: 0 1px 3px rgba(90, 109, 143, 0.12);
+    font-size: var(--font-sm);
+    font-weight: 600;
+    line-height: 1;
 }
 
 .info-icon-btn:hover,
 .info-icon-btn:focus-visible {
-    color: var(--primary-color);
-    background: rgba(102, 116, 219, 0.12);
+    color: var(--secondary-dark);
+    border-color: rgba(102, 116, 219, 0.42);
+    background: linear-gradient(135deg, #edf2ff 0%, #e5ebff 100%);
+    box-shadow: 0 4px 10px rgba(102, 116, 219, 0.18);
+    transform: translateY(-1px);
     outline: none;
 }
 
 .info-icon-btn svg {
     pointer-events: none;
+    flex-shrink: 0;
+}
+
+.info-icon-btn__text {
+    white-space: nowrap;
 }
 
 .info-modal {
@@ -2747,4 +2759,3 @@ svg {
     display: flex;
     flex-direction: column;
 }
-

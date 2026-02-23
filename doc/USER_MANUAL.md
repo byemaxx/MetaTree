@@ -8,7 +8,7 @@ MetaTree runs entirely in your browser, ensuring that your data remains local an
 
 ### Key Features
 *   **Hierarchical Comparison**: Map group contrasts (e.g., Treatment vs. Control) directly onto a tree.
-*   **Multiple Modes**: Switch between individual sample views, aggregated group views, and direct group comparisons.
+*   **Multiple Modes**: Switch between individual sample views, aggregated group views, pairwise group comparisons, and full comparison matrix views.
 *   **Flexible Input**: Supports both wide (abundance tables) and long (statistical results) formats.
 *   **Rich Customization**: Control colors, node sizes, layouts, and labels with ease.
 *   **High-Quality Export**: Download results as SVG (vector) or PNG (raster) images.
@@ -84,9 +84,9 @@ The interface is divided into two main areas:
 2.  **Main View (Right)**: Displays the interactive visualizations.
 
 ### Sidebar Sections
-*   **Data & Metadata**: Upload files and configure parsing options (delimiters).
-*   **Analysis Mode**: Switch between Single, Group, and Comparison modes.
-*   **Layout & Panels**: Adjust tree layout (Radial, Linear, Packing) and panel dimensions.
+*   **Data & Metadata**: Upload files, configure parsing options, handle duplicate IDs, and apply metadata/taxon filters.
+*   **Analysis Mode**: Switch between Sample View, Group View, Pairwise Diff, and Diff Matrix modes.
+*   **Layout & Panels**: Adjust tree layout (Radial, Tree, Circle packing) and panel dimensions.
 *   **Colors & Domain**: Customize color schemes and value ranges.
 *   **Labels & Sizing**: Control text labels, node sizes, and edge widths.
 *   **UI Theme**: Change the application's color theme.
@@ -104,6 +104,10 @@ The interface is divided into two main areas:
     *   **For Long Tables**: A **Column Mapping Modal** will appear. Select the columns from your file that correspond to *Taxon ID*, *Condition*, *Value* (e.g., Log2FC), *P-value*, and *Q-value*.
 4.  (Optional) Click **Load Meta File** to upload sample metadata.
 5.  If your file uses a custom delimiter (not tab or comma), expand **Load parameters** to specify it.
+6.  (Optional) Configure advanced loading/filtering controls:
+    *   **Duplicate ID handling**: choose how rows with the same ID are merged (`Sum`, `Mean`, `Max`, `Min`, `First`).
+    *   **Filter samples by meta**: keep only samples matching selected metadata values.
+    *   **Filter items by name**: build include/exclude lists using keyword or regex matching.
 
 ### Step 2: Choosing a Visualization Mode
 Navigate to the **Analysis Mode** panel and select a mode:
@@ -114,6 +118,7 @@ Navigate to the **Analysis Mode** panel and select a mode:
 *   **Controls**:
     *   **Transform**: Apply `log2`, `sqrt`, or `area` transforms to handle large value ranges.
     *   **Quantile range**: Filter out extreme outliers.
+    *   **Long-format significance filter**: for combined long tables, optionally filter by `P-value`, `Q-value`, and `|Log2FC|`.
 
 #### Group Mode
 *   **Description**: Aggregates samples into groups and shows one tree per group.
@@ -130,10 +135,21 @@ Navigate to the **Analysis Mode** panel and select a mode:
     1.  Define your groups (via metadata or manually).
     2.  Select **Group 1** (Baseline) and **Group 2** (Comparison).
     3.  Choose a **Metric** (e.g., Log2 fold change).
-    4.  Click **Run comparison**.
+    4.  (Optional) Choose a statistical **Test** (`Wilcoxon Rank Sum` or `T-test (Welch)`).
+    5.  Click **Run comparison**.
+    6.  (Optional) Enable **Build base from non-zero selected** to construct the base tree only from currently displayed non-zero branches.
 *   **Significance Filtering**:
     *   Enable **Filter by significance** to hide non-significant nodes.
     *   Adjust **P-value**, **Q-value**, and **|Log2FC|** thresholds.
+
+#### Diff Matrix Mode
+*   **Description**: Computes all pairwise comparisons among selected groups and displays them as a matrix.
+*   **Use Case**: Quickly screening many group-vs-group differences in one run.
+*   **Setup**:
+    1.  Define groups (via metadata or manually).
+    2.  In the group list, select at least two groups using the checkboxes (`All`, `None`, and `Invert` shortcuts are available).
+    3.  Choose **Metric** and **Test**.
+    4.  Click **Run comparison** to generate the matrix.
 
 ### Step 3: Customizing the Visualization
 
@@ -152,11 +168,14 @@ In the **Layout & Panels** section:
     *   **Tree Spread**: Slider to adjust the tree height/width.
     *   **Sort Nodes**: Sort branches by *Value* or *Name*.
 *   **Circle Packing**: Nested circles (good for overviewing abundance).
+*   **Panel sizing**: Adjust panel width/height and optionally lock both values for consistent multi-panel layouts.
 
 #### Colors
 In the **Colors & Domain** section:
 *   **Color Scheme**: Choose from preset diverging (for comparisons) or sequential (for abundance) palettes.
 *   **Custom Gradient**: Define your own start, middle, and end colors.
+*   **Reverse colors**: Invert the selected palette direction.
+*   **Zero value color**: Optionally assign a dedicated color for zero-abundance/zero-effect nodes.
 *   **Color Domain**: Manually set the value range (e.g., set to `5` to make the color scale go from -5 to +5).
 
 #### Labels & Nodes
@@ -164,6 +183,8 @@ In the **Labels & Sizing** section:
 *   **Amount**: Slider to show more or fewer labels.
 *   **Levels**: Click specific numbers to show labels only at certain depths (e.g., `0` for leaves, `1` for genus).
 *   **Node Size**: Adjust the base size of nodes.
+*   **Font / Max length / Overflow**: Control label readability (`Ellipsis` or `Wrap` behavior).
+*   **Auto-hide overlapping labels**: Enable smart label culling and adjust culling strength.
 *   **Uniform label colors**: Check this to color labels the same as their nodes.
 
 #### UI Theme
@@ -176,8 +197,9 @@ In the **UI Theme** section:
     *   **Header border** controls the border line around each tree panel header. If you keep it equal to **Header** (background), the border is effectively invisible.
 
 ### Step 4: Exporting
-*   **Export Results**: In Comparison mode, use the **Export results** button to download the statistical table.
-*   **Save Image**: Use the browser's print function or look for specific export buttons (if available in the specific view) to save the visualization. *Note: The README mentions SVG/PNG export; typically this is found near the visualization or in the main controls.*
+*   **Export Statistical Results**: In Pairwise Diff or Diff Matrix mode, click **View results**. In the results modal, export the selected comparison as **TSV** or **CSV**.
+*   **Export Figures (SVG/PNG)**: Right-click inside a tree panel or visualization area to open the export menu. You can export the **current panel** or **all panels** as SVG/PNG.
+*   **Mode note**: Figure export is primarily intended for Sample View, Group View, and Diff Matrix layouts. Pairwise Diff still supports panel-level export from the context menu.
 
 ---
 
@@ -190,7 +212,9 @@ MetaTree exposes a small, stable API so that external tools can preload data wit
 #### Lifecycle events
 
 - `metatree:ready` is dispatched on `window` once the UI is initialized. Listen to this event to know when it is safe to call the APIs below.
-- `metatree:data-loaded` and `metatree:meta-loaded` fire after successful programmatic uploads. Their `detail` payload includes the label used, plus counts that can be used for logging.
+- `metatree:data-loaded` and `metatree:meta-loaded` fire after successful programmatic uploads.
+  - `metatree:data-loaded.detail` includes: `label`, `sampleCount`, `isCombinedLong`.
+  - `metatree:meta-loaded.detail` includes: `label`, `columnCount`.
 
 #### Loading data/metadata from memory
 
@@ -201,6 +225,9 @@ window.loadMetaFromText(metaTsvString, { label: 'MetaX meta' });
 
 - `tsvString` / `metaTsvString` must match the same TSV schema that the upload buttons expect (wide hierarchy tables, combined long-format tables, and metadata with a `Sample` column).
 - Both helpers return the parsed object and throw an error if the payload is invalid, so surrounding code can show a custom message or retry.
+- `loadDataFromText` also supports optional parsing hints:
+  - `format`: `'wide'` or `'long'`.
+  - `mapping`: object used for long-format column mapping (`taxon`, `condition`, `value`, and optional `pvalue`/`qvalue`).
 
 #### Bootstrapping without custom JavaScript
 
@@ -218,6 +245,7 @@ If you cannot easily listen for events (e.g., when launching MetaTree inside ano
 ```
 
 MetaTree will automatically call `loadDataFromText`/`loadMetaFromText` as soon as the interface is ready.
+- The bootstrap object is accepted as either `window.MetaTreeBootstrap` or `window.metaTreeBootstrap`.
 
 #### Example: feeding pandas DataFrames from Python
 
@@ -248,9 +276,9 @@ webview.page().runJavaScript(js)
 MetaTree performs all statistical calculations client-side using JavaScript. These methods are specifically used in **Comparison Mode** to evaluate differences between two defined groups.
 
 ### 7.1. Pre-processing
-Before any test, samples are filtered based on the **Min Abundance** threshold.
-- If a sample's value for a specific node is below the threshold, it is excluded from the calculation for that node.
-- If fewer than 2 samples remain in either group after filtering, the statistical test is skipped.
+In the current UI workflow, comparisons run with the minimum-abundance cutoff set to `0` (no additional pre-filtering by abundance threshold).
+- For each node, tests are only performed when both groups have at least 2 valid observations.
+- If either group has fewer than 2 valid observations for a node, the test is skipped for that node.
 
 ### 7.2. Hypothesis Testing
 MetaTree supports two options for testing differences between two independent groups:
@@ -266,7 +294,7 @@ MetaTree supports two options for testing differences between two independent gr
         - converting U to a Z-score
         - obtaining the p-value from the standard normal distribution.
   
-+ **T-test (Welch)**: an option that assumes approximately normally distributed data but does not assume equal variances between groups. Select the test in the Comparison panel under "Test:".
+- **T-test (Welch)**: an option that assumes approximately normally distributed data but does not assume equal variances between groups. Select the test in the Comparison panel under "Test:".
 
 ### 7.3. Effect Size
 **Cohen's d** is calculated to quantify the magnitude of the difference. It represents the standardized difference between the two group means, using a pooled standard deviation that accounts for the sample sizes and variances of both groups.

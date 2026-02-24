@@ -1074,6 +1074,15 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         container.innerHTML = '<p class="text-muted">No content to preview.</p>';
         return;
     }
+    const escapeValue = (value) => {
+        const str = (value == null) ? '' : String(value);
+        if (typeof escapeHtml === 'function') return escapeHtml(str);
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    };
 
     const allLines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
     // Do not count the header row in totals or preview counts
@@ -1110,7 +1119,7 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
     // Header (first non-empty line)
     const headers = (headerLine && typeof headerLine === 'string') ? headerLine.split(delimiter) : [];
     headers.forEach(h => {
-        html += `<th style="padding:7px 10px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${h}</th>`;
+        html += `<th style="padding:7px 10px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${escapeValue(h)}</th>`;
     });
     html += '</tr></thead><tbody>';
 
@@ -1119,7 +1128,7 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         const cols = lines[i].split(delimiter);
         html += '<tr style="border-bottom:1px solid #eee;">';
         cols.forEach(c => {
-            html += `<td style="padding:5px 10px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
+            html += `<td style="padding:5px 10px; border-right:1px solid #eee; white-space:nowrap;">${escapeValue(c)}</td>`;
         });
         html += '</tr>';
     }
@@ -1298,28 +1307,7 @@ function initEventListeners() {
     // 丰度转换选择
     document.getElementById('abundance-transform').addEventListener('change', handleAbundanceTransformChange);
 
-    // 配色方案选择通过下方的可折叠预览条进行（点击预览切换）
-    const previewsToggle = document.getElementById('color-previews-toggle');
-    if (previewsToggle) {
-        const syncPreviewsToggleState = () => {
-            const wrap = document.getElementById('color-previews-wrapper');
-            if (!wrap) return;
-            const expanded = window.getComputedStyle(wrap).display !== 'none';
-            previewsToggle.classList.toggle('expanded', expanded);
-            previewsToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-        };
-
-        previewsToggle.addEventListener('click', () => {
-            const wrap = document.getElementById('color-previews-wrapper');
-            if (!wrap) return;
-            const current = window.getComputedStyle(wrap).display;
-            const visible = current !== 'none';
-            wrap.style.display = visible ? 'none' : 'block';
-            syncPreviewsToggleState();
-        });
-
-        syncPreviewsToggleState();
-    }
+    // 配色方案预览区域常显
     // Removed deprecated diverging previews toggle; diverging palettes are now in Colors & Domain panel
     // 反转颜色复选框
     const rev = document.getElementById('color-reverse');
@@ -1658,50 +1646,6 @@ function initEventListeners() {
                 content.style.display = 'block';
                 this.textContent = 'Collapse ▲';
             }
-        });
-    }
-    // Labels & Nodes panel collapse/expand
-    const labelsPanel = document.getElementById('labels-panel');
-    const labelsToggle = document.getElementById('labels-toggle');
-    if (labelsToggle && labelsPanel) {
-        labelsToggle.addEventListener('click', function () {
-            const collapsed = labelsPanel.classList.toggle('collapsed');
-            labelsToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            labelsToggle.classList.toggle('expanded', !collapsed);
-            labelsToggle.setAttribute('aria-expanded', String(!collapsed));
-        });
-    }
-    // Colors & Domain panel collapse/expand
-    const colorsPanel = document.getElementById('colors-panel');
-    const colorsToggle = document.getElementById('colors-toggle');
-    if (colorsToggle && colorsPanel) {
-        colorsToggle.addEventListener('click', function () {
-            const collapsed = colorsPanel.classList.toggle('collapsed');
-            colorsToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            colorsToggle.classList.toggle('expanded', !collapsed);
-            colorsToggle.setAttribute('aria-expanded', String(!collapsed));
-        });
-    }
-    // Layout & Panels panel collapse/expand (new panel moved out of Analysis Mode)
-    const layoutPanel = document.getElementById('layout-panel');
-    const layoutToggle = document.getElementById('layout-toggle');
-    if (layoutToggle && layoutPanel) {
-        layoutToggle.addEventListener('click', function () {
-            const collapsed = layoutPanel.classList.toggle('collapsed');
-            layoutToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            layoutToggle.classList.toggle('expanded', !collapsed);
-            layoutToggle.setAttribute('aria-expanded', String(!collapsed));
-        });
-    }
-    // Theme panel collapse/expand
-    const themePanel = document.getElementById('theme-panel');
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle && themePanel) {
-        themeToggle.addEventListener('click', function () {
-            const collapsed = themePanel.classList.toggle('collapsed');
-            themeToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            themeToggle.classList.toggle('expanded', !collapsed);
-            themeToggle.setAttribute('aria-expanded', String(!collapsed));
         });
     }
     // Labels reset button
@@ -3085,6 +3029,7 @@ function handleVisualizationModeChange() {
 
         // 初始化group选项
         updateGroupMetaColumnOptions();
+        ensureDefaultMetaGroupingForMode('group');
 
         // 如果已经有选中的组,重新绘制
         if (treeData && selectedGroups.length > 0) {
@@ -3126,6 +3071,8 @@ function handleVisualizationModeChange() {
         if (matrixGroupSelection) {
             matrixGroupSelection.style.display = visualizationMode === 'matrix' ? 'flex' : 'none';
         }
+
+        ensureDefaultMetaGroupingForMode(visualizationMode);
 
         // 更新分组显示和组选择器
         updateGroupDefinitionsDisplay();
@@ -4115,6 +4062,132 @@ function handleColorDomainReset() {
     persistCurrentModeColorSettings();
 }
 
+const PAGE_ZOOM_STORAGE_KEY = 'metatree.pageZoomPercent';
+const PAGE_ZOOM_DEFAULT_PERCENT = 100;
+const PAGE_ZOOM_MIN_PERCENT = 80;
+const PAGE_ZOOM_MAX_PERCENT = 130;
+
+function clampPageZoomPercent(value) {
+    const parsed = typeof value === 'string' ? parseInt(value, 10) : Number(value);
+    if (!isFinite(parsed)) return PAGE_ZOOM_DEFAULT_PERCENT;
+    return Math.max(PAGE_ZOOM_MIN_PERCENT, Math.min(PAGE_ZOOM_MAX_PERCENT, Math.round(parsed)));
+}
+
+function updatePageZoomValueLabel(percent) {
+    const valueEl = document.getElementById('page-zoom-value');
+    if (!valueEl) return;
+    valueEl.textContent = `${percent}%`;
+}
+
+function isPageZoomSupported() {
+    try {
+        return typeof document !== 'undefined'
+            && !!document.documentElement
+            && ('zoom' in document.documentElement.style);
+    } catch (_) {
+        return false;
+    }
+}
+
+function applyPageZoomPercent(percent) {
+    const safePercent = clampPageZoomPercent(percent);
+    const zoomScale = safePercent / 100;
+    const root = document.documentElement;
+    if (root) {
+        root.style.zoom = String(zoomScale);
+        root.style.setProperty('--page-zoom-scale', String(zoomScale));
+    }
+    return safePercent;
+}
+
+function readPersistedPageZoomPercent() {
+    try {
+        const stored = localStorage.getItem(PAGE_ZOOM_STORAGE_KEY);
+        if (stored == null) return PAGE_ZOOM_DEFAULT_PERCENT;
+        return clampPageZoomPercent(stored);
+    } catch (_) {
+        return PAGE_ZOOM_DEFAULT_PERCENT;
+    }
+}
+
+function persistPageZoomPercent(percent) {
+    try {
+        localStorage.setItem(PAGE_ZOOM_STORAGE_KEY, String(clampPageZoomPercent(percent)));
+    } catch (_) { }
+}
+
+function updateRangeSliderProgress(slider) {
+    if (!slider || slider.tagName !== 'INPUT' || slider.type !== 'range') return;
+    const min = Number.isFinite(parseFloat(slider.min)) ? parseFloat(slider.min) : 0;
+    const maxRaw = Number.isFinite(parseFloat(slider.max)) ? parseFloat(slider.max) : 100;
+    const max = maxRaw > min ? maxRaw : (min + 1);
+    const valueRaw = Number.isFinite(parseFloat(slider.value)) ? parseFloat(slider.value) : min;
+    const value = Math.min(Math.max(valueRaw, min), max);
+    const progress = ((value - min) / (max - min)) * 100;
+    slider.style.setProperty('--range-progress', `${progress}%`);
+}
+
+function initRangeSliderProgressStyles() {
+    const sliders = document.querySelectorAll('input[type="range"]');
+    sliders.forEach(updateRangeSliderProgress);
+
+    document.addEventListener('input', (event) => {
+        const target = event.target;
+        if (target && target.matches && target.matches('input[type="range"]')) {
+            updateRangeSliderProgress(target);
+        }
+    });
+
+    document.addEventListener('change', (event) => {
+        const target = event.target;
+        if (target && target.matches && target.matches('input[type="range"]')) {
+            updateRangeSliderProgress(target);
+        }
+    });
+}
+
+function initPageZoomControl() {
+    const slider = document.getElementById('page-zoom-slider');
+    const resetBtn = document.getElementById('page-zoom-reset');
+    const valueEl = document.getElementById('page-zoom-value');
+    if (!slider || !resetBtn || !valueEl) return;
+
+    if (!isPageZoomSupported()) {
+        slider.disabled = true;
+        resetBtn.disabled = true;
+        valueEl.textContent = 'N/A';
+        slider.title = 'Page zoom is not supported in this browser';
+        resetBtn.title = 'Page zoom is not supported in this browser';
+        return;
+    }
+
+    const applyAndSyncUI = (percent, options = {}) => {
+        const shouldPersist = !!options.persist;
+        const applied = applyPageZoomPercent(percent);
+        slider.value = String(applied);
+        updatePageZoomValueLabel(applied);
+        if (shouldPersist) {
+            persistPageZoomPercent(applied);
+        }
+        return applied;
+    };
+
+    const initialPercent = readPersistedPageZoomPercent();
+    applyAndSyncUI(initialPercent, { persist: false });
+
+    slider.addEventListener('input', (e) => {
+        applyAndSyncUI(e.target.value, { persist: false });
+    });
+
+    slider.addEventListener('change', (e) => {
+        applyAndSyncUI(e.target.value, { persist: true });
+    });
+
+    resetBtn.addEventListener('click', () => {
+        applyAndSyncUI(PAGE_ZOOM_DEFAULT_PERCENT, { persist: true });
+    });
+}
+
 function initCollapsiblePanel(panelId, toggleId, options = {}) {
     const panel = document.getElementById(panelId);
     const toggle = document.getElementById(toggleId);
@@ -4221,6 +4294,85 @@ function initSidebarCollapseControl() {
         applyState(collapsed);
         persistState(collapsed);
     });
+}
+
+function initSidebarActivityNavigation() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    const navButtons = Array.from(sidebar.querySelectorAll('.sidebar-activity-btn[data-panel-target]'));
+    const panels = Array.from(sidebar.querySelectorAll('[data-sidebar-panel]'));
+    if (navButtons.length === 0 || panels.length === 0) return;
+
+    const storageKey = 'metatree.sidebarActivePanel';
+    const panelIds = panels.map((panel) => panel.id).filter(Boolean);
+    const fallbackPanelId = panelIds[0];
+    if (!fallbackPanelId) return;
+
+    const applyActivePanel = (panelId, options = {}) => {
+        const shouldPersist = options.persist !== false;
+        const targetId = panelIds.includes(panelId) ? panelId : fallbackPanelId;
+
+        navButtons.forEach((button) => {
+            const isActive = button.dataset.panelTarget === targetId;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        panels.forEach((panel) => {
+            const isActive = panel.id === targetId;
+            panel.classList.toggle('is-active', isActive);
+            panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+        });
+
+        if (shouldPersist) {
+            try {
+                localStorage.setItem(storageKey, targetId);
+            } catch (_) { }
+        }
+    };
+
+    let initialPanel = fallbackPanelId;
+    try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved && panelIds.includes(saved)) {
+            initialPanel = saved;
+        }
+    } catch (_) { }
+    applyActivePanel(initialPanel, { persist: false });
+
+    navButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const targetPanelId = button.dataset.panelTarget;
+            if (!panelIds.includes(targetPanelId)) return;
+
+            applyActivePanel(targetPanelId);
+        });
+    });
+}
+
+function initSidebarDiscoveryHint() {
+    const storageKey = 'metatree.sidebarDiscoveryHintShown.v1';
+    try {
+        if (localStorage.getItem(storageKey) === 'true') return;
+    } catch (_) { }
+
+    const appBody = document.querySelector('.app-body');
+    const activityBar = document.querySelector('.sidebar-activity-bar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    if (!appBody || !toggleBtn) return;
+
+    const hintTarget = appBody.classList.contains('sidebar-collapsed') ? toggleBtn : activityBar;
+    if (!hintTarget) return;
+
+    hintTarget.classList.add('nav-attention');
+    window.setTimeout(() => {
+        hintTarget.classList.remove('nav-attention');
+    }, 3200);
+
+    try {
+        localStorage.setItem(storageKey, 'true');
+    } catch (_) { }
 }
 
 function initSidebarToggleScrollProxy() {
@@ -4403,15 +4555,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initEventListeners();
     initSidebarCollapseControl();
-    initSidebarToggleScrollProxy();
+    initSidebarActivityNavigation();
+    initSidebarDiscoveryHint();
+    initPageZoomControl();
+    initRangeSliderProgressStyles();
     initDataParameterControls();
-    initCollapsiblePanel('data-metadata-panel', 'data-metadata-panel-toggle', {
-        defaultCollapsed: false,
-        expandLabel: 'Expand ▼',
-        collapseLabel: 'Collapse ▲',
-        expandAriaLabel: 'Expand Data & Metadata panel',
-        collapseAriaLabel: 'Collapse Data & Metadata panel'
-    });
     initFileFormatInfoModal();
     initAboutInfoModal();
 
@@ -4549,7 +4697,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // 基础容器
             'viz-container', 'stats-panel', 'total-nodes', 'leaf-nodes', 'max-depth',
             // 数据与元数据
-            'data-metadata-panel', 'data-metadata-panel-toggle',
+            'data-metadata-panel',
             'file-upload', 'meta-upload', 'load-example', 'filename-display', 'meta-file-display',
             'data-params-toggle', 'data-params-content', 'data-delimiter-select', 'data-delimiter-custom',
             'taxa-delimiter-select', 'taxa-delimiter-custom',
@@ -4564,11 +4712,11 @@ document.addEventListener('DOMContentLoaded', function () {
             'single-significance-toggle-row', 'single-significance-thresholds-row', 'single-show-significance',
             'single-pvalue-threshold', 'single-qvalue-threshold', 'single-logfc-threshold',
             // 连续色板与自定义
-            'color-previews-toggle', 'color-previews-wrapper', 'color-previews', 'color-reverse',
+            'color-previews-wrapper', 'color-previews', 'color-reverse',
             'custom-color-controls', 'custom-color-start', 'custom-color-end', 'custom-stops-count', 'apply-custom-color',
             'custom-presets', 'preset-name', 'save-preset',
             // 标签与节点
-            'labels-panel', 'labels-toggle', 'label-threshold', 'label-threshold-value', 'label-font-size', 'label-font-size-value',
+            'labels-panel', 'label-threshold', 'label-threshold-value', 'label-font-size', 'label-font-size-value',
             'label-levels', 'labels-reset', 'node-size-multiplier', 'node-size-value', 'min-node-size', 'min-node-size-value',
             'max-node-size', 'max-node-size-value', 'node-opacity', 'node-opacity-value', 'edge-width-multiplier', 'edge-width-value', 'min-edge-width', 'min-edge-width-value',
             'edge-opacity', 'edge-opacity-value',
@@ -4579,11 +4727,13 @@ document.addEventListener('DOMContentLoaded', function () {
             'group-selection-row', 'select-group1', 'select-group2',
             'show-significance', 'significance-thresholds-row', 'pvalue-threshold', 'qvalue-threshold', 'logfc-threshold',
             'comparison-base-nonzero-only', 'comparison-metric',
-            'color-domain-abs', 'color-domain-reset', 'run-comparison', 'export-comparison', 'colors-toggle',
+            'color-domain-abs', 'color-domain-reset', 'run-comparison', 'export-comparison',
             // 分组模态框
             'group-modal', 'group-name-input', 'sample-checklist', 'existing-groups-list', 'save-group-btn', 'cancel-group-btn', 'close-group-modal',
             // 组工具
-            'delete-all-groups'
+            'delete-all-groups',
+            // 页面级缩放
+            'page-zoom-slider', 'page-zoom-value', 'page-zoom-reset'
             // 注意：select-all-groups, select-none-groups, invert-groups 是动态生成的，不在初始验证列表中
         ];
         const missing = requiredIds.filter(id => !document.getElementById(id));
@@ -5058,6 +5208,41 @@ function updateGroupMetaColumnOptions() {
 
     if (currentValue && metaColumns.includes(currentValue)) {
         select.value = currentValue;
+    }
+}
+
+function ensureDefaultMetaGroupingForMode(mode) {
+    const metaCols = (typeof window !== 'undefined' && Array.isArray(window.metaColumns))
+        ? window.metaColumns
+        : [];
+    if (metaCols.length === 0) return;
+
+    const firstCol = metaCols[0];
+    let changed = false;
+
+    updateGroupMetaColumnOptions();
+
+    const groupSelect = document.getElementById('group-meta-column-select');
+    if (groupSelect && (!groupSelect.value || !metaCols.includes(groupSelect.value))) {
+        groupSelect.value = firstCol;
+        changed = true;
+    }
+
+    const comparisonSelect = document.getElementById('meta-group-column');
+    if (comparisonSelect && (!comparisonSelect.value || !metaCols.includes(comparisonSelect.value))) {
+        comparisonSelect.value = firstCol;
+        changed = true;
+    }
+
+    if (!changed) return;
+
+    const groups = (typeof getAllGroups === 'function') ? getAllGroups() : {};
+    if (groups && Object.keys(groups).length > 0) return;
+
+    if (mode === 'group') {
+        handleGroupMetaColumnChange(firstCol);
+    } else if (mode === 'comparison' || mode === 'matrix') {
+        handleMetaGroupColumnChange(firstCol);
     }
 }
 

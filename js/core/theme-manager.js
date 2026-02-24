@@ -546,6 +546,18 @@
         const shadowXl = '0 8px 16px rgba(0, 0, 0, 0.1)';
 
         const gradientPrimary = `linear-gradient(135deg, ${primary} 0%, ${primaryDark} 100%)`;
+        const gradientPrimaryHover = `linear-gradient(135deg, ${primaryDark} 0%, ${adjustColor(primaryDark, -12)} 100%)`;
+        const scrollbarPanelTrack = mixColors(background, surface, 0.7);
+        const scrollbarThumb = hexToRgba(primaryLight, 0.2);
+        const scrollbarThumbHover = hexToRgba(primary, 0.8);
+        const scrollbarSoftThumb = hexToRgba(primaryLight, 0.28);
+        const scrollbarSoftThumbHover = hexToRgba(primary, 0.75);
+        const scrollbarSoftColor = hexToRgba(primaryLight, 0.35);
+        const rangeTrackColor = mixColors(surface, text, 0.2);
+        const rangeTrackColorHover = mixColors(surface, text, 0.3);
+        const rangeTrackFill = primaryDark;
+        const rangeThumbColor = surface;
+        const rangeThumbBorder = primaryDark;
 
         return {
             '--primary-color': primary,
@@ -569,12 +581,27 @@
             '--bg-lighter': backgroundLighter,
             '--bg-body': background,
             '--gradient-primary': gradientPrimary,
-            '--gradient-primary-hover': `linear-gradient(135deg, ${primaryDark} 0%, ${adjustColor(primaryDark, -12)} 100%)`,
+            '--gradient-primary-hover': gradientPrimaryHover,
             '--gradient-success': `linear-gradient(135deg, ${success} 0%, ${successDark} 100%)`,
             '--gradient-info': `linear-gradient(135deg, ${info} 0%, ${infoDark} 100%)`,
             '--gradient-danger': `linear-gradient(135deg, ${danger} 0%, ${dangerDark} 100%)`,
             '--gradient-bg': `linear-gradient(135deg, ${mixColors(background, surface, 0.6)} 0%, ${surface} 100%)`,
             '--gradient-accent': `linear-gradient(135deg, ${secondary} 0%, ${primary} 100%)`,
+
+            '--scrollbar-track': 'transparent',
+            '--scrollbar-thumb': scrollbarThumb,
+            '--scrollbar-thumb-hover': scrollbarThumbHover,
+            '--scrollbar-panel-track': scrollbarPanelTrack,
+            '--scrollbar-panel-thumb': gradientPrimary,
+            '--scrollbar-panel-thumb-hover': gradientPrimaryHover,
+            '--scrollbar-soft-thumb': scrollbarSoftThumb,
+            '--scrollbar-soft-thumb-hover': scrollbarSoftThumbHover,
+            '--scrollbar-soft-color': scrollbarSoftColor,
+            '--range-track-color': rangeTrackColor,
+            '--range-track-color-hover': rangeTrackColorHover,
+            '--range-track-fill': rangeTrackFill,
+            '--range-thumb-color': rangeThumbColor,
+            '--range-thumb-border': rangeThumbBorder,
 
             // Shadows: required for theme switching to undo presets that remove them.
             '--shadow-sm': shadowSm,

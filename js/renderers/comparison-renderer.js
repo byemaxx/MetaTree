@@ -14,7 +14,6 @@
   };
 
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
-  const PACK_EPSILON = 1e-6;
   
   // Matrix alignment threshold: when sidebar is visible and the matrix fills less than
   // this percentage of available width, left-align it to avoid a large empty band on the left.
@@ -174,18 +173,10 @@
     return root;
   }
 
-  function computePackMetric(stats) {
-    if (!stats) return PACK_EPSILON;
-    const mean1 = Math.max(0, stats.mean_1 || 0);
-    const mean2 = Math.max(0, stats.mean_2 || 0);
-    const avg = (mean1 + mean2) / 2;
-    const fold = Math.abs(
-      (typeof stats.comparison_value === 'number' && isFinite(stats.comparison_value))
-        ? stats.comparison_value
-        : (typeof stats.log2_median_ratio === 'number' ? stats.log2_median_ratio : 0)
-    );
-    const value = Math.max(avg, fold);
-    return (isFinite(value) && value > 0) ? value : PACK_EPSILON;
+  function getPackingStructureWeight(node) {
+    const hasChildren = !!(node && Array.isArray(node.children) && node.children.length > 0);
+    const collapsed = !!(node && node.__collapsed);
+    return (collapsed || !hasChildren) ? 1 : 0;
   }
 
   const HTML_ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
@@ -256,7 +247,7 @@
     if (!filterBySignificance) return collapsedNodes;
     return collapsedNodes.filter(node => visibleNodeSet.has(node));
   }
-  function buildComparisonLayout(root, width, height, comparisonStats, opts = {}) {
+  function buildComparisonLayout(root, width, height, opts = {}) {
     const mode = getActiveLayoutMode();
     const forMini = !!opts.mini;
     let labelPadExtra = 0;
@@ -299,20 +290,6 @@
       const offsetX = (width - diameter) / 2;
       const offsetY = (height - diameter) / 2;
 
-      // Use provided dataToPath or build local one (fallback)
-      let dataToPath = opts.dataToPath;
-      if (!dataToPath) {
-        dataToPath = new Map();
-        if (root) {
-          root.each(d => {
-            if (d.data) {
-              const p = (typeof getNodeAncestorPath === 'function') ? getNodeAncestorPath(d) : null;
-              if (p) dataToPath.set(d.data, p);
-            }
-          });
-        }
-      }
-
       const packChildAccessor = (node) => (node && node.__collapsed) ? null : node && node.children;
       let packRoot = null;
       if (root && root.data) {
@@ -333,15 +310,17 @@
           packRoot = stripUnaryChainToFirstBranch(packRoot);
         }
       } catch (_) { }
+      // packing 几何只由层级结构决定，统计量仅用于颜色映射
       packRoot
-        .sum(d => {
-          const label = d ? d.name : null;
-          let nodePath = dataToPath.get(d);
-          if (!nodePath) nodePath = label;
-          const stats = nodePath ? comparisonStats[nodePath] : undefined;
-          return computePackMetric(stats);
-        })
-        .sort((a, b) => (b.value || 0) - (a.value || 0));
+        .sum(getPackingStructureWeight)
+        .sort((a, b) => {
+          const valueDiff = (b.value || 0) - (a.value || 0);
+          if (valueDiff !== 0) return valueDiff;
+          return d3.ascending(
+            (a && a.data && a.data.name) ? a.data.name : '',
+            (b && b.data && b.data.name) ? b.data.name : ''
+          );
+        });
       const pack = d3.pack()
         .size([diameter, diameter])
         .padding(forMini ? 1.3 : 2.5);
@@ -921,9 +900,8 @@
       });
     }
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, {
+    const layoutConfig = buildComparisonLayout(root, width, height, {
       mini: false,
-      dataToPath,
       visibleData,
       filterBySignificance,
       sourceTreeData: root.data
@@ -1100,10 +1078,8 @@
         if (!(levelOk && mag >= threshold)) return false;
         if (layoutConfig.mode === 'packing') {
           const isLeafLevel = depthFromLeaf === 0;
-          const minRadius = isLeafLevel
-            ? Math.max((typeof labelFontSize === 'number' ? labelFontSize : 9) * 0.5, 4)
-            : minPackLabelRadius;
-          return typeof d.r === 'number' ? d.r >= minRadius : false;
+          if (isLeafLevel) return true;
+          return typeof d.r === 'number' ? d.r >= minPackLabelRadius : false;
         }
         return true;
       });
@@ -1118,7 +1094,7 @@
       });
 
       let visibleNodesSet = new Set();
-      if (useSmartCulling && layoutConfig.mode !== 'packing') {
+      if (useSmartCulling) {
         // Sort candidates by priority: Outer nodes (lower height) first, then magnitude
         const currentLabelFontSize = (typeof labelFontSize === 'number')
           ? labelFontSize
@@ -1214,6 +1190,19 @@
                 metrics,
                 currentLabelFontSize,
                 isTreeVertical,
+                { collisionPadScale: profile.collisionPadScale }
+              );
+              if (helpers.collidesWithPlacedBoxes(labelBox, placedBoxes)) return;
+              placedBoxes.push(labelBox);
+              visibleNodesSet.add(d);
+              return;
+            }
+
+            if (layoutConfig.mode === 'packing' && typeof helpers.createPackingLabelBox === 'function') {
+              const labelBox = helpers.createPackingLabelBox(
+                d,
+                metrics,
+                currentLabelFontSize,
                 { collisionPadScale: profile.collisionPadScale }
               );
               if (helpers.collidesWithPlacedBoxes(labelBox, placedBoxes)) return;
@@ -1792,9 +1781,8 @@
       });
     }
 
-    const layoutConfig = buildComparisonLayout(root, width, height, comparisonStats, {
+    const layoutConfig = buildComparisonLayout(root, width, height, {
       mini: true,
-      dataToPath,
       visibleData,
       filterBySignificance: filterMini,
       sourceTreeData: root.data

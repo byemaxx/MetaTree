@@ -4351,6 +4351,30 @@ function initSidebarActivityNavigation() {
     });
 }
 
+function initSidebarDiscoveryHint() {
+    const storageKey = 'metatree.sidebarDiscoveryHintShown.v1';
+    try {
+        if (localStorage.getItem(storageKey) === 'true') return;
+    } catch (_) { }
+
+    const appBody = document.querySelector('.app-body');
+    const activityBar = document.querySelector('.sidebar-activity-bar');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    if (!appBody || !toggleBtn) return;
+
+    const hintTarget = appBody.classList.contains('sidebar-collapsed') ? toggleBtn : activityBar;
+    if (!hintTarget) return;
+
+    hintTarget.classList.add('nav-attention');
+    window.setTimeout(() => {
+        hintTarget.classList.remove('nav-attention');
+    }, 3200);
+
+    try {
+        localStorage.setItem(storageKey, 'true');
+    } catch (_) { }
+}
+
 function initSidebarToggleScrollProxy() {
     const toggleBtn = document.getElementById('sidebar-toggle');
     const mainContent = document.querySelector('.main-content');
@@ -4532,6 +4556,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initEventListeners();
     initSidebarCollapseControl();
     initSidebarActivityNavigation();
+    initSidebarDiscoveryHint();
     initPageZoomControl();
     initRangeSliderProgressStyles();
     initDataParameterControls();

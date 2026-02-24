@@ -1250,7 +1250,7 @@ input[type="text"] {
 }
 
 input[type="number"] {
-    width: 54px;
+    width: 56px;
 }
 
 input[type="number"]:focus,

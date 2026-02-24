@@ -57,6 +57,24 @@
     --sidebar-activity-hover-bg: var(--bg-lighter);
     --sidebar-activity-active-bg: var(--bg-white);
     --sidebar-activity-active-ring: var(--secondary-color);
+
+    /* Scrollbars */
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(152, 168, 196, 0.2);
+    --scrollbar-thumb-hover: rgba(107, 127, 168, 0.8);
+    --scrollbar-panel-track: #f1f3f5;
+    --scrollbar-panel-thumb: var(--gradient-primary);
+    --scrollbar-panel-thumb-hover: var(--gradient-primary-hover);
+    --scrollbar-soft-thumb: rgba(152, 168, 196, 0.28);
+    --scrollbar-soft-thumb-hover: rgba(107, 127, 168, 0.75);
+    --scrollbar-soft-color: rgba(152, 168, 196, 0.35);
+
+    /* Range slider */
+    --range-track-color: var(--border-color);
+    --range-track-color-hover: var(--text-light);
+    --range-track-fill: var(--primary-dark);
+    --range-thumb-color: var(--bg-white);
+    --range-thumb-border: var(--primary-dark);
     
     /* 间距系统 */
     --spacing-xs: 3px;
@@ -120,18 +138,18 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(152, 168, 196, 0.2);
+    background-color: var(--scrollbar-thumb);
     border-radius: 4px;
     border: 2px solid transparent;
     background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(107, 127, 168, 0.8);
+    background-color: var(--scrollbar-thumb-hover);
 }
 
 html, body {
@@ -188,7 +206,7 @@ body.info-modal-open {
     gap: 0;
     border-right: 2px solid var(--border-color);
     box-shadow: 1px 0 0 rgba(0,0,0,0.03);
-    background: linear-gradient(180deg, #fafbfd 0%, #f8f9fb 100%);
+    background: linear-gradient(180deg, var(--bg-lighter) 0%, var(--bg-light) 100%);
     padding-right: 0;
     overflow: hidden;
     position: relative;
@@ -914,7 +932,7 @@ body.info-modal-open {
 
 /* 卡片式面板 */
 .card-panel {
-    background: linear-gradient(135deg, #fafbfd 0%, #f8f9fb 100%);
+    background: linear-gradient(135deg, var(--bg-lighter) 0%, var(--bg-light) 100%);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
@@ -926,8 +944,8 @@ body.info-modal-open {
 
 .card-panel:hover {
     box-shadow: var(--shadow-md);
-    border-color: #d4dae3;
-    background: linear-gradient(135deg, #ffffff 0%, #fafbfd 100%);
+    border-color: var(--primary-light);
+    background: linear-gradient(135deg, var(--bg-white) 0%, var(--bg-lighter) 100%);
 }
 
 .panel-title {
@@ -935,7 +953,7 @@ body.info-modal-open {
     font-size: var(--font-md);
     color: var(--text-primary);
     padding: var(--spacing-md) var(--spacing-lg);
-    background: linear-gradient(135deg, #f0f3f7 0%, #e8ecf1 100%);
+    background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-lighter) 100%);
     border-bottom: 1px solid var(--border-color);
     margin: 0;
     position: relative;
@@ -1100,9 +1118,74 @@ select:focus {
 
 input[type="range"] {
     width: 100px;
+    height: 16px;
     margin: 0 var(--spacing-sm);
     cursor: pointer;
-    accent-color: var(--primary-color);
+    accent-color: var(--range-track-fill);
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    --range-progress: 50%;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: linear-gradient(
+        to right,
+        var(--range-track-fill) 0%,
+        var(--range-track-fill) var(--range-progress),
+        var(--range-track-color) var(--range-progress),
+        var(--range-track-color) 100%
+    );
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--range-thumb-color);
+    border: 2px solid var(--range-thumb-border);
+    box-shadow: var(--shadow-sm);
+    margin-top: -4px;
+}
+
+input[type="range"]:hover::-webkit-slider-runnable-track {
+    background: linear-gradient(
+        to right,
+        var(--range-track-fill) 0%,
+        var(--range-track-fill) var(--range-progress),
+        var(--range-track-color-hover) var(--range-progress),
+        var(--range-track-color-hover) 100%
+    );
+}
+
+input[type="range"]::-moz-range-track {
+    height: 6px;
+    border: none;
+    border-radius: 999px;
+    background: var(--range-track-color);
+}
+
+input[type="range"]::-moz-range-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--range-track-fill);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--range-thumb-color);
+    border: 2px solid var(--range-thumb-border);
+    box-shadow: var(--shadow-sm);
+}
+
+input[type="range"]:hover::-moz-range-track {
+    background: var(--range-track-color-hover);
 }
 
 input[type="checkbox"] {
@@ -2319,7 +2402,7 @@ button:disabled {
 #existing-groups-list::-webkit-scrollbar-track,
 .collapsible-content::-webkit-scrollbar-track,
 .sample-checkboxes::-webkit-scrollbar-track {
-    background: #f1f3f5;
+    background: var(--scrollbar-panel-track);
     border-radius: 3px;
 }
 
@@ -2327,7 +2410,7 @@ button:disabled {
 #existing-groups-list::-webkit-scrollbar-thumb,
 .collapsible-content::-webkit-scrollbar-thumb,
 .sample-checkboxes::-webkit-scrollbar-thumb {
-    background: var(--gradient-primary);
+    background: var(--scrollbar-panel-thumb);
     border-radius: 3px;
     transition: var(--transition-fast);
 }
@@ -2336,18 +2419,18 @@ button:disabled {
 #existing-groups-list::-webkit-scrollbar-thumb:hover,
 .collapsible-content::-webkit-scrollbar-thumb:hover,
 .sample-checkboxes::-webkit-scrollbar-thumb:hover {
-    background: var(--gradient-primary-hover);
+    background: var(--scrollbar-panel-thumb-hover);
 }
 
 /* ========== 选择分组/样本容器：半透明滚动条（覆盖上面的渐变样式） ========== */
 .group-display::-webkit-scrollbar-track,
 .sample-checkboxes::-webkit-scrollbar-track {
-    background: transparent;
+    background: var(--scrollbar-track);
 }
 
 .group-display::-webkit-scrollbar-thumb,
 .sample-checkboxes::-webkit-scrollbar-thumb {
-    background: rgba(152, 168, 196, 0.28);
+    background: var(--scrollbar-soft-thumb);
     border-radius: 4px;
     border: 1px solid transparent;
     background-clip: content-box;
@@ -2356,14 +2439,14 @@ button:disabled {
 
 .group-display::-webkit-scrollbar-thumb:hover,
 .sample-checkboxes::-webkit-scrollbar-thumb:hover {
-    background: rgba(107, 127, 168, 0.75);
+    background: var(--scrollbar-soft-thumb-hover);
 }
 
 /* Firefox */
 .group-display,
 .sample-checkboxes {
     scrollbar-width: thin;
-    scrollbar-color: rgba(152, 168, 196, 0.35) transparent;
+    scrollbar-color: var(--scrollbar-soft-color) var(--scrollbar-track);
 }
 
 /* ========== 输入框焦点增强效果 ========== */
@@ -2431,12 +2514,12 @@ input[type="checkbox"]:focus {
 }
 
 .taxon-filter-box::-webkit-scrollbar-track {
-    background: #f1f3f5;
+    background: var(--scrollbar-panel-track);
     border-radius: 3px;
 }
 
 .taxon-filter-box::-webkit-scrollbar-thumb {
-    background: var(--gradient-primary);
+    background: var(--scrollbar-panel-thumb);
     border-radius: 3px;
 }
 

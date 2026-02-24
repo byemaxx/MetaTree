@@ -4116,6 +4116,36 @@ function persistPageZoomPercent(percent) {
     } catch (_) { }
 }
 
+function updateRangeSliderProgress(slider) {
+    if (!slider || slider.tagName !== 'INPUT' || slider.type !== 'range') return;
+    const min = Number.isFinite(parseFloat(slider.min)) ? parseFloat(slider.min) : 0;
+    const maxRaw = Number.isFinite(parseFloat(slider.max)) ? parseFloat(slider.max) : 100;
+    const max = maxRaw > min ? maxRaw : (min + 1);
+    const valueRaw = Number.isFinite(parseFloat(slider.value)) ? parseFloat(slider.value) : min;
+    const value = Math.min(Math.max(valueRaw, min), max);
+    const progress = ((value - min) / (max - min)) * 100;
+    slider.style.setProperty('--range-progress', `${progress}%`);
+}
+
+function initRangeSliderProgressStyles() {
+    const sliders = document.querySelectorAll('input[type="range"]');
+    sliders.forEach(updateRangeSliderProgress);
+
+    document.addEventListener('input', (event) => {
+        const target = event.target;
+        if (target && target.matches && target.matches('input[type="range"]')) {
+            updateRangeSliderProgress(target);
+        }
+    });
+
+    document.addEventListener('change', (event) => {
+        const target = event.target;
+        if (target && target.matches && target.matches('input[type="range"]')) {
+            updateRangeSliderProgress(target);
+        }
+    });
+}
+
 function initPageZoomControl() {
     const slider = document.getElementById('page-zoom-slider');
     const resetBtn = document.getElementById('page-zoom-reset');
@@ -4503,6 +4533,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initSidebarCollapseControl();
     initSidebarActivityNavigation();
     initPageZoomControl();
+    initRangeSliderProgressStyles();
     initDataParameterControls();
     initFileFormatInfoModal();
     initAboutInfoModal();

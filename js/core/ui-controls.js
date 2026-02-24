@@ -3029,6 +3029,7 @@ function handleVisualizationModeChange() {
 
         // 初始化group选项
         updateGroupMetaColumnOptions();
+        ensureDefaultMetaGroupingForMode('group');
 
         // 如果已经有选中的组,重新绘制
         if (treeData && selectedGroups.length > 0) {
@@ -3070,6 +3071,8 @@ function handleVisualizationModeChange() {
         if (matrixGroupSelection) {
             matrixGroupSelection.style.display = visualizationMode === 'matrix' ? 'flex' : 'none';
         }
+
+        ensureDefaultMetaGroupingForMode(visualizationMode);
 
         // 更新分组显示和组选择器
         updateGroupDefinitionsDisplay();
@@ -5149,6 +5152,41 @@ function updateGroupMetaColumnOptions() {
 
     if (currentValue && metaColumns.includes(currentValue)) {
         select.value = currentValue;
+    }
+}
+
+function ensureDefaultMetaGroupingForMode(mode) {
+    const metaCols = (typeof window !== 'undefined' && Array.isArray(window.metaColumns))
+        ? window.metaColumns
+        : [];
+    if (metaCols.length === 0) return;
+
+    const firstCol = metaCols[0];
+    let changed = false;
+
+    updateGroupMetaColumnOptions();
+
+    const groupSelect = document.getElementById('group-meta-column-select');
+    if (groupSelect && (!groupSelect.value || !metaCols.includes(groupSelect.value))) {
+        groupSelect.value = firstCol;
+        changed = true;
+    }
+
+    const comparisonSelect = document.getElementById('meta-group-column');
+    if (comparisonSelect && (!comparisonSelect.value || !metaCols.includes(comparisonSelect.value))) {
+        comparisonSelect.value = firstCol;
+        changed = true;
+    }
+
+    if (!changed) return;
+
+    const groups = (typeof getAllGroups === 'function') ? getAllGroups() : {};
+    if (groups && Object.keys(groups).length > 0) return;
+
+    if (mode === 'group') {
+        handleGroupMetaColumnChange(firstCol);
+    } else if (mode === 'comparison' || mode === 'matrix') {
+        handleMetaGroupColumnChange(firstCol);
     }
 }
 

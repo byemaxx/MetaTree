@@ -92,7 +92,7 @@ const FILE_FORMAT_INFO_CONTENT = {
                     <li>Use this when your file already contains differential/statistical result columns.</li>
                 </ul>
             </div>
-            <p class="text-muted">Tip: Use the “Load Example” button to inspect a working template before uploading your own file.</p>
+            <p class="text-muted">Tip: Use the “Reset to Example” button to inspect a working template before uploading your own file.</p>
         `
     },
     meta: {
@@ -163,6 +163,45 @@ try {
         window.cachedDataLabel = null;
     }
 } catch (_) { }
+
+const EXAMPLE_DATA_LABEL = 'Example: test/data/taxa.tsv';
+const EXAMPLE_META_LABEL = 'Example: test/data/meta.tsv';
+let isExampleLoadInProgress = false;
+
+function isLoadedExampleDatasetLabel(label) {
+    return typeof label === 'string' && label.trim() === EXAMPLE_DATA_LABEL;
+}
+
+function getCurrentLoadedDataLabel() {
+    const filenameDisplay = document.getElementById('filename-display');
+    if (filenameDisplay && typeof filenameDisplay.textContent === 'string') {
+        return filenameDisplay.textContent.trim();
+    }
+    try {
+        if (typeof window !== 'undefined' && typeof window.cachedDataLabel === 'string') {
+            return window.cachedDataLabel.trim();
+        }
+    } catch (_) { }
+    return '';
+}
+
+function updateLoadExampleButtonState() {
+    const btn = document.getElementById('load-example');
+    if (!btn) return;
+
+    const isCurrentExample = isLoadedExampleDatasetLabel(getCurrentLoadedDataLabel());
+    const shouldDisable = isExampleLoadInProgress || isCurrentExample;
+    btn.disabled = shouldDisable;
+    btn.setAttribute('aria-disabled', shouldDisable ? 'true' : 'false');
+
+    if (isExampleLoadInProgress) {
+        btn.title = 'Loading built-in example data...';
+    } else if (isCurrentExample) {
+        btn.title = 'Current data already uses the built-in example';
+    } else {
+        btn.title = 'Replace current data with built-in example';
+    }
+}
 
 const manualColorDomainStore = (() => {
     try {
@@ -1828,6 +1867,7 @@ function loadDataFromText(text, options = {}) {
         : 'Inline data';
     const filenameDisplay = document.getElementById('filename-display');
     if (filenameDisplay) filenameDisplay.textContent = filenameLabel;
+    updateLoadExampleButtonState();
 
     const previewBtn = document.getElementById('preview-data-btn');
     if (previewBtn) previewBtn.style.display = 'inline-flex';
@@ -4554,6 +4594,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     dispatchMetaTreeReadyEvent();
     bootstrapMetaTreeFromWindowPayload();
+    updateLoadExampleButtonState();
 
     // Auto-load the built-in example dataset for a ready-to-use first view.
     // Guardrails:
@@ -4579,10 +4620,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ========== 示例数据自动加载与 meta 集成 ==========
 async function handleLoadExampleClick() {
+    if (isExampleLoadInProgress) return;
+    isExampleLoadInProgress = true;
+    updateLoadExampleButtonState();
+
     try {
         // 显示加载提示
         const filenameDisplay = document.getElementById('filename-display');
-        filenameDisplay.textContent = 'Loading example data...';
+        if (filenameDisplay) filenameDisplay.textContent = 'Loading example data...';
 
         if (typeof showToast === 'function') showToast('Loading example data...', 3000);
 
@@ -4598,12 +4643,12 @@ async function handleLoadExampleClick() {
 
         // Use loadDataFromText to centralize logic and ensure caching (for re-parsing on delimiter change)
         // Use loadDataFromText to centralize logic and ensure caching (for re-parsing on delimiter change)
-        loadDataFromText(taxaText, { label: 'Example: test/data/taxa.tsv' });
+        loadDataFromText(taxaText, { label: EXAMPLE_DATA_LABEL });
 
         // Update cached content for preview
         if (typeof window !== 'undefined') {
             window.cachedDataContent = taxaText;
-            window.cachedDataLabel = 'Example: test/data/taxa.tsv';
+            window.cachedDataLabel = EXAMPLE_DATA_LABEL;
             // Show preview button
             const pBtn = document.getElementById('preview-data-btn');
             if (pBtn) pBtn.style.display = 'inline-flex';
@@ -4620,7 +4665,7 @@ async function handleLoadExampleClick() {
                 // Cache meta content for preview
                 if (typeof window !== 'undefined') {
                     window.cachedMetaContent = metaText;
-                    window.cachedMetaLabel = 'Example: test/data/meta.tsv';
+                    window.cachedMetaLabel = EXAMPLE_META_LABEL;
                     // Show meta preview button
                     const mBtn = document.getElementById('preview-meta-btn');
                     if (mBtn) mBtn.style.display = 'inline-flex';
@@ -4628,7 +4673,7 @@ async function handleLoadExampleClick() {
 
                 // 解析并处理 meta 数据
                 // Now we use loadMetaFromText to ensure consistency with standard flow
-                loadMetaFromText(metaText, { label: 'Example: test/data/meta.tsv' });
+                loadMetaFromText(metaText, { label: EXAMPLE_META_LABEL });
             } else {
                 console.warn('Meta.tsv not found or not accessible');
             }
@@ -4645,7 +4690,7 @@ async function handleLoadExampleClick() {
         });
 
         const filenameDisplay = document.getElementById('filename-display');
-        filenameDisplay.textContent = 'Failed to load example';
+        if (filenameDisplay) filenameDisplay.textContent = 'Failed to load example';
 
         let errorMsg = 'Failed to load example data: ' + err.message;
         if (err.message.includes('Failed to fetch')) {
@@ -4655,6 +4700,9 @@ async function handleLoadExampleClick() {
             errorMsg += '3. Check that test/data/taxa.tsv file exists in the project folder';
         }
         alert(errorMsg);
+    } finally {
+        isExampleLoadInProgress = false;
+        updateLoadExampleButtonState();
     }
 }
 

@@ -1036,6 +1036,33 @@ button:disabled {
     box-shadow: var(--shadow-primary);
 }
 
+/* De-emphasize reset utility action compared with primary upload actions */
+#load-example {
+    padding: 6px 10px;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    border-width: 1px;
+    color: var(--text-secondary);
+    border-color: #c9d2df;
+    background: transparent;
+    box-shadow: none;
+}
+
+#load-example:hover:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+    background: #f8fafc;
+    color: var(--text-primary);
+    border-color: #b0bccd;
+}
+
+#load-example:disabled {
+    opacity: 0.75;
+    background: #f8fafc;
+    color: var(--text-light);
+    border-color: #d8e0eb;
+}
+
 /* ========== 帮助图标 ========== */
 .help-icon {
     display: inline-flex;

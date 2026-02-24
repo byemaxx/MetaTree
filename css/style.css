@@ -308,7 +308,7 @@ body.info-modal-open {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xl);
-    padding: 0 var(--spacing-xl) var(--spacing-lg) var(--spacing-md);
+    padding: 0 var(--spacing-md) var(--spacing-md) var(--spacing-md);
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;

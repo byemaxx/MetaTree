@@ -1660,50 +1660,6 @@ function initEventListeners() {
             }
         });
     }
-    // Labels & Nodes panel collapse/expand
-    const labelsPanel = document.getElementById('labels-panel');
-    const labelsToggle = document.getElementById('labels-toggle');
-    if (labelsToggle && labelsPanel) {
-        labelsToggle.addEventListener('click', function () {
-            const collapsed = labelsPanel.classList.toggle('collapsed');
-            labelsToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            labelsToggle.classList.toggle('expanded', !collapsed);
-            labelsToggle.setAttribute('aria-expanded', String(!collapsed));
-        });
-    }
-    // Colors & Domain panel collapse/expand
-    const colorsPanel = document.getElementById('colors-panel');
-    const colorsToggle = document.getElementById('colors-toggle');
-    if (colorsToggle && colorsPanel) {
-        colorsToggle.addEventListener('click', function () {
-            const collapsed = colorsPanel.classList.toggle('collapsed');
-            colorsToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            colorsToggle.classList.toggle('expanded', !collapsed);
-            colorsToggle.setAttribute('aria-expanded', String(!collapsed));
-        });
-    }
-    // Layout & Panels panel collapse/expand (new panel moved out of Analysis Mode)
-    const layoutPanel = document.getElementById('layout-panel');
-    const layoutToggle = document.getElementById('layout-toggle');
-    if (layoutToggle && layoutPanel) {
-        layoutToggle.addEventListener('click', function () {
-            const collapsed = layoutPanel.classList.toggle('collapsed');
-            layoutToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            layoutToggle.classList.toggle('expanded', !collapsed);
-            layoutToggle.setAttribute('aria-expanded', String(!collapsed));
-        });
-    }
-    // Theme panel collapse/expand
-    const themePanel = document.getElementById('theme-panel');
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle && themePanel) {
-        themeToggle.addEventListener('click', function () {
-            const collapsed = themePanel.classList.toggle('collapsed');
-            themeToggle.textContent = collapsed ? 'Expand ▼' : 'Collapse ▲';
-            themeToggle.classList.toggle('expanded', !collapsed);
-            themeToggle.setAttribute('aria-expanded', String(!collapsed));
-        });
-    }
     // Labels reset button
     const labelsResetBtn = document.getElementById('labels-reset');
     if (labelsResetBtn) {
@@ -4223,6 +4179,61 @@ function initSidebarCollapseControl() {
     });
 }
 
+function initSidebarActivityNavigation() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    const navButtons = Array.from(sidebar.querySelectorAll('.sidebar-activity-btn[data-panel-target]'));
+    const panels = Array.from(sidebar.querySelectorAll('[data-sidebar-panel]'));
+    if (navButtons.length === 0 || panels.length === 0) return;
+
+    const storageKey = 'metatree.sidebarActivePanel';
+    const panelIds = panels.map((panel) => panel.id).filter(Boolean);
+    const fallbackPanelId = panelIds[0];
+    if (!fallbackPanelId) return;
+
+    const applyActivePanel = (panelId, options = {}) => {
+        const shouldPersist = options.persist !== false;
+        const targetId = panelIds.includes(panelId) ? panelId : fallbackPanelId;
+
+        navButtons.forEach((button) => {
+            const isActive = button.dataset.panelTarget === targetId;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        panels.forEach((panel) => {
+            const isActive = panel.id === targetId;
+            panel.classList.toggle('is-active', isActive);
+            panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+        });
+
+        if (shouldPersist) {
+            try {
+                localStorage.setItem(storageKey, targetId);
+            } catch (_) { }
+        }
+    };
+
+    let initialPanel = fallbackPanelId;
+    try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved && panelIds.includes(saved)) {
+            initialPanel = saved;
+        }
+    } catch (_) { }
+    applyActivePanel(initialPanel, { persist: false });
+
+    navButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const targetPanelId = button.dataset.panelTarget;
+            if (!panelIds.includes(targetPanelId)) return;
+
+            applyActivePanel(targetPanelId);
+        });
+    });
+}
+
 function initSidebarToggleScrollProxy() {
     const toggleBtn = document.getElementById('sidebar-toggle');
     const mainContent = document.querySelector('.main-content');
@@ -4403,15 +4414,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initEventListeners();
     initSidebarCollapseControl();
-    initSidebarToggleScrollProxy();
+    initSidebarActivityNavigation();
     initDataParameterControls();
-    initCollapsiblePanel('data-metadata-panel', 'data-metadata-panel-toggle', {
-        defaultCollapsed: false,
-        expandLabel: 'Expand ▼',
-        collapseLabel: 'Collapse ▲',
-        expandAriaLabel: 'Expand Data & Metadata panel',
-        collapseAriaLabel: 'Collapse Data & Metadata panel'
-    });
     initFileFormatInfoModal();
     initAboutInfoModal();
 
@@ -4549,7 +4553,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // 基础容器
             'viz-container', 'stats-panel', 'total-nodes', 'leaf-nodes', 'max-depth',
             // 数据与元数据
-            'data-metadata-panel', 'data-metadata-panel-toggle',
+            'data-metadata-panel',
             'file-upload', 'meta-upload', 'load-example', 'filename-display', 'meta-file-display',
             'data-params-toggle', 'data-params-content', 'data-delimiter-select', 'data-delimiter-custom',
             'taxa-delimiter-select', 'taxa-delimiter-custom',
@@ -4568,7 +4572,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'custom-color-controls', 'custom-color-start', 'custom-color-end', 'custom-stops-count', 'apply-custom-color',
             'custom-presets', 'preset-name', 'save-preset',
             // 标签与节点
-            'labels-panel', 'labels-toggle', 'label-threshold', 'label-threshold-value', 'label-font-size', 'label-font-size-value',
+            'labels-panel', 'label-threshold', 'label-threshold-value', 'label-font-size', 'label-font-size-value',
             'label-levels', 'labels-reset', 'node-size-multiplier', 'node-size-value', 'min-node-size', 'min-node-size-value',
             'max-node-size', 'max-node-size-value', 'node-opacity', 'node-opacity-value', 'edge-width-multiplier', 'edge-width-value', 'min-edge-width', 'min-edge-width-value',
             'edge-opacity', 'edge-opacity-value',
@@ -4579,7 +4583,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'group-selection-row', 'select-group1', 'select-group2',
             'show-significance', 'significance-thresholds-row', 'pvalue-threshold', 'qvalue-threshold', 'logfc-threshold',
             'comparison-base-nonzero-only', 'comparison-metric',
-            'color-domain-abs', 'color-domain-reset', 'run-comparison', 'export-comparison', 'colors-toggle',
+            'color-domain-abs', 'color-domain-reset', 'run-comparison', 'export-comparison',
             // 分组模态框
             'group-modal', 'group-name-input', 'sample-checklist', 'existing-groups-list', 'save-group-btn', 'cancel-group-btn', 'close-group-modal',
             // 组工具

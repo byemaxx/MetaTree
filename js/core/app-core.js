@@ -1039,6 +1039,19 @@ function stripUnaryChainToFirstBranch(h) {
 }
 
 /**
+ * Circle packing 布局权重（仅基于结构）
+ * 叶节点返回 1，内部节点返回 0，让 d3.sum 后的 value 等于子树叶子数。
+ * 这样各 panel 的几何结构保持一致，数量值仅用于颜色映射。
+ * @param {Object} node
+ * @returns {number}
+ */
+function getPackingStructureWeight(node) {
+    const hasChildren = !!(node && Array.isArray(node.children) && node.children.length > 0);
+    const collapsed = !!(node && node.__collapsed);
+    return (collapsed || !hasChildren) ? 1 : 0;
+}
+
+/**
  * 将打包布局的文本标签提升到节点层的最上方（避免被子节点圆覆盖）
  * 会将父 <g> 的平移/旋转合并到标签自身的 transform 上
  * @param {d3.Selection} selection - 需要提升的文本选择
@@ -1520,12 +1533,21 @@ function createTreeLabelBox(node, metrics, fontSize, isVertical, options = {}) {
     return createOrientedLabelBox(baseX, baseY, rotation, anchor, offset, metrics, fontSize, options);
 }
 
+function createPackingLabelBox(node, metrics, fontSize, options = {}) {
+    const offsetX = Number.isFinite(options.offsetX) ? options.offsetX : 0;
+    const offsetY = Number.isFinite(options.offsetY) ? options.offsetY : 0;
+    const baseX = (Number.isFinite(node && node.x) ? node.x : 0) + offsetX;
+    const baseY = (Number.isFinite(node && node.y) ? node.y : 0) + offsetY;
+    return createOrientedLabelBox(baseX, baseY, 0, 'middle', 0, metrics, fontSize, options);
+}
+
 try {
     if (typeof window !== 'undefined') {
         window.smartLabelCullingHelpers = {
             getLabelTextMetrics,
             resolveRadialLabelPlacement,
             createTreeLabelBox,
+            createPackingLabelBox,
             collidesWithPlacedBoxes,
             normalizeLabelCullingStrength,
             resolveCurrentCullingStrength,
@@ -3229,22 +3251,21 @@ function drawTree(sample, globalDomain) {
         const offsetX = (width - diameter) / 2;
         const offsetY = (height - diameter) / 2;
 
-        // 为 pack 计算数值（使用已变换的丰度以符合当前视觉域，并确保非负）
+        // packing 几何仅由层级结构决定；丰度仅用于颜色映射
         let rootPack = (typeof hierarchy.copy === 'function')
             ? hierarchy.copy()
             : d3.hierarchy(sourceTree, childAccessor);
         // 对 packing 使用完整的单子链剥离，避免同心圆遮蔽实际分支
         rootPack = stripUnaryChainToFirstBranch(rootPack)
-            .sum(d => {
-                const abundance = (d.abundances && d.abundances[sample]) ? d.abundances[sample] : 0;
-                const t = transformAbundance(abundance);
-                const magnitude = Math.abs(t);
-                if (magnitude > 0) return magnitude;
-                // 为零丰度的叶子提供极小值，避免 pack 将其压缩为同心圆
-                const isLeaf = !d.children || d.children.length === 0;
-                return isLeaf ? 1e-6 : 0;
-            })
-            .sort((a, b) => (b.value || 0) - (a.value || 0));
+            .sum(getPackingStructureWeight)
+            .sort((a, b) => {
+                const valueDiff = (b.value || 0) - (a.value || 0);
+                if (valueDiff !== 0) return valueDiff;
+                return d3.ascending(
+                    (a && a.data && a.data.name) ? a.data.name : '',
+                    (b && b.data && b.data.name) ? b.data.name : ''
+                );
+            });
 
         const pack = d3.pack()
             .size([diameter, diameter])
@@ -3291,33 +3312,77 @@ function drawTree(sample, globalDomain) {
             const thresholdValue = calculateLabelThreshold(rootPack, sample);
             const selectedSet = getLabelLevelSet();
             const minPackLabelRadius = Math.max(labelFontSize, 10);
+            const currentLabelFontSize = (labelFontSize || 10);
+            const currentCullingStrength = resolveCurrentCullingStrength(
+                (typeof labelCullingStrength !== 'undefined') ? labelCullingStrength : undefined
+            );
 
-            let pVis = 0;
-            let pTotal = 0;
+            const candidates = nodes.filter(d => {
+                const abundance = (d.data && d.data.abundances && d.data.abundances[sample]) ? d.data.abundances[sample] : 0;
+                const t = transformAbundance(abundance);
+                const depthFromLeaf = d.height;
+                const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
+                const sigOk = !singleSigActive || (d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
+
+                const isCandidate = levelOk && sigOk && Math.abs(t) >= thresholdValue;
+                if (!isCandidate) return false;
+                const isLeafLevel = depthFromLeaf === 0;
+                // packing 结构统一后，叶节点半径通常更小：0 级标签不做半径拦截
+                const radiusOk = isLeafLevel
+                    ? true
+                    : (typeof d.r === 'number' ? d.r >= minPackLabelRadius : true);
+                return radiusOk;
+            });
+
+            const pTotal = candidates.length;
+            let visibleNodes = candidates;
+
+            if (smartLabelCulling) {
+                const labelMeta = new Map();
+                const ensureMeta = (node) => {
+                    if (labelMeta.has(node)) return labelMeta.get(node);
+                    const text = getDisplayName(node);
+                    const metrics = getLabelTextMetrics(text, currentLabelFontSize);
+                    const info = { text, metrics, width: metrics.width || 0 };
+                    labelMeta.set(node, info);
+                    return info;
+                };
+                const sortedCandidates = [...candidates].sort((a, b) => {
+                    if (a.height !== b.height) return a.height - b.height; // Leaves (0) first
+                    const abA = Math.abs(transformAbundance((a.data && a.data.abundances && a.data.abundances[sample]) || 0));
+                    const abB = Math.abs(transformAbundance((b.data && b.data.abundances && b.data.abundances[sample]) || 0));
+                    if (abA !== abB) return abB - abA;
+                    return ensureMeta(a).width - ensureMeta(b).width;
+                });
+
+                const placedBoxes = [];
+                const visibleNodesSet = new Set();
+                sortedCandidates.forEach((d) => {
+                    const meta = ensureMeta(d);
+                    const hasChildren = !!(d && d.children && d.children.length > 0);
+                    const profile = resolveLabelCullingProfile(hasChildren, currentLabelFontSize, currentCullingStrength);
+                    const labelBox = createPackingLabelBox(
+                        d,
+                        meta.metrics,
+                        currentLabelFontSize,
+                        {
+                            collisionPadScale: profile.collisionPadScale,
+                            offsetX,
+                            offsetY
+                        }
+                    );
+                    if (collidesWithPlacedBoxes(labelBox, placedBoxes)) return;
+                    placedBoxes.push(labelBox);
+                    visibleNodesSet.add(d);
+                });
+                visibleNodes = candidates.filter(d => visibleNodesSet.has(d));
+            }
+
+            const pVis = visibleNodes.length;
 
             const packLabels = g.append('g').attr('class', 'labels-layer')
                 .selectAll('.node-label')
-                .data(nodes.filter(d => {
-                    const abundance = (d.data && d.data.abundances && d.data.abundances[sample]) ? d.data.abundances[sample] : 0;
-                    const t = transformAbundance(abundance);
-                    const depthFromLeaf = d.height;
-                    const levelOk = !selectedSet || selectedSet.has(depthFromLeaf);
-                    const sigOk = !singleSigActive || (d.data && d.data.__singleSigPass && d.data.__singleSigPass[sample]);
-
-                    const isCandidate = levelOk && sigOk && Math.abs(t) >= thresholdValue;
-                    if (isCandidate) {
-                        pTotal++;
-                        const isLeafLevel = depthFromLeaf === 0;
-                        const minRadius = isLeafLevel ? Math.max(labelFontSize * 0.5, 4) : minPackLabelRadius;
-                        const radiusOk = typeof d.r === 'number' ? d.r >= minRadius : true;
-
-                        if (radiusOk) {
-                            pVis++;
-                            return true;
-                        }
-                    }
-                    return false;
-                }))
+                .data(visibleNodes)
                 .join('text')
                 .attr('class', 'node-label')
                 .attr('text-anchor', 'middle')

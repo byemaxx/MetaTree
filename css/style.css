@@ -992,7 +992,7 @@ body.info-modal-open {
 
 .panel-title {
     font-weight: 600;
-    font-size: var(--font-md);
+    font-size: var(--font-xl);
     color: var(--text-primary);
     padding: var(--spacing-md) var(--spacing-lg);
     background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-lighter) 100%);

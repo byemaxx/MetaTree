@@ -18,6 +18,30 @@
 <body>
     <div class="container">
         <div class="header">
+            <nav class="header-links" aria-label="Project links">
+                <a href="https://github.com/byemaxx/MetaTree" target="_blank" rel="noopener noreferrer">
+                    <svg class="header-link-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M9 18c-4 1.2-4-2-6-2m12 4v-3.1a2.7 2.7 0 0 0-.8-2.1c2.6-.3 5.3-1.3 5.3-5.7a4.4 4.4 0 0 0-1.2-3.1 4.1 4.1 0 0 0-.1-3s-1-.3-3.2 1.2a11 11 0 0 0-6 0C6.8 2.7 5.8 3 5.8 3a4.1 4.1 0 0 0-.1 3A4.4 4.4 0 0 0 4.5 9c0 4.4 2.7 5.4 5.3 5.7a2.7 2.7 0 0 0-.8 2.1V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://github.com/byemaxx/MetaTree/blob/main/doc/USER_MANUAL.md" target="_blank"
+                    rel="noopener noreferrer">
+                    <svg class="header-link-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        <path d="M14 2v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    <span>Documentation</span>
+                </a>
+                <button type="button" id="header-about-link" class="header-link-button">
+                    <svg class="header-link-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle>
+                        <path d="M12 10v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                        <circle cx="12" cy="7.5" r="1" fill="currentColor"></circle>
+                    </svg>
+                    <span>About</span>
+                </button>
+            </nav>
             <div class="title-row">
                 <a class="title-link" href="https://github.com/byemaxx/MetaTree" target="_blank"
                     rel="noopener noreferrer" aria-label="MetaTree project homepage">
@@ -1187,18 +1211,6 @@
             </main>
         </div>
 
-        <section class="about-section" id="about">
-            <div class="about-content">
-                <p class="about-text">
-                    <!-- <strong>MetaTree</strong> is an open-source toolkit for quick heat-tree comparisons across multi-sample and custom visualizations. -->
-                    For documentation, questions, or to report issues, visit the
-                    <a class="about-inline-link" href="https://github.com/byemaxx/MetaTree" target="_blank"
-                        rel="noopener noreferrer">
-                        Project homepage
-                    </a>
-                </p>
-            </div>
-        </section>
     </div>
 
     <!-- 分组定义模态框 -->
@@ -1213,6 +1225,43 @@
             </div>
             <div class="info-modal-body" id="file-format-modal-body">
                 <p class="text-muted">Click the info icons next to the upload buttons to view supported formats.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="about-modal" class="info-modal" aria-hidden="true" role="dialog" aria-labelledby="about-modal-title">
+        <div class="info-modal-overlay"></div>
+        <div class="info-modal-content about-modal-content" role="document" tabindex="-1">
+            <div class="info-modal-header">
+                <h3 id="about-modal-title">About MetaTree</h3>
+                <button type="button" class="info-modal-close" id="about-modal-close" aria-label="Close about">&times;</button>
+            </div>
+            <div class="info-modal-body about-modal-body">
+                <p><strong>MetaTree</strong> is an interactive web app for hierarchical taxonomy visualization and
+                    multi-group comparison.</p>
+                <p>It supports loading your own data tables, filtering by metadata, and exploring results in
+                    sample/group/comparison modes.</p>
+                <p>MetaTree is designed for microbiome and other hierarchical datasets where users need to compare
+                    multiple conditions quickly while keeping biological structure visible.</p>
+                <p>Key capabilities include hierarchical tree rendering, metadata-aware sample filtering, grouped
+                    analysis, pairwise comparison, and matrix-style multi-comparison views in one workflow.</p>
+                <h4>Preprint</h4>
+                <p>If you use MetaTree in your research, please cite our preprint:</p>
+                <p class="about-citation">
+                    Wu Q, Zhang A, Ning Z, et al. MetaTree: an interactive web platform for hierarchical data
+                    visualization and multi-group comparison[J]. bioRxiv, 2026: 2026.01.22.701099.
+                </p>
+                <p>
+                    <a href="https://www.biorxiv.org/content/10.64898/2026.01.22.701099v1" target="_blank"
+                        rel="noopener noreferrer">https://www.biorxiv.org/content/10.64898/2026.01.22.701099v1</a>
+                </p>
+                <p>Project links:</p>
+                <ul class="info-modal-list">
+                    <li><a href="https://github.com/byemaxx/MetaTree" target="_blank"
+                            rel="noopener noreferrer">GitHub repository</a></li>
+                    <li><a href="https://github.com/byemaxx/MetaTree/blob/main/doc/USER_MANUAL.md" target="_blank"
+                            rel="noopener noreferrer">User manual</a></li>
+                </ul>
             </div>
         </div>
     </div>

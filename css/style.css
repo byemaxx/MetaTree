@@ -272,6 +272,7 @@ body.info-modal-open {
     text-align: center;
     border-bottom: var(--app-header-border, none);
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    position: relative;
 }
 
 /* Title row: keep paragraph centered but place icon next to H1 in a horizontal row */
@@ -319,6 +320,57 @@ body.info-modal-open {
     font-size: var(--font-md);
     opacity: 0.95;
     font-weight: 400;
+}
+
+.header-links {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.header-links a,
+.header-links .header-link-button {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    padding: 2px 4px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--transition-fast);
+}
+
+.header-links .header-link-button {
+    font-family: inherit;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.header-links a:hover,
+.header-links a:focus-visible,
+.header-links .header-link-button:hover,
+.header-links .header-link-button:focus-visible {
+    background: transparent;
+    text-decoration: underline;
+}
+
+.header-links a:focus-visible,
+.header-links .header-link-button:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.7);
+    outline-offset: 2px;
+}
+
+.header-link-icon {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
 }
 
 .about-section {
@@ -1120,6 +1172,35 @@ button:disabled {
     gap: var(--spacing-lg);
 }
 
+.about-modal-body p {
+    margin: 0;
+}
+
+.about-modal-body h4 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: var(--font-lg);
+}
+
+.about-modal-body .about-citation {
+    padding: 10px 12px;
+    border-left: 3px solid var(--primary-color);
+    background: var(--bg-light);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+}
+
+.about-modal-body .info-modal-list a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+
+.about-modal-body .info-modal-list a:hover,
+.about-modal-body .info-modal-list a:focus-visible {
+    color: var(--secondary-dark);
+    text-decoration: underline;
+}
+
 .info-example {
     border: 1px solid var(--border-light);
     border-radius: var(--radius-xl);
@@ -1707,6 +1788,14 @@ button:disabled {
     
     .header p {
         font-size: var(--font-sm);
+    }
+
+    .header-links {
+        position: static;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: var(--spacing-sm);
+        gap: 6px;
     }
 
     .about-section {

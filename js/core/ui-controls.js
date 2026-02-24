@@ -4277,6 +4277,40 @@ function initFileFormatInfoModal() {
     });
 }
 
+function initAboutInfoModal() {
+    const modal = document.getElementById('about-modal');
+    const trigger = document.getElementById('header-about-link');
+    if (!modal || !trigger) return;
+
+    const closeBtn = document.getElementById('about-modal-close');
+    const overlay = modal.querySelector('.info-modal-overlay');
+
+    const openModal = () => {
+        modal.classList.add('is-visible');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('info-modal-open');
+        if (closeBtn) closeBtn.focus();
+    };
+
+    const closeModal = () => {
+        modal.classList.remove('is-visible');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('info-modal-open');
+        trigger.focus();
+    };
+
+    trigger.addEventListener('click', openModal);
+    [closeBtn, overlay].forEach((el) => {
+        if (el) el.addEventListener('click', closeModal);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.classList.contains('is-visible')) {
+            closeModal();
+        }
+    });
+}
+
 function dispatchMetaTreeReadyEvent() {
     try {
         if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
@@ -4339,6 +4373,7 @@ document.addEventListener('DOMContentLoaded', function () {
         collapseAriaLabel: 'Collapse Data & Metadata panel'
     });
     initFileFormatInfoModal();
+    initAboutInfoModal();
 
     // 初始化 taxon 筛选功能
     initTaxonFilters();

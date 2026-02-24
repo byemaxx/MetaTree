@@ -22,9 +22,9 @@ const FILE_FORMAT_INFO_CONTENT = {
     data: {
         title: 'Data File Format',
         html: `
-            <p><strong>Supported inputs:</strong> Tab/CSV/plain-text files that contain either a wide abundance table or a combined long-format statistics table.</p>
+            <p><strong>Choose one input type for your data file:</strong> <code>Wide Table</code> <strong>or</strong> <code>Long Table</code>.</p>
             <div class="info-example">
-                    <div class="info-example-title">Comparison Results Table</div>
+                    <div class="info-example-title">Type1: Wide Table (abundance matrix)</div>
                 <div class="info-table-wrapper">
                     <table class="info-sample-table" aria-label="Wide hierarchy table example">
                         <thead>
@@ -36,12 +36,12 @@ const FILE_FORMAT_INFO_CONTENT = {
                         </thead>
                         <tbody>
                             <tr>
-                                <td>k__Bacteria|p__Firmicutes|c__Bacilli</td>
+                                <td>k__Bacteria|p__Firmicutes|c__Bacilli|...</td>
                                 <td>123.4</td>
                                 <td>98.1</td>
                             </tr>
                             <tr>
-                                <td>k__Bacteria|p__Bacteroidota|c__Bacteroidia</td>
+                                <td>k__Bacteria|p__Bacteroidota|c__Bacteroidia|...</td>
                                 <td>56.0</td>
                                 <td>44.2</td>
                             </tr>
@@ -52,10 +52,11 @@ const FILE_FORMAT_INFO_CONTENT = {
                     <li>Column 1: full ranked path (separator defaults to | and can be edited via "Taxa rank separator").</li>
                     <li>Remaining columns: numeric values for each sample or condition.</li>
                     <li>Switch between tab, comma, or custom delimiters inside "Load parameters".</li>
+                    <li>Use this when your file is taxon/function rows by sample columns.</li>
                 </ul>
             </div>
             <div class="info-example">
-                <div class="info-example-title">Combined long-format stats</div>
+                <div class="info-example-title">Type2: Long Table (combined statistics)</div>
                 <div class="info-table-wrapper">
                     <table class="info-sample-table" aria-label="Long-format statistics example">
                         <thead>
@@ -88,7 +89,7 @@ const FILE_FORMAT_INFO_CONTENT = {
                 <ul class="info-modal-list">
                     <li>Item_ID must match a hierarchy node (taxon or taxa-function).</li>
                     <li>condition labels distinguish contrasts; log2FoldChange/pvalue/padj drive coloring and filtering.</li>
-                    <li>Load the wide table, the long-format table, or both depending on your workflow.</li>
+                    <li>Use this when your file already contains differential/statistical result columns.</li>
                 </ul>
             </div>
             <p class="text-muted">Tip: Use the “Load Example” button to inspect a working template before uploading your own file.</p>

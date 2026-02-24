@@ -1071,11 +1071,7 @@
 
                     <div class="control-row">
                         <div class="control-group">
-                            <label class="fw-500 flex ai-center gap-8">
-                                Color scheme:
-                                <button id="color-previews-toggle" class="toggle-btn ml-8" type="button"
-                                    aria-controls="color-previews-wrapper" aria-expanded="true">Schemes</button>
-                            </label>
+                            <label class="fw-500">Color scheme:</label>
                             <label class="ml-10 fw-500 flex ai-center gap-6">
                                 <input type="checkbox" id="color-reverse">
                                 Reverse colors
@@ -1164,10 +1160,25 @@
                         UI Theme
                     </div>
                     <div class="theme-panel-body">
-                        <p class="theme-panel-text">
-                            Choose a soft preset or fine tune primary, surface, and tree panel hues. Changes apply
-                            instantly and persist locally.
-                        </p>
+                        <div class="theme-zoom-card" role="group" aria-label="Page zoom">
+                            <div class="theme-zoom-row">
+                                <label for="page-zoom-slider">Page zoom</label>
+                                <span id="page-zoom-value" class="theme-zoom-value">100%</span>
+                            </div>
+                            <div class="theme-zoom-controls">
+                                <input type="range" id="page-zoom-slider" min="80" max="130" step="5" value="100"
+                                    aria-label="Adjust page zoom">
+                                <button id="page-zoom-reset" type="button" class="btn-icon"
+                                    title="Reset page zoom to 100%" aria-label="Reset page zoom to 100%">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path
+                                            d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                         <div id="theme-preset-list" class="theme-preset-list" role="listbox" aria-label="Theme presets">
                             <!-- populated by JS -->
                         </div>

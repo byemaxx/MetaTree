@@ -1298,28 +1298,7 @@ function initEventListeners() {
     // 丰度转换选择
     document.getElementById('abundance-transform').addEventListener('change', handleAbundanceTransformChange);
 
-    // 配色方案选择通过下方的可折叠预览条进行（点击预览切换）
-    const previewsToggle = document.getElementById('color-previews-toggle');
-    if (previewsToggle) {
-        const syncPreviewsToggleState = () => {
-            const wrap = document.getElementById('color-previews-wrapper');
-            if (!wrap) return;
-            const expanded = window.getComputedStyle(wrap).display !== 'none';
-            previewsToggle.classList.toggle('expanded', expanded);
-            previewsToggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-        };
-
-        previewsToggle.addEventListener('click', () => {
-            const wrap = document.getElementById('color-previews-wrapper');
-            if (!wrap) return;
-            const current = window.getComputedStyle(wrap).display;
-            const visible = current !== 'none';
-            wrap.style.display = visible ? 'none' : 'block';
-            syncPreviewsToggleState();
-        });
-
-        syncPreviewsToggleState();
-    }
+    // 配色方案预览区域常显
     // Removed deprecated diverging previews toggle; diverging palettes are now in Colors & Domain panel
     // 反转颜色复选框
     const rev = document.getElementById('color-reverse');
@@ -4071,6 +4050,102 @@ function handleColorDomainReset() {
     persistCurrentModeColorSettings();
 }
 
+const PAGE_ZOOM_STORAGE_KEY = 'metatree.pageZoomPercent';
+const PAGE_ZOOM_DEFAULT_PERCENT = 100;
+const PAGE_ZOOM_MIN_PERCENT = 80;
+const PAGE_ZOOM_MAX_PERCENT = 130;
+
+function clampPageZoomPercent(value) {
+    const parsed = typeof value === 'string' ? parseInt(value, 10) : Number(value);
+    if (!isFinite(parsed)) return PAGE_ZOOM_DEFAULT_PERCENT;
+    return Math.max(PAGE_ZOOM_MIN_PERCENT, Math.min(PAGE_ZOOM_MAX_PERCENT, Math.round(parsed)));
+}
+
+function updatePageZoomValueLabel(percent) {
+    const valueEl = document.getElementById('page-zoom-value');
+    if (!valueEl) return;
+    valueEl.textContent = `${percent}%`;
+}
+
+function isPageZoomSupported() {
+    try {
+        return typeof document !== 'undefined'
+            && !!document.documentElement
+            && ('zoom' in document.documentElement.style);
+    } catch (_) {
+        return false;
+    }
+}
+
+function applyPageZoomPercent(percent) {
+    const safePercent = clampPageZoomPercent(percent);
+    const zoomScale = safePercent / 100;
+    const root = document.documentElement;
+    if (root) {
+        root.style.zoom = String(zoomScale);
+        root.style.setProperty('--page-zoom-scale', String(zoomScale));
+    }
+    return safePercent;
+}
+
+function readPersistedPageZoomPercent() {
+    try {
+        const stored = localStorage.getItem(PAGE_ZOOM_STORAGE_KEY);
+        if (stored == null) return PAGE_ZOOM_DEFAULT_PERCENT;
+        return clampPageZoomPercent(stored);
+    } catch (_) {
+        return PAGE_ZOOM_DEFAULT_PERCENT;
+    }
+}
+
+function persistPageZoomPercent(percent) {
+    try {
+        localStorage.setItem(PAGE_ZOOM_STORAGE_KEY, String(clampPageZoomPercent(percent)));
+    } catch (_) { }
+}
+
+function initPageZoomControl() {
+    const slider = document.getElementById('page-zoom-slider');
+    const resetBtn = document.getElementById('page-zoom-reset');
+    const valueEl = document.getElementById('page-zoom-value');
+    if (!slider || !resetBtn || !valueEl) return;
+
+    if (!isPageZoomSupported()) {
+        slider.disabled = true;
+        resetBtn.disabled = true;
+        valueEl.textContent = 'N/A';
+        slider.title = 'Page zoom is not supported in this browser';
+        resetBtn.title = 'Page zoom is not supported in this browser';
+        return;
+    }
+
+    const applyAndSyncUI = (percent, options = {}) => {
+        const shouldPersist = !!options.persist;
+        const applied = applyPageZoomPercent(percent);
+        slider.value = String(applied);
+        updatePageZoomValueLabel(applied);
+        if (shouldPersist) {
+            persistPageZoomPercent(applied);
+        }
+        return applied;
+    };
+
+    const initialPercent = readPersistedPageZoomPercent();
+    applyAndSyncUI(initialPercent, { persist: false });
+
+    slider.addEventListener('input', (e) => {
+        applyAndSyncUI(e.target.value, { persist: false });
+    });
+
+    slider.addEventListener('change', (e) => {
+        applyAndSyncUI(e.target.value, { persist: true });
+    });
+
+    resetBtn.addEventListener('click', () => {
+        applyAndSyncUI(PAGE_ZOOM_DEFAULT_PERCENT, { persist: true });
+    });
+}
+
 function initCollapsiblePanel(panelId, toggleId, options = {}) {
     const panel = document.getElementById(panelId);
     const toggle = document.getElementById(toggleId);
@@ -4415,6 +4490,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initEventListeners();
     initSidebarCollapseControl();
     initSidebarActivityNavigation();
+    initPageZoomControl();
     initDataParameterControls();
     initFileFormatInfoModal();
     initAboutInfoModal();
@@ -4568,7 +4644,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'single-significance-toggle-row', 'single-significance-thresholds-row', 'single-show-significance',
             'single-pvalue-threshold', 'single-qvalue-threshold', 'single-logfc-threshold',
             // 连续色板与自定义
-            'color-previews-toggle', 'color-previews-wrapper', 'color-previews', 'color-reverse',
+            'color-previews-wrapper', 'color-previews', 'color-reverse',
             'custom-color-controls', 'custom-color-start', 'custom-color-end', 'custom-stops-count', 'apply-custom-color',
             'custom-presets', 'preset-name', 'save-preset',
             // 标签与节点
@@ -4587,7 +4663,9 @@ document.addEventListener('DOMContentLoaded', function () {
             // 分组模态框
             'group-modal', 'group-name-input', 'sample-checklist', 'existing-groups-list', 'save-group-btn', 'cancel-group-btn', 'close-group-modal',
             // 组工具
-            'delete-all-groups'
+            'delete-all-groups',
+            // 页面级缩放
+            'page-zoom-slider', 'page-zoom-value', 'page-zoom-reset'
             // 注意：select-all-groups, select-none-groups, invert-groups 是动态生成的，不在初始验证列表中
         ];
         const missing = requiredIds.filter(id => !document.getElementById(id));

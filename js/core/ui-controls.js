@@ -1074,6 +1074,15 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         container.innerHTML = '<p class="text-muted">No content to preview.</p>';
         return;
     }
+    const escapeValue = (value) => {
+        const str = (value == null) ? '' : String(value);
+        if (typeof escapeHtml === 'function') return escapeHtml(str);
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    };
 
     const allLines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
     // Do not count the header row in totals or preview counts
@@ -1110,7 +1119,7 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
     // Header (first non-empty line)
     const headers = (headerLine && typeof headerLine === 'string') ? headerLine.split(delimiter) : [];
     headers.forEach(h => {
-        html += `<th style="padding:7px 10px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${h}</th>`;
+        html += `<th style="padding:7px 10px; text-align:left; border-right:1px solid #eee; white-space:nowrap; font-weight:600; color:#4a5568;">${escapeValue(h)}</th>`;
     });
     html += '</tr></thead><tbody>';
 
@@ -1119,7 +1128,7 @@ function renderPreviewTable(text, delimiter, containerId, context = 'data') {
         const cols = lines[i].split(delimiter);
         html += '<tr style="border-bottom:1px solid #eee;">';
         cols.forEach(c => {
-            html += `<td style="padding:5px 10px; border-right:1px solid #eee; white-space:nowrap;">${c}</td>`;
+            html += `<td style="padding:5px 10px; border-right:1px solid #eee; white-space:nowrap;">${escapeValue(c)}</td>`;
         });
         html += '</tr>';
     }

@@ -3,6 +3,25 @@
  * Version: 2.0
  */
 
+const APP_VERSION = (typeof window !== 'undefined' && typeof window.APP_VERSION === 'string' && window.APP_VERSION.trim())
+    ? window.APP_VERSION.trim()
+    : 'v0.0.0';
+
+function applyAppVersionToUI() {
+    const headerVersion = document.getElementById('header-version-value')
+        || document.getElementById('app-version-badge');
+    if (headerVersion) headerVersion.textContent = APP_VERSION;
+
+    const aboutVersion = document.getElementById('about-version-value');
+    if (aboutVersion) aboutVersion.textContent = APP_VERSION;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyAppVersionToUI);
+} else {
+    applyAppVersionToUI();
+}
+
 // ========== 全局变量 ==========
 let treeData = null;
 let selectedSamples = [];
@@ -2879,7 +2898,7 @@ function drawTree(sample, globalDomain) {
     // 节点大小比例尺 - 根据变换类型选择合适的 scale
     // 约定：
     // - log/log2/sqrt：数据已变换，使用幂映射以提升低值分辨率
-    // - area：半径按 sqrt(value) 映射，使圆面积与值成正比（metacoder 风格）
+    // - area：半径按 sqrt(value) 映射，使圆面积与值成正比
     // - none：半径按线性映射（不做面积校正），以产生与 area 不同的视觉效果
     let sizeScale;
     const adjustedMinSize = minNodeSize * nodeSizeMultiplier;

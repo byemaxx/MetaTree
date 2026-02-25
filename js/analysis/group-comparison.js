@@ -1,6 +1,5 @@
 /**
  * 宏基因组层级分类结构可视化平台 - 组间比较模块
- * 类似于 Metacoder 的 compare_groups 和 heat_tree_matrix
  * Version: 1.0
  */
 
@@ -310,7 +309,6 @@ function cohensD(group1, group2) {
 // ========== 组间比较核心功能 ==========
 
 /**
- * 比较所有分组 - 类似 Metacoder 的 compare_groups
  * @param {Object} treeData - 层级树数据
  * @param {Object} groups - 分组定义 {groupName: [samples]}
  * @param {Object} options - 选项

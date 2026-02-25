@@ -1723,7 +1723,9 @@ button:disabled {
     /* 使用纯色背景，移除渐变 */
     background: var(--tree-panel-header-start, var(--primary-color));
     color: var(--tree-panel-header-text, #ffffff);
-    padding: 10px var(--spacing-lg);
+    height: 36px;
+    padding: 2px var(--spacing-lg);
+    box-sizing: border-box;
     font-weight: 600;
     font-size: var(--font-md);
     display: flex;

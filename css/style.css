@@ -468,15 +468,15 @@ body.info-modal-open {
 }
 
 .sidebar-activity-bar.nav-attention {
-    animation: sidebarHintPulse 1.05s ease-in-out 3;
+    animation: sidebarHintPulse 1.05s ease-in-out infinite;
 }
 
 .sidebar-activity-bar.nav-attention .sidebar-activity-btn.active {
-    animation: sidebarHintActiveButtonPulse 1.05s ease-in-out 3;
+    animation: sidebarHintActiveButtonPulse 1.05s ease-in-out infinite;
 }
 
 .app-body.sidebar-collapsed .sidebar-toggle-collapsed.nav-attention {
-    animation: sidebarToggleHintPulse 1.05s ease-in-out 3;
+    animation: sidebarToggleHintPulse 1.05s ease-in-out infinite;
 }
 
 /* A visible, non-interactive gutter to emphasize the boundary between panels */

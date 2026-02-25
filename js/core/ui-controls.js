@@ -4533,22 +4533,40 @@ function initSidebarDiscoveryHint() {
         if (localStorage.getItem(storageKey) === 'true') return;
     } catch (_) { }
 
+    const sidebar = document.getElementById('sidebar');
     const appBody = document.querySelector('.app-body');
     const activityBar = document.querySelector('.sidebar-activity-bar');
     const collapsedToggleBtn = document.getElementById('sidebar-toggle-collapsed');
     if (!appBody) return;
 
+    const clearHint = () => {
+        if (activityBar) activityBar.classList.remove('nav-attention');
+        if (collapsedToggleBtn) collapsedToggleBtn.classList.remove('nav-attention');
+    };
+
     const hintTarget = appBody.classList.contains('sidebar-collapsed') ? collapsedToggleBtn : activityBar;
     if (!hintTarget) return;
-
+    clearHint();
     hintTarget.classList.add('nav-attention');
-    window.setTimeout(() => {
-        hintTarget.classList.remove('nav-attention');
-    }, 4200);
 
-    try {
-        localStorage.setItem(storageKey, 'true');
-    } catch (_) { }
+    const markAcknowledged = () => {
+        clearHint();
+        document.removeEventListener('click', handleDocumentClick, true);
+        try {
+            localStorage.setItem(storageKey, 'true');
+        } catch (_) { }
+    };
+
+    const handleDocumentClick = (event) => {
+        const target = event.target;
+        if (!target) return;
+        const clickedSidebar = !!(sidebar && sidebar.contains(target));
+        const clickedCollapsedToggle = !!(collapsedToggleBtn && collapsedToggleBtn.contains(target));
+        if (!clickedSidebar && !clickedCollapsedToggle) return;
+        markAcknowledged();
+    };
+
+    document.addEventListener('click', handleDocumentClick, true);
 }
 
 function initSidebarToggleScrollProxy() {

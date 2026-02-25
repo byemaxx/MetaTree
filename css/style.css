@@ -427,10 +427,20 @@ body.info-modal-open {
 
 @keyframes sidebarHintPulse {
     0%, 100% {
-        box-shadow: inset -1px 0 0 color-mix(in srgb, var(--primary-dark) 8%, transparent);
+        box-shadow:
+            inset -1px 0 0 color-mix(in srgb, var(--primary-dark) 8%, transparent),
+            inset 0 0 0 0 color-mix(in srgb, var(--secondary-color) 0%, transparent);
+        background: linear-gradient(180deg, var(--sidebar-activity-bg) 0%, var(--bg-body) 100%);
     }
     50% {
-        box-shadow: inset -1px 0 0 color-mix(in srgb, var(--primary-dark) 8%, transparent), 0 0 0 7px color-mix(in srgb, var(--secondary-color) 16%, transparent);
+        box-shadow:
+            inset -1px 0 0 color-mix(in srgb, var(--primary-dark) 8%, transparent),
+            inset 0 0 0 2px color-mix(in srgb, var(--secondary-color) 62%, transparent);
+        background: linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--sidebar-activity-bg) 80%, var(--secondary-color) 20%) 0%,
+            color-mix(in srgb, var(--bg-body) 90%, var(--secondary-color) 10%) 100%
+        );
     }
 }
 
@@ -443,8 +453,26 @@ body.info-modal-open {
     }
 }
 
+@keyframes sidebarHintActiveButtonPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: inset 0 0 0 1px var(--sidebar-activity-active-ring), 0 2px 8px color-mix(in srgb, var(--sidebar-activity-active-ring) 22%, transparent);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow:
+            inset 0 0 0 1px var(--sidebar-activity-active-ring),
+            0 8px 16px color-mix(in srgb, var(--sidebar-activity-active-ring) 32%, transparent),
+            0 0 0 2px color-mix(in srgb, var(--sidebar-activity-active-ring) 45%, transparent);
+    }
+}
+
 .sidebar-activity-bar.nav-attention {
     animation: sidebarHintPulse 1.05s ease-in-out 3;
+}
+
+.sidebar-activity-bar.nav-attention .sidebar-activity-btn.active {
+    animation: sidebarHintActiveButtonPulse 1.05s ease-in-out 3;
 }
 
 .app-body.sidebar-collapsed .sidebar-toggle-collapsed.nav-attention {

@@ -18,6 +18,14 @@ const MODE_COLOR_KEY_MAP = {
     matrix: 'comparison'
 };
 
+const STORAGE_KEYS = {
+    customColorPresets: 'metatree.customColorPresets.v1',
+    customColorPresetsLegacy: 'treemap_custom_color_presets',
+    pageZoomPercent: 'metatree.pageZoomPercent',
+    sidebarCollapsed: 'metatree.sidebarCollapsed',
+    sidebarDiscoveryHintShown: 'metatree.sidebarDiscoveryHintShown.v1'
+};
+
 const FILE_FORMAT_INFO_CONTENT = {
     data: {
         title: 'Data File Format',
@@ -1404,23 +1412,64 @@ function initEventListeners() {
         });
     }
 
+    function normalizePresetStore(raw) {
+        if (!Array.isArray(raw)) return [];
+        return raw
+            .map((item) => {
+                if (!item || typeof item !== 'object') return null;
+                const name = (typeof item.name === 'string') ? item.name.trim() : '';
+                const stops = Array.isArray(item.stops)
+                    ? item.stops.filter((c) => typeof c === 'string' && c.trim().length > 0)
+                    : [];
+                if (!name || stops.length < 2) return null;
+                return { name, stops };
+            })
+            .filter(Boolean);
+    }
+
+    function readCustomColorPresetsFromStorage() {
+        try {
+            const primaryRaw = localStorage.getItem(STORAGE_KEYS.customColorPresets);
+            if (primaryRaw) {
+                return normalizePresetStore(JSON.parse(primaryRaw));
+            }
+        } catch (_) { }
+        try {
+            const legacyRaw = localStorage.getItem(STORAGE_KEYS.customColorPresetsLegacy);
+            if (!legacyRaw) return [];
+            const migrated = normalizePresetStore(JSON.parse(legacyRaw));
+            // One-way migrate legacy data into the current key.
+            localStorage.setItem(STORAGE_KEYS.customColorPresets, JSON.stringify(migrated));
+            return migrated;
+        } catch (_) {
+            return [];
+        }
+    }
+
+    function writeCustomColorPresetsToStorage(presetsList) {
+        try {
+            localStorage.setItem(STORAGE_KEYS.customColorPresets, JSON.stringify(normalizePresetStore(presetsList)));
+        } catch (err) {
+            console.warn('Failed to save preset', err);
+        }
+    }
+
     // presets: load from localStorage
     function loadPresets() {
-        let presets = [];
-        try { presets = JSON.parse(localStorage.getItem('treemap_custom_color_presets') || '[]'); } catch (e) { presets = []; }
+        const loaded = readCustomColorPresetsFromStorage();
         if (presetsSelect) {
             presetsSelect.innerHTML = '<option value="">-- none --</option>';
-            presets.forEach((p, idx) => {
+            loaded.forEach((p, idx) => {
                 const opt = document.createElement('option');
                 opt.value = idx;
                 opt.textContent = p.name;
                 presetsSelect.appendChild(opt);
             });
         }
-        return presets;
+        return loaded;
     }
 
-    const presets = loadPresets();
+    let presets = loadPresets();
     if (presetsSelect) {
         presetsSelect.addEventListener('change', () => {
             const idx = presetsSelect.value;
@@ -1465,12 +1514,14 @@ function initEventListeners() {
                 return;
             }
             const stops = Array.isArray(customColorStops) ? customColorStops.slice() : [customStart.value, customEnd.value];
-            let store = [];
-            try { store = JSON.parse(localStorage.getItem('treemap_custom_color_presets') || '[]'); } catch (e) { store = []; }
+            const store = readCustomColorPresetsFromStorage();
             store.push({ name, stops });
-            try { localStorage.setItem('treemap_custom_color_presets', JSON.stringify(store)); } catch (e) { console.warn('Failed to save preset', e); }
+            writeCustomColorPresetsToStorage(store);
             presetNameInput.value = '';
-            loadPresets();
+            presets = loadPresets();
+            if (presetsSelect && presets.length > 0) {
+                presetsSelect.value = String(presets.length - 1);
+            }
             alert('Preset saved');
         });
     }
@@ -4194,7 +4245,7 @@ function handleColorDomainReset() {
     persistCurrentModeColorSettings();
 }
 
-const PAGE_ZOOM_STORAGE_KEY = 'metatree.pageZoomPercent';
+const PAGE_ZOOM_STORAGE_KEY = STORAGE_KEYS.pageZoomPercent;
 const PAGE_ZOOM_DEFAULT_PERCENT = 100;
 const PAGE_ZOOM_MIN_PERCENT = 80;
 const PAGE_ZOOM_MAX_PERCENT = 130;
@@ -4386,7 +4437,7 @@ function initSidebarCollapseControl() {
     ].filter(Boolean);
     if (!appBody || !sidebar || toggleButtons.length === 0) return;
 
-    const storageKey = 'metatree.sidebarCollapsed';
+    const storageKey = STORAGE_KEYS.sidebarCollapsed;
 
     const readPersistedState = () => {
         try {
@@ -4443,13 +4494,11 @@ function initSidebarActivityNavigation() {
     const panels = Array.from(sidebar.querySelectorAll('[data-sidebar-panel]'));
     if (navButtons.length === 0 || panels.length === 0) return;
 
-    const storageKey = 'metatree.sidebarActivePanel';
     const panelIds = panels.map((panel) => panel.id).filter(Boolean);
     const fallbackPanelId = panelIds[0];
     if (!fallbackPanelId) return;
 
-    const applyActivePanel = (panelId, options = {}) => {
-        const shouldPersist = options.persist !== false;
+    const applyActivePanel = (panelId) => {
         const targetId = panelIds.includes(panelId) ? panelId : fallbackPanelId;
 
         navButtons.forEach((button) => {
@@ -4464,21 +4513,9 @@ function initSidebarActivityNavigation() {
             panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
         });
 
-        if (shouldPersist) {
-            try {
-                localStorage.setItem(storageKey, targetId);
-            } catch (_) { }
-        }
     };
 
-    let initialPanel = fallbackPanelId;
-    try {
-        const saved = localStorage.getItem(storageKey);
-        if (saved && panelIds.includes(saved)) {
-            initialPanel = saved;
-        }
-    } catch (_) { }
-    applyActivePanel(initialPanel, { persist: false });
+    applyActivePanel(fallbackPanelId);
 
     navButtons.forEach((button) => {
         button.addEventListener('click', () => {
@@ -4491,7 +4528,7 @@ function initSidebarActivityNavigation() {
 }
 
 function initSidebarDiscoveryHint() {
-    const storageKey = 'metatree.sidebarDiscoveryHintShown.v1';
+    const storageKey = STORAGE_KEYS.sidebarDiscoveryHintShown;
     try {
         if (localStorage.getItem(storageKey) === 'true') return;
     } catch (_) { }
@@ -4507,7 +4544,7 @@ function initSidebarDiscoveryHint() {
     hintTarget.classList.add('nav-attention');
     window.setTimeout(() => {
         hintTarget.classList.remove('nav-attention');
-    }, 3200);
+    }, 4200);
 
     try {
         localStorage.setItem(storageKey, 'true');

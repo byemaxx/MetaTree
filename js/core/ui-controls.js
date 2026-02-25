@@ -3329,6 +3329,22 @@ function updateSampleChecklistInModal() {
     });
 }
 
+function selectAllSamplesInGroupModal() {
+    const checklist = document.getElementById('sample-checklist');
+    if (!checklist) return;
+    checklist.querySelectorAll('input.sample-checkbox').forEach(cb => {
+        cb.checked = true;
+    });
+}
+
+function invertSamplesInGroupModal() {
+    const checklist = document.getElementById('sample-checklist');
+    if (!checklist) return;
+    checklist.querySelectorAll('input.sample-checkbox').forEach(cb => {
+        cb.checked = !cb.checked;
+    });
+}
+
 function updateExistingGroupsList() {
     const listContainer = document.getElementById('existing-groups-list');
     const groups = getAllGroups();
@@ -4702,6 +4718,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('save-group-btn').addEventListener('click', handleSaveGroup);
     document.getElementById('cancel-group-btn').addEventListener('click', handleCloseGroupModal);
     document.getElementById('close-group-modal').addEventListener('click', handleCloseGroupModal);
+
+    const groupSelectAllBtn = document.getElementById('group-select-all-samples');
+    if (groupSelectAllBtn) groupSelectAllBtn.addEventListener('click', selectAllSamplesInGroupModal);
+    const groupInvertBtn = document.getElementById('group-invert-samples');
+    if (groupInvertBtn) groupInvertBtn.addEventListener('click', invertSamplesInGroupModal);
+
     document.getElementById('run-comparison').addEventListener('click', handleRunComparison);
     document.getElementById('export-comparison').addEventListener('click', handleViewResults);
     document.getElementById('comparison-metric').addEventListener('change', handleComparisonMetricChange);

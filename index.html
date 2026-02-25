@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MetaTree Hierarchical Taxonomy Visualization</title>
+    <title>MetaTree</title>
     <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
 
     <!-- D3.js 库 (本地版本) -->
@@ -49,14 +49,20 @@
                     <h1>MetaTree</h1>
                 </a>
             </div>
-            <p>Interactive platform for hierarchical data visualization and multi-group comparison</p>
+            <p>
+                <span class="header-subtitle-text">Interactive platform for hierarchical data visualization and multi-group comparison</span>
+                <span class="header-version-label subtitle-version-label" aria-label="Application version">
+                    <span class="header-version-text">Version</span>
+                    <span id="header-version-value">v-</span>
+                </span>
+            </p>
         </div>
 
         <div class="app-body">
             <aside class="sidebar" id="sidebar">
                 <nav class="sidebar-activity-bar" aria-label="Sidebar navigation">
                     <button type="button" class="sidebar-activity-btn active" data-panel-target="data-metadata-panel"
-                        title="Data & Metadata" aria-label="Open Data & Metadata panel" aria-selected="true">
+                        title="Data & Filters" aria-label="Open Data & Filters panel" aria-selected="true">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"></rect>
                             <path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
@@ -64,23 +70,23 @@
                         <span>Data</span>
                     </button>
                     <button type="button" class="sidebar-activity-btn" data-panel-target="analysis-mode-panel"
-                        title="Analysis Mode" aria-label="Open Analysis Mode panel" aria-selected="false">
+                        title="Analysis" aria-label="Open Analysis panel" aria-selected="false">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="2"></circle>
                             <circle cx="16" cy="16" r="3" stroke="currentColor" stroke-width="2"></circle>
                             <path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
                         </svg>
-                        <span>Mode</span>
+                        <span>Analyze</span>
                     </button>
                     <button type="button" class="sidebar-activity-btn" data-panel-target="labels-panel"
-                        title="Labels & Sizing" aria-label="Open Labels & Sizing panel" aria-selected="false">
+                        title="Labels & Style" aria-label="Open Labels & Style panel" aria-selected="false">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M4 6h16M4 12h10M4 18h13" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
                         </svg>
-                        <span>Labels</span>
+                        <span>Style</span>
                     </button>
                     <button type="button" class="sidebar-activity-btn" data-panel-target="layout-panel"
-                        title="Layout & Panels" aria-label="Open Layout & Panels panel" aria-selected="false">
+                        title="Layout & Size" aria-label="Open Layout & Size panel" aria-selected="false">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <rect x="3" y="4" width="8" height="16" rx="1.5" stroke="currentColor" stroke-width="2"></rect>
                             <rect x="13" y="4" width="8" height="7" rx="1.5" stroke="currentColor" stroke-width="2"></rect>
@@ -89,7 +95,7 @@
                         <span>Layout</span>
                     </button>
                     <button type="button" class="sidebar-activity-btn" data-panel-target="colors-panel"
-                        title="Colors & Domain" aria-label="Open Colors & Domain panel" aria-selected="false">
+                        title="Color Scale" aria-label="Open Color Scale panel" aria-selected="false">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <path d="M12 3a7 7 0 0 0-7 7c0 2.2 1.2 3.9 3 4.8.8.4 1.3 1.2 1.3 2.1v.1a1.9 1.9 0 0 0 1.9 2h1.1a6.7 6.7 0 0 0 0-13.4Z"
                                 stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
@@ -100,7 +106,7 @@
                         <span>Colors</span>
                     </button>
                     <button type="button" class="sidebar-activity-btn" data-panel-target="theme-panel"
-                        title="UI Theme" aria-label="Open UI Theme panel" aria-selected="false">
+                        title="Appearance" aria-label="Open Appearance panel" aria-selected="false">
                         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                             <circle cx="12" cy="12" r="7" stroke="currentColor" stroke-width="2"></circle>
                             <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9l-2.2 2.2M7.1 16.9l-2.2 2.2"
@@ -552,7 +558,7 @@
                                     <option value="sqrt">Square root</option>
                                 </select>
                                 <span class="help-icon"
-                                    title="Log: good for wide-range data (1-1e6). Sqrt: moderate compression. Area: metacoder-style. Linear: narrow-range data.">
+                                    title="Log2: best for wide dynamic-range values (~1 to 1e6). Sqrt: moderate compression. Area: node radius scales as sqrt(value). None: use raw values (best for narrow-range data).">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
@@ -1305,6 +1311,7 @@
                     multiple conditions quickly while keeping biological structure visible.</p>
                 <p>Key capabilities include hierarchical tree rendering, metadata-aware sample filtering, grouped
                     analysis, pairwise comparison, and matrix-style multi-comparison views in one workflow.</p>
+                <p class="about-version"><strong>Version:</strong> <span id="about-version-value">v-</span></p>
                 <h4>Preprint</h4>
                 <p>If you use MetaTree in your research, please cite our preprint:</p>
                 <p class="about-citation">
@@ -1441,6 +1448,7 @@
 
 
     <!-- JavaScript 模块 -->
+    <script src="js/config/version.js"></script>
     <script src="js/analysis/group-comparison.js"></script>
     <script src="js/components/legend-panel.js"></script>
     <script src="js/utils/export-tools.js"></script>

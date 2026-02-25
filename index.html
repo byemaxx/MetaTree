@@ -1059,21 +1059,31 @@
                             </div>
                         </div>
 
-                        <div class="control-row">
-                            <div class="control-group">
+                        <div class="control-row no-divider">
+                            <div class="control-group vertical layout-size-group">
                                 <label for="panel-width-slider">Panel width:</label>
-                                <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="560"
-                                    class="w-180 ml-8">
-                                <span id="panel-width-value" class="ml-8">560px</span>
+                                <div class="layout-size-inline">
+                                    <input type="range" id="panel-width-slider" min="200" max="2000" step="10" value="560"
+                                        class="layout-size-slider">
+                                    <input type="number" id="panel-width-input" min="200" max="2000" step="10" value="560"
+                                        class="w-70" aria-label="Panel width in pixels">
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="control-group">
+                        <div class="control-row no-divider">
+                            <div class="control-group vertical layout-size-group">
                                 <label for="panel-height-slider">Panel height:</label>
-                                <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600"
-                                    class="w-180 ml-8">
-                                <span id="panel-height-value" class="ml-8">600px</span>
+                                <div class="layout-size-inline">
+                                    <input type="range" id="panel-height-slider" min="200" max="2000" step="10" value="600"
+                                        class="layout-size-slider">
+                                    <input type="number" id="panel-height-input" min="200" max="2000" step="10" value="600"
+                                        class="w-70" aria-label="Panel height in pixels">
+                                </div>
                             </div>
+                        </div>
 
+                        <div class="control-row">
                             <div class="control-group">
                                 <label class="flex ai-center gap-8">
                                     <input type="checkbox" id="panel-lock-size">

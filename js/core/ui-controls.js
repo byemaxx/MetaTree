@@ -423,17 +423,17 @@ function syncLayoutPanelInputsToSettings(settings) {
         }
     }
     const panelSlider = document.getElementById('panel-width-slider');
-    const panelValue = document.getElementById('panel-width-value');
+    const panelInput = document.getElementById('panel-width-input');
     if (panelSlider && typeof settings.panelWidth === 'number') {
         panelSlider.value = String(settings.panelWidth);
-        if (panelValue) panelValue.textContent = `${settings.panelWidth}px`;
+        if (panelInput) panelInput.value = String(settings.panelWidth);
         updateRangeSliderProgress(panelSlider);
     }
     const heightSlider = document.getElementById('panel-height-slider');
-    const heightValue = document.getElementById('panel-height-value');
+    const heightInput = document.getElementById('panel-height-input');
     if (heightSlider && typeof settings.panelHeight === 'number') {
         heightSlider.value = String(settings.panelHeight);
-        if (heightValue) heightValue.textContent = `${settings.panelHeight}px`;
+        if (heightInput) heightInput.value = String(settings.panelHeight);
         updateRangeSliderProgress(heightSlider);
     }
 }
@@ -1534,32 +1534,40 @@ function initEventListeners() {
     if (btnSelectNone) btnSelectNone.addEventListener('click', selectNoneSamples);
     if (btnInvert) btnInvert.addEventListener('click', invertSampleSelection);
 
-    // Panel width slider: adjust CSS variables per active layout context
+    const parseManualLayoutValue = (raw) => {
+        if (raw == null) return null;
+        const text = String(raw).trim();
+        if (!text) return null;
+        const parsed = parseFloat(text);
+        if (!Number.isFinite(parsed)) return null;
+        return clampLayoutValue(parsed);
+    };
+
+    // Panel width slider / numeric input: adjust CSS variables per active layout context
     const panelSlider = document.getElementById('panel-width-slider');
-    const panelValue = document.getElementById('panel-width-value');
+    const panelWidthInput = document.getElementById('panel-width-input');
     if (panelSlider) {
         const panelLock = document.getElementById('panel-lock-size');
         const syncWidthPreview = (val, opts = {}) => {
             const widthPx = clampLayoutValue(val);
             panelSlider.value = String(widthPx);
-            if (panelValue) panelValue.textContent = `${widthPx}px`;
+            updateRangeSliderProgress(panelSlider);
+            if (panelWidthInput) panelWidthInput.value = String(widthPx);
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const current = { ...getLayoutPanelSettingsForContext(ctx), panelWidth: widthPx };
             if (opts.syncLock && panelLock && panelLock.checked) {
                 const other = document.getElementById('panel-height-slider');
-                const otherValue = document.getElementById('panel-height-value');
+                const otherInput = document.getElementById('panel-height-input');
                 current.panelHeight = widthPx;
-                if (other) other.value = String(widthPx);
-                if (otherValue) otherValue.textContent = `${widthPx}px`;
+                if (other) {
+                    other.value = String(widthPx);
+                    updateRangeSliderProgress(other);
+                }
+                if (otherInput) otherInput.value = String(widthPx);
             }
             applyLayoutPanelSettingsToDom(current, ctx);
         };
-
-        panelSlider.addEventListener('input', (e) => {
-            syncWidthPreview(e.target.value, { syncLock: true });
-        });
-
-        panelSlider.addEventListener('change', () => {
+        const commitWidth = () => {
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const updates = { panelWidth: clampLayoutValue(panelSlider.value) };
             if (panelLock && panelLock.checked) {
@@ -1569,35 +1577,55 @@ function initEventListeners() {
             if (typeof redrawCurrentViz === 'function') {
                 try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after panel width change', err); }
             }
+        };
+
+        panelSlider.addEventListener('input', (e) => {
+            syncWidthPreview(e.target.value, { syncLock: true });
         });
+        panelSlider.addEventListener('change', commitWidth);
+
+        if (panelWidthInput) {
+            const applyWidthFromInput = () => {
+                const parsed = parseManualLayoutValue(panelWidthInput.value);
+                const next = parsed == null ? clampLayoutValue(panelSlider.value) : parsed;
+                syncWidthPreview(next, { syncLock: true });
+                commitWidth();
+            };
+            panelWidthInput.addEventListener('blur', applyWidthFromInput);
+            panelWidthInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    panelWidthInput.blur();
+                }
+            });
+        }
     }
 
-    // Panel height slider binding
+    // Panel height slider / numeric input binding
     const panelHeightSlider = document.getElementById('panel-height-slider');
-    const panelHeightValue = document.getElementById('panel-height-value');
+    const panelHeightInput = document.getElementById('panel-height-input');
     if (panelHeightSlider) {
         const panelLock = document.getElementById('panel-lock-size');
         const syncHeightPreview = (val, opts = {}) => {
             const heightPx = clampLayoutValue(val);
             panelHeightSlider.value = String(heightPx);
-            if (panelHeightValue) panelHeightValue.textContent = `${heightPx}px`;
+            updateRangeSliderProgress(panelHeightSlider);
+            if (panelHeightInput) panelHeightInput.value = String(heightPx);
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const current = { ...getLayoutPanelSettingsForContext(ctx), panelHeight: heightPx };
             if (opts.syncLock && panelLock && panelLock.checked) {
                 const other = document.getElementById('panel-width-slider');
-                const otherValue = document.getElementById('panel-width-value');
+                const otherInput = document.getElementById('panel-width-input');
                 current.panelWidth = heightPx;
-                if (other) other.value = String(heightPx);
-                if (otherValue) otherValue.textContent = `${heightPx}px`;
+                if (other) {
+                    other.value = String(heightPx);
+                    updateRangeSliderProgress(other);
+                }
+                if (otherInput) otherInput.value = String(heightPx);
             }
             applyLayoutPanelSettingsToDom(current, ctx);
         };
-
-        panelHeightSlider.addEventListener('input', (e) => {
-            syncHeightPreview(e.target.value, { syncLock: true });
-        });
-
-        panelHeightSlider.addEventListener('change', () => {
+        const commitHeight = () => {
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const updates = { panelHeight: clampLayoutValue(panelHeightSlider.value) };
             if (panelLock && panelLock.checked) {
@@ -1607,7 +1635,28 @@ function initEventListeners() {
             if (typeof redrawCurrentViz === 'function') {
                 try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after panel height change', err); }
             }
+        };
+
+        panelHeightSlider.addEventListener('input', (e) => {
+            syncHeightPreview(e.target.value, { syncLock: true });
         });
+        panelHeightSlider.addEventListener('change', commitHeight);
+
+        if (panelHeightInput) {
+            const applyHeightFromInput = () => {
+                const parsed = parseManualLayoutValue(panelHeightInput.value);
+                const next = parsed == null ? clampLayoutValue(panelHeightSlider.value) : parsed;
+                syncHeightPreview(next, { syncLock: true });
+                commitHeight();
+            };
+            panelHeightInput.addEventListener('blur', applyHeightFromInput);
+            panelHeightInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    panelHeightInput.blur();
+                }
+            });
+        }
     }
 
     // Lock checkbox: when toggled on, immediately sync height to width (so they're in lock state)
@@ -1618,15 +1667,18 @@ function initEventListeners() {
                 if (e.target.checked) {
                     const w = document.getElementById('panel-width-slider');
                     const h = document.getElementById('panel-height-slider');
-                    const hv = document.getElementById('panel-height-value');
+                    const wi = document.getElementById('panel-width-input');
+                    const hi = document.getElementById('panel-height-input');
                     if (w && h) {
                         h.value = w.value;
+                        updateRangeSliderProgress(h);
+                        if (wi) wi.value = w.value;
+                        if (hi) hi.value = w.value;
                         const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
                         setLayoutPanelSettingsForContext(ctx, {
                             panelWidth: clampLayoutValue(w.value),
                             panelHeight: clampLayoutValue(w.value)
                         });
-                        if (hv) hv.textContent = `${w.value}px`;
                     }
                 }
             } catch (err) { console.warn('Error syncing sliders on lock change', err); }
@@ -4778,7 +4830,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'viz-mode', 'samples-toggle-group', 'toggle-samples', 'sample-selection-panel', 'sample-checkboxes',
             'select-all-samples', 'select-none-samples', 'invert-samples',
             // 单样本设置
-            'panel-width-slider', 'panel-width-value', 'panel-height-slider', 'panel-height-value', 'panel-lock-size',
+            'panel-width-slider', 'panel-width-input', 'panel-height-slider', 'panel-height-input', 'panel-lock-size',
             'layout-select', 'layout-reset', 'abundance-transform', 'quantile-low', 'quantile-high', 'show-individual-legends',
             // 单样本显著性（combined_long）
             'single-significance-toggle-row', 'single-significance-thresholds-row', 'single-show-significance',

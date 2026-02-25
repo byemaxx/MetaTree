@@ -248,14 +248,17 @@ body.info-modal-open {
 
 .sidebar-activity-btn {
     width: 100%;
-    height: 96px;
+    min-height: 96px;
     border: 1px solid color-mix(in srgb, var(--sidebar-activity-border) 65%, transparent);
     border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--bg-white) 58%, transparent);
     color: var(--sidebar-activity-icon);
-    display: grid;
-    place-items: center;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 10px 0 12px;
     font-size: var(--font-base);
     font-weight: 600;
     line-height: 1;
@@ -278,22 +281,21 @@ body.info-modal-open {
 }
 
 .sidebar-activity-btn svg {
-    grid-area: 1 / 1;
     width: 17px;
     height: 17px;
     flex-shrink: 0;
-    transform: translateY(-14px);
+    transform: none;
 }
 
 .sidebar-activity-btn span {
-    grid-area: 1 / 1;
     display: inline-block;
-    transform: translateY(14px) rotate(90deg);
-    transform-origin: center center;
+    transform: none;
     white-space: nowrap;
     font-size: 12px;
     line-height: 1;
     margin: 0;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
 }
 
 .sidebar-activity-btn:hover {

@@ -18,7 +18,8 @@
         danger: '#f76b6b',
         treeBackground: '#f5f7fa',
         treeHeader: '#6b7fa8',
-        treeHeaderText: '#ffffff'
+        treeHeaderText: '#ffffff',
+        treeLabel: '#4a5568'
     };
 
     const BUILT_IN_THEME_CONFIGS = [
@@ -344,6 +345,13 @@
 
     function applyCustomTheme(colors, options) {
         const palette = sanitizeColors(Object.assign({}, DEFAULT_CUSTOM_COLORS, colors || {}));
+        if (!colors || !Object.prototype.hasOwnProperty.call(colors, 'treeLabel')) {
+            palette.treeLabel = normalizeHex(mixColors(
+                palette.text || DEFAULT_CUSTOM_COLORS.text || BASE_THEME_COLORS.text,
+                palette.surface || DEFAULT_CUSTOM_COLORS.surface || BASE_THEME_COLORS.surface,
+                0.22
+            ));
+        }
         const props = buildThemeProperties(palette);
         applyThemeProperties(props, 'custom');
         updateCustomInputs(palette);
@@ -388,6 +396,7 @@
             treeBackground: document.getElementById('custom-theme-tree-bg'),
             treeHeader: document.getElementById('custom-theme-tree-header'),
             treeHeaderText: document.getElementById('custom-theme-tree-header-text'),
+            treeLabel: document.getElementById('custom-theme-tree-label'),
             treeHeaderBorder: document.getElementById('custom-theme-tree-header-border')
         };
         Object.entries(map).forEach(([key, input]) => {
@@ -401,6 +410,14 @@
             const fallback = colors.treeHeader || DEFAULT_CUSTOM_COLORS.treeHeader || BASE_THEME_COLORS.treeHeader;
             map.treeHeaderBorder.value = normalizeHex(fallback);
         }
+        if (map.treeLabel && !colors.treeLabel) {
+            const fallback = mixColors(
+                colors.text || DEFAULT_CUSTOM_COLORS.text || BASE_THEME_COLORS.text,
+                colors.surface || DEFAULT_CUSTOM_COLORS.surface || BASE_THEME_COLORS.surface,
+                0.22
+            );
+            map.treeLabel.value = normalizeHex(fallback);
+        }
     }
 
     function readCustomColorInputs() {
@@ -413,6 +430,7 @@
             treeBackground: valueFromInput('custom-theme-tree-bg'),
             treeHeader: valueFromInput('custom-theme-tree-header'),
             treeHeaderText: valueFromInput('custom-theme-tree-header-text'),
+            treeLabel: valueFromInput('custom-theme-tree-label'),
             treeHeaderBorder: valueFromInput('custom-theme-tree-header-border')
         };
     }
@@ -457,7 +475,18 @@
     }
 
     function materializeThemeConfig(config) {
-        const colors = sanitizeColors(Object.assign({}, BASE_THEME_COLORS, config.colors || {}));
+        const configColors = (config && config.colors && typeof config.colors === 'object')
+            ? config.colors
+            : {};
+        const mergedColors = Object.assign({}, BASE_THEME_COLORS, configColors);
+        if (!Object.prototype.hasOwnProperty.call(configColors, 'treeLabel')) {
+            mergedColors.treeLabel = mixColors(
+                mergedColors.text || BASE_THEME_COLORS.text,
+                mergedColors.surface || BASE_THEME_COLORS.surface,
+                0.22
+            );
+        }
+        const colors = sanitizeColors(mergedColors);
         const overrides = (config && config.propertiesOverrides && typeof config.propertiesOverrides === 'object')
             ? config.propertiesOverrides
             : null;
@@ -518,6 +547,7 @@
         const treeBackground = normalizeHex(colors.treeBackground || DEFAULT_CUSTOM_COLORS.treeBackground);
         const treeHeader = normalizeHex(colors.treeHeader || DEFAULT_CUSTOM_COLORS.treeHeader);
         const treeHeaderText = normalizeHex(colors.treeHeaderText || DEFAULT_CUSTOM_COLORS.treeHeaderText || '#ffffff');
+        const treeLabel = normalizeHex(colors.treeLabel || mixColors(text, surface, 0.22));
         // Default: border matches the header background (invisible). Classic can set it to black.
         const treeHeaderBorder = normalizeHex(colors.treeHeaderBorder || treeHeader);
 
@@ -632,6 +662,7 @@
             '--tree-panel-header-start': treeHeader,
             '--tree-panel-header-end': treeHeaderEnd,
             '--tree-panel-header-text': treeHeaderText,
+            '--tree-label-default-color': treeLabel,
             '--tree-panel-header-border-color': treeHeaderBorder,
             // Ensure per-side header border widths reset when switching themes.
             // Classical overrides these to avoid double-thick overlap with panel borders.

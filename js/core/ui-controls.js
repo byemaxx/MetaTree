@@ -423,16 +423,18 @@ function syncLayoutPanelInputsToSettings(settings) {
         }
     }
     const panelSlider = document.getElementById('panel-width-slider');
-    const panelValue = document.getElementById('panel-width-value');
+    const panelInput = document.getElementById('panel-width-input');
     if (panelSlider && typeof settings.panelWidth === 'number') {
         panelSlider.value = String(settings.panelWidth);
-        if (panelValue) panelValue.textContent = `${settings.panelWidth}px`;
+        if (panelInput) panelInput.value = String(settings.panelWidth);
+        updateRangeSliderProgress(panelSlider);
     }
     const heightSlider = document.getElementById('panel-height-slider');
-    const heightValue = document.getElementById('panel-height-value');
+    const heightInput = document.getElementById('panel-height-input');
     if (heightSlider && typeof settings.panelHeight === 'number') {
         heightSlider.value = String(settings.panelHeight);
-        if (heightValue) heightValue.textContent = `${settings.panelHeight}px`;
+        if (heightInput) heightInput.value = String(settings.panelHeight);
+        updateRangeSliderProgress(heightSlider);
     }
 }
 
@@ -1532,32 +1534,40 @@ function initEventListeners() {
     if (btnSelectNone) btnSelectNone.addEventListener('click', selectNoneSamples);
     if (btnInvert) btnInvert.addEventListener('click', invertSampleSelection);
 
-    // Panel width slider: adjust CSS variables per active layout context
+    const parseManualLayoutValue = (raw) => {
+        if (raw == null) return null;
+        const text = String(raw).trim();
+        if (!text) return null;
+        const parsed = parseFloat(text);
+        if (!Number.isFinite(parsed)) return null;
+        return clampLayoutValue(parsed);
+    };
+
+    // Panel width slider / numeric input: adjust CSS variables per active layout context
     const panelSlider = document.getElementById('panel-width-slider');
-    const panelValue = document.getElementById('panel-width-value');
+    const panelWidthInput = document.getElementById('panel-width-input');
     if (panelSlider) {
         const panelLock = document.getElementById('panel-lock-size');
         const syncWidthPreview = (val, opts = {}) => {
             const widthPx = clampLayoutValue(val);
             panelSlider.value = String(widthPx);
-            if (panelValue) panelValue.textContent = `${widthPx}px`;
+            updateRangeSliderProgress(panelSlider);
+            if (panelWidthInput) panelWidthInput.value = String(widthPx);
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const current = { ...getLayoutPanelSettingsForContext(ctx), panelWidth: widthPx };
             if (opts.syncLock && panelLock && panelLock.checked) {
                 const other = document.getElementById('panel-height-slider');
-                const otherValue = document.getElementById('panel-height-value');
+                const otherInput = document.getElementById('panel-height-input');
                 current.panelHeight = widthPx;
-                if (other) other.value = String(widthPx);
-                if (otherValue) otherValue.textContent = `${widthPx}px`;
+                if (other) {
+                    other.value = String(widthPx);
+                    updateRangeSliderProgress(other);
+                }
+                if (otherInput) otherInput.value = String(widthPx);
             }
             applyLayoutPanelSettingsToDom(current, ctx);
         };
-
-        panelSlider.addEventListener('input', (e) => {
-            syncWidthPreview(e.target.value, { syncLock: true });
-        });
-
-        panelSlider.addEventListener('change', () => {
+        const commitWidth = () => {
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const updates = { panelWidth: clampLayoutValue(panelSlider.value) };
             if (panelLock && panelLock.checked) {
@@ -1567,35 +1577,55 @@ function initEventListeners() {
             if (typeof redrawCurrentViz === 'function') {
                 try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after panel width change', err); }
             }
+        };
+
+        panelSlider.addEventListener('input', (e) => {
+            syncWidthPreview(e.target.value, { syncLock: true });
         });
+        panelSlider.addEventListener('change', commitWidth);
+
+        if (panelWidthInput) {
+            const applyWidthFromInput = () => {
+                const parsed = parseManualLayoutValue(panelWidthInput.value);
+                const next = parsed == null ? clampLayoutValue(panelSlider.value) : parsed;
+                syncWidthPreview(next, { syncLock: true });
+                commitWidth();
+            };
+            panelWidthInput.addEventListener('blur', applyWidthFromInput);
+            panelWidthInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    panelWidthInput.blur();
+                }
+            });
+        }
     }
 
-    // Panel height slider binding
+    // Panel height slider / numeric input binding
     const panelHeightSlider = document.getElementById('panel-height-slider');
-    const panelHeightValue = document.getElementById('panel-height-value');
+    const panelHeightInput = document.getElementById('panel-height-input');
     if (panelHeightSlider) {
         const panelLock = document.getElementById('panel-lock-size');
         const syncHeightPreview = (val, opts = {}) => {
             const heightPx = clampLayoutValue(val);
             panelHeightSlider.value = String(heightPx);
-            if (panelHeightValue) panelHeightValue.textContent = `${heightPx}px`;
+            updateRangeSliderProgress(panelHeightSlider);
+            if (panelHeightInput) panelHeightInput.value = String(heightPx);
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const current = { ...getLayoutPanelSettingsForContext(ctx), panelHeight: heightPx };
             if (opts.syncLock && panelLock && panelLock.checked) {
                 const other = document.getElementById('panel-width-slider');
-                const otherValue = document.getElementById('panel-width-value');
+                const otherInput = document.getElementById('panel-width-input');
                 current.panelWidth = heightPx;
-                if (other) other.value = String(heightPx);
-                if (otherValue) otherValue.textContent = `${heightPx}px`;
+                if (other) {
+                    other.value = String(heightPx);
+                    updateRangeSliderProgress(other);
+                }
+                if (otherInput) otherInput.value = String(heightPx);
             }
             applyLayoutPanelSettingsToDom(current, ctx);
         };
-
-        panelHeightSlider.addEventListener('input', (e) => {
-            syncHeightPreview(e.target.value, { syncLock: true });
-        });
-
-        panelHeightSlider.addEventListener('change', () => {
+        const commitHeight = () => {
             const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
             const updates = { panelHeight: clampLayoutValue(panelHeightSlider.value) };
             if (panelLock && panelLock.checked) {
@@ -1605,7 +1635,28 @@ function initEventListeners() {
             if (typeof redrawCurrentViz === 'function') {
                 try { redrawCurrentViz(); } catch (err) { console.warn('Error redrawing after panel height change', err); }
             }
+        };
+
+        panelHeightSlider.addEventListener('input', (e) => {
+            syncHeightPreview(e.target.value, { syncLock: true });
         });
+        panelHeightSlider.addEventListener('change', commitHeight);
+
+        if (panelHeightInput) {
+            const applyHeightFromInput = () => {
+                const parsed = parseManualLayoutValue(panelHeightInput.value);
+                const next = parsed == null ? clampLayoutValue(panelHeightSlider.value) : parsed;
+                syncHeightPreview(next, { syncLock: true });
+                commitHeight();
+            };
+            panelHeightInput.addEventListener('blur', applyHeightFromInput);
+            panelHeightInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    panelHeightInput.blur();
+                }
+            });
+        }
     }
 
     // Lock checkbox: when toggled on, immediately sync height to width (so they're in lock state)
@@ -1616,15 +1667,18 @@ function initEventListeners() {
                 if (e.target.checked) {
                     const w = document.getElementById('panel-width-slider');
                     const h = document.getElementById('panel-height-slider');
-                    const hv = document.getElementById('panel-height-value');
+                    const wi = document.getElementById('panel-width-input');
+                    const hi = document.getElementById('panel-height-input');
                     if (w && h) {
                         h.value = w.value;
+                        updateRangeSliderProgress(h);
+                        if (wi) wi.value = w.value;
+                        if (hi) hi.value = w.value;
                         const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
                         setLayoutPanelSettingsForContext(ctx, {
                             panelWidth: clampLayoutValue(w.value),
                             panelHeight: clampLayoutValue(w.value)
                         });
-                        if (hv) hv.textContent = `${w.value}px`;
                     }
                 }
             } catch (err) { console.warn('Error syncing sliders on lock change', err); }
@@ -1652,6 +1706,11 @@ function initEventListeners() {
     const labelsResetBtn = document.getElementById('labels-reset');
     if (labelsResetBtn) {
         labelsResetBtn.addEventListener('click', resetLabelsNodesToDefaults);
+    }
+    // Layout reset button
+    const layoutResetBtn = document.getElementById('layout-reset');
+    if (layoutResetBtn) {
+        layoutResetBtn.addEventListener('click', resetLayoutPanelsToDefaults);
     }
 
     // Sync zoom toggle
@@ -2872,10 +2931,67 @@ function resetLabelsNodesToDefaults() {
             } catch (_) { /* ignore hint update errors */ }
         }
 
+        // 同步刷新本面板所有 range 的轨道填充进度（--range-progress）
+        const labelsPanel = document.getElementById('labels-panel');
+        if (labelsPanel) {
+            labelsPanel.querySelectorAll('input[type="range"]').forEach(updateRangeSliderProgress);
+        }
+
         // 统一重绘
         redrawCurrentViz();
     } catch (err) {
         console.warn('Failed to reset Labels & Nodes settings', err);
+    }
+}
+
+// 一键还原：重置“Layout & Panels”区域的所有设置到默认值
+function resetLayoutPanelsToDefaults() {
+    try {
+        const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+        const defaults = LAYOUT_PANEL_DEFAULTS[ctx] || LAYOUT_PANEL_DEFAULTS[LAYOUT_PANEL_CONTEXTS.SAMPLES];
+        if (defaults) {
+            setLayoutPanelSettingsForContext(ctx, defaults);
+            setActiveLayoutPanelContext(ctx, { force: true });
+        }
+
+        const defaultDirection = 'horizontal';
+        document.querySelectorAll('input[name="tree-direction"]').forEach((radio) => {
+            radio.checked = (radio.value === defaultDirection);
+        });
+        if (typeof treeLayoutDirection !== 'undefined') treeLayoutDirection = defaultDirection;
+        try { if (typeof window !== 'undefined') window.treeLayoutDirection = defaultDirection; } catch (_) { }
+
+        const linkShapeSel = document.getElementById('tree-link-shape');
+        if (linkShapeSel) linkShapeSel.value = 'curved';
+        if (typeof treeLinkShape !== 'undefined') treeLinkShape = 'curved';
+        try { if (typeof window !== 'undefined') window.treeLinkShape = 'curved'; } catch (_) { }
+
+        const alignLeavesCheck = document.getElementById('tree-align-leaves');
+        if (alignLeavesCheck) alignLeavesCheck.checked = false;
+        if (typeof treeAlignLeaves !== 'undefined') treeAlignLeaves = false;
+        try { if (typeof window !== 'undefined') window.treeAlignLeaves = false; } catch (_) { }
+
+        const sepSlider = document.getElementById('tree-separation-slider');
+        if (sepSlider) {
+            sepSlider.value = '1';
+            updateRangeSliderProgress(sepSlider);
+        }
+        const sepVal = document.getElementById('tree-separation-value');
+        if (sepVal) sepVal.textContent = '1.0x';
+        if (typeof treeSeparation !== 'undefined') treeSeparation = 1.0;
+        try { if (typeof window !== 'undefined') window.treeSeparation = 1.0; } catch (_) { }
+
+        const sortSel = document.getElementById('tree-sort-select');
+        if (sortSel) sortSel.value = 'none';
+        if (typeof treeNodeSort !== 'undefined') treeNodeSort = 'none';
+        try { if (typeof window !== 'undefined') window.treeNodeSort = 'none'; } catch (_) { }
+
+        const panelLock = document.getElementById('panel-lock-size');
+        if (panelLock) panelLock.checked = false;
+
+        redrawCurrentViz();
+    } catch (err) {
+        console.warn('Failed to reset Layout & Panels settings', err);
     }
 }
 
@@ -3210,6 +3326,22 @@ function updateSampleChecklistInModal() {
             ${sample}
         `;
         checklist.appendChild(label);
+    });
+}
+
+function selectAllSamplesInGroupModal() {
+    const checklist = document.getElementById('sample-checklist');
+    if (!checklist) return;
+    checklist.querySelectorAll('input.sample-checkbox').forEach(cb => {
+        cb.checked = true;
+    });
+}
+
+function invertSamplesInGroupModal() {
+    const checklist = document.getElementById('sample-checklist');
+    if (!checklist) return;
+    checklist.querySelectorAll('input.sample-checkbox').forEach(cb => {
+        cb.checked = !cb.checked;
     });
 }
 
@@ -4248,8 +4380,11 @@ function initCollapsiblePanel(panelId, toggleId, options = {}) {
 function initSidebarCollapseControl() {
     const appBody = document.querySelector('.app-body');
     const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    if (!appBody || !sidebar || !toggleBtn) return;
+    const toggleButtons = [
+        document.getElementById('sidebar-toggle-inline'),
+        document.getElementById('sidebar-toggle-collapsed')
+    ].filter(Boolean);
+    if (!appBody || !sidebar || toggleButtons.length === 0) return;
 
     const storageKey = 'metatree.sidebarCollapsed';
 
@@ -4271,10 +4406,12 @@ function initSidebarCollapseControl() {
     const applyState = (collapsed) => {
         appBody.classList.toggle('sidebar-collapsed', collapsed);
         sidebar.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
-        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
-        toggleBtn.setAttribute('aria-label', label);
-        toggleBtn.setAttribute('title', label);
+        toggleButtons.forEach((toggleBtn) => {
+            toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            toggleBtn.setAttribute('aria-label', label);
+            toggleBtn.setAttribute('title', label);
+        });
 
         if (typeof redrawCurrentViz === 'function' && treeData) {
             // wait for layout to settle before redrawing panels at new width
@@ -4289,10 +4426,12 @@ function initSidebarCollapseControl() {
     let collapsed = readPersistedState();
     applyState(collapsed);
 
-    toggleBtn.addEventListener('click', () => {
-        collapsed = !collapsed;
-        applyState(collapsed);
-        persistState(collapsed);
+    toggleButtons.forEach((toggleBtn) => {
+        toggleBtn.addEventListener('click', () => {
+            collapsed = !collapsed;
+            applyState(collapsed);
+            persistState(collapsed);
+        });
     });
 }
 
@@ -4359,10 +4498,10 @@ function initSidebarDiscoveryHint() {
 
     const appBody = document.querySelector('.app-body');
     const activityBar = document.querySelector('.sidebar-activity-bar');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    if (!appBody || !toggleBtn) return;
+    const collapsedToggleBtn = document.getElementById('sidebar-toggle-collapsed');
+    if (!appBody) return;
 
-    const hintTarget = appBody.classList.contains('sidebar-collapsed') ? toggleBtn : activityBar;
+    const hintTarget = appBody.classList.contains('sidebar-collapsed') ? collapsedToggleBtn : activityBar;
     if (!hintTarget) return;
 
     hintTarget.classList.add('nav-attention');
@@ -4376,7 +4515,7 @@ function initSidebarDiscoveryHint() {
 }
 
 function initSidebarToggleScrollProxy() {
-    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleBtn = document.getElementById('sidebar-toggle-collapsed');
     const mainContent = document.querySelector('.main-content');
     if (!toggleBtn || !mainContent) return;
 
@@ -4385,6 +4524,7 @@ function initSidebarToggleScrollProxy() {
 
     const handleWheel = (event) => {
         const rect = toggleBtn.getBoundingClientRect();
+        if (rect.width < 1 || rect.height < 1) return;
         const gutterWidth = Math.max(rect.width + (gutterPadding * 2), minGutterWidth);
         const gutterLeft = rect.left - ((gutterWidth - rect.width) / 2);
         const gutterRight = gutterLeft + gutterWidth;
@@ -4578,6 +4718,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('save-group-btn').addEventListener('click', handleSaveGroup);
     document.getElementById('cancel-group-btn').addEventListener('click', handleCloseGroupModal);
     document.getElementById('close-group-modal').addEventListener('click', handleCloseGroupModal);
+
+    const groupSelectAllBtn = document.getElementById('group-select-all-samples');
+    if (groupSelectAllBtn) groupSelectAllBtn.addEventListener('click', selectAllSamplesInGroupModal);
+    const groupInvertBtn = document.getElementById('group-invert-samples');
+    if (groupInvertBtn) groupInvertBtn.addEventListener('click', invertSamplesInGroupModal);
+
     document.getElementById('run-comparison').addEventListener('click', handleRunComparison);
     document.getElementById('export-comparison').addEventListener('click', handleViewResults);
     document.getElementById('comparison-metric').addEventListener('change', handleComparisonMetricChange);
@@ -4706,8 +4852,8 @@ document.addEventListener('DOMContentLoaded', function () {
             'viz-mode', 'samples-toggle-group', 'toggle-samples', 'sample-selection-panel', 'sample-checkboxes',
             'select-all-samples', 'select-none-samples', 'invert-samples',
             // 单样本设置
-            'panel-width-slider', 'panel-width-value', 'panel-height-slider', 'panel-height-value', 'panel-lock-size',
-            'layout-select', 'abundance-transform', 'quantile-low', 'quantile-high', 'show-individual-legends',
+            'panel-width-slider', 'panel-width-input', 'panel-height-slider', 'panel-height-input', 'panel-lock-size',
+            'layout-select', 'layout-reset', 'abundance-transform', 'quantile-low', 'quantile-high', 'show-individual-legends',
             // 单样本显著性（combined_long）
             'single-significance-toggle-row', 'single-significance-thresholds-row', 'single-show-significance',
             'single-pvalue-threshold', 'single-qvalue-threshold', 'single-logfc-threshold',

@@ -599,6 +599,12 @@
   // 主渲染：比较树（支持普通、内联与模态容器）
   function drawComparisonTree(group1, group2, comparisonStats, opts = {}) {
     const store = resolveComparisonRendererStore(opts.rendererStore);
+    const isValidZoomTransform = (value) => !!(
+      value
+      && Number.isFinite(value.k)
+      && Number.isFinite(value.x)
+      && Number.isFinite(value.y)
+    );
     try { store.setStats(comparisonStats); } catch (_) { }
     const useModal = !!opts.isModal;
     const containerId = opts.containerId || 'viz-container';
@@ -666,6 +672,7 @@
         const svgRef = store.getSvg();
         const zoomRef = store.getZoom();
         if (svgRef && zoomRef) {
+          try { store.setTransform(d3.zoomIdentity); } catch (_) { }
           svgRef.transition().duration(500).call(zoomRef.transform, d3.zoomIdentity);
         }
       });
@@ -756,12 +763,21 @@
       .scaleExtent([0.1, 10])
       .on('zoom', (event) => {
         rootG.attr('transform', event.transform);
+        try { store.setTransform(event && event.transform ? event.transform : null); } catch (_) { }
       });
     svg.call(zoom);
     try {
       store.setSvg(svg);
       store.setZoom(zoom);
     } catch (_) { }
+    const preservedTransform = (() => {
+      try { return store.getTransform(); } catch (_) { return null; }
+    })();
+    if (isValidZoomTransform(preservedTransform)) {
+      svg.call(zoom.transform, preservedTransform);
+    } else {
+      try { store.setTransform(d3.zoomIdentity); } catch (_) { }
+    }
 
 
     // 层级数据
@@ -1253,7 +1269,9 @@
         .text(d => (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || ''))
         .style('font-size', `${labelFontSize}px`)
         .attr('fill', d => {
-          return (typeof window !== 'undefined' && typeof window.getLabelColor === 'function') ? window.getLabelColor(d) : '#333';
+          return (typeof window !== 'undefined' && typeof window.getLabelColor === 'function')
+            ? window.getLabelColor(d)
+            : 'var(--tree-label-default-color, #4a5568)';
         })
         .attr('font-weight', '500')
         .style('pointer-events', 'all')

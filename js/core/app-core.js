@@ -29,6 +29,7 @@ let samples = [];
 let rawData = [];
 let svgs = {};
 let zooms = {};
+let zoomTransforms = {}; // persist per-panel zoom transforms across redraws
 let svgGroups = {}; // store <g> per sample for direct transform when needed
 let currentLayout = 'radial';
 let treeLayoutDirection = 'horizontal'; // 'horizontal' | 'vertical'
@@ -121,6 +122,9 @@ let uniformLabelColors = false; // 是否启用统一标签颜色
 let labelColorMap = new Map(); // 存储标签名称到颜色的映射 {labelName: color}
 let customLabelColors = new Map(); // 用户自定义的标签颜色 {labelName: color}
 let labelColorIndex = 0; // 当前使用的颜色索引
+const TREE_LABEL_DEFAULT_CSS_VAR = '--tree-label-default-color';
+const TREE_LABEL_DEFAULT_FALLBACK = '#4a5568';
+const TREE_LABEL_DEFAULT_TOKEN = `var(${TREE_LABEL_DEFAULT_CSS_VAR}, ${TREE_LABEL_DEFAULT_FALLBACK})`;
 // 针对单个节点实例的颜色覆盖：key 为祖先路径（唯一标识当前节点实例）
 let nodeColorOverrides = new Map(); // { nodeAncestorPath: color }
 let nodeColorOverrideLabel = new Map(); // { nodeAncestorPath: labelName } 用于按标签清理覆盖
@@ -1582,6 +1586,18 @@ try {
  * @param {Object|string} nodeOrLabel - 节点对象或标签名称
  * @returns {string} - 颜色值
  */
+function getDefaultTreeLabelColorValue() {
+    try {
+        if (typeof window !== 'undefined' && window.getComputedStyle && typeof document !== 'undefined' && document.documentElement) {
+            const value = window.getComputedStyle(document.documentElement)
+                .getPropertyValue(TREE_LABEL_DEFAULT_CSS_VAR)
+                .trim();
+            if (value) return value;
+        }
+    } catch (_) { /* ignore */ }
+    return TREE_LABEL_DEFAULT_FALLBACK;
+}
+
 function getLabelColor(nodeOrLabel) {
     // 如果传入的是节点对象，先检查单节点覆盖，再回退到按名称着色
     if (typeof nodeOrLabel === 'object' && nodeOrLabel && nodeOrLabel.data) {
@@ -1595,10 +1611,10 @@ function getLabelColor(nodeOrLabel) {
         const labelName = getFullLabelName(nodeOrLabel);
         // 优先使用用户自定义颜色（即使 uniformLabelColors 未勾选）
         if (customLabelColors.has(labelName)) return customLabelColors.get(labelName);
-        if (!uniformLabelColors) return '#333';
+        if (!uniformLabelColors) return TREE_LABEL_DEFAULT_TOKEN;
         if (labelColorMap.has(labelName)) return labelColorMap.get(labelName);
         console.warn('No color found for label:', labelName);
-        return '#333';
+        return TREE_LABEL_DEFAULT_TOKEN;
     }
     // 传入的是字符串标签名
     const labelName = nodeOrLabel;
@@ -1610,7 +1626,7 @@ function getLabelColor(nodeOrLabel) {
 
     // 如果未启用统一标签颜色，返回默认黑色
     if (!uniformLabelColors) {
-        return '#333';
+        return TREE_LABEL_DEFAULT_TOKEN;
     }
 
     // 返回预分配的颜色（已在 drawAllTrees 中分配）
@@ -1620,7 +1636,7 @@ function getLabelColor(nodeOrLabel) {
 
     // 如果没有找到（理论上不应该发生），返回默认颜色
     console.warn('No color found for label:', labelName);
-    return '#333';
+    return TREE_LABEL_DEFAULT_TOKEN;
 }
 
 /**
@@ -2737,6 +2753,10 @@ function drawTree(sample, globalDomain) {
         .on('zoom', (event) => {
             // 应用本地变换
             g.attr('transform', event.transform);
+            // Persist current transform so redraws can restore user zoom.
+            if (event && event.transform) {
+                zoomTransforms[sample] = event.transform;
+            }
             // 只在用户触发（存在 sourceEvent）且启用了同步，且为单样本或group模式时广播
             if (syncZoomEnabled && (visualizationMode === 'single' || visualizationMode === 'group') && event && event.sourceEvent && !__isSyncingZoom) {
                 let active;
@@ -3709,11 +3729,18 @@ function drawTree(sample, globalDomain) {
         createLegend(svg, width, height, legendDomain);
     }
 
-    // 重置缩放
-    svg.transition().duration(750).call(
-        zoom.transform,
-        d3.zoomIdentity
-    );
+    // Restore previous zoom instead of forcing identity on every redraw.
+    const preservedTransform = zoomTransforms[sample];
+    if (
+        preservedTransform
+        && Number.isFinite(preservedTransform.k)
+        && Number.isFinite(preservedTransform.x)
+        && Number.isFinite(preservedTransform.y)
+    ) {
+        svg.call(zoom.transform, preservedTransform);
+    } else {
+        zoomTransforms[sample] = d3.zoomIdentity;
+    }
 }
 
 function createLegend(svg, width, height, legendDomain) {
@@ -3930,7 +3957,7 @@ function handleLabelRightClick(event, d) {
     } else if (labelColorMap.has(labelName)) {
         currentColor = labelColorMap.get(labelName);
     } else {
-        currentColor = generateDistinctColor(labelColorIndex);
+        currentColor = getDefaultTreeLabelColorValue();
     }
 
     console.log('Current color for', labelName, ':', currentColor);

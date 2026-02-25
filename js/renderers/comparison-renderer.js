@@ -1269,7 +1269,9 @@
         .text(d => (typeof window !== 'undefined' && typeof window.getDisplayName === 'function') ? window.getDisplayName(d) : (d.data.name || ''))
         .style('font-size', `${labelFontSize}px`)
         .attr('fill', d => {
-          return (typeof window !== 'undefined' && typeof window.getLabelColor === 'function') ? window.getLabelColor(d) : '#333';
+          return (typeof window !== 'undefined' && typeof window.getLabelColor === 'function')
+            ? window.getLabelColor(d)
+            : 'var(--tree-label-default-color, #4a5568)';
         })
         .attr('font-weight', '500')
         .style('pointer-events', 'all')

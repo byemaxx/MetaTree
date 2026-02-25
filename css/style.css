@@ -49,6 +49,7 @@
     --tree-panel-header-start: #6b7fa8;
     --tree-panel-header-end: #6674db;
     --tree-panel-header-text: #ffffff;
+    --tree-label-default-color: #4a5568;
     --sidebar-activity-bg: var(--bg-light);
     --sidebar-activity-border: var(--border-color);
     --sidebar-activity-icon: var(--text-secondary);
@@ -197,7 +198,7 @@ body.info-modal-open {
 }
 
 .sidebar {
-    width: 324px;
+    width: 330px;
     min-width: 240px;
     max-width: 460px;
     display: flex;

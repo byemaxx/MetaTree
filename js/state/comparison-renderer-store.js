@@ -6,6 +6,7 @@
     const store = (function () {
         let svg = null;
         let zoom = null;
+        let transform = null;
         let stats = null;
         let resizeObserver = null;
 
@@ -22,9 +23,16 @@
             setZoom(value) {
                 zoom = value || null;
             },
+            getTransform() {
+                return transform;
+            },
+            setTransform(value) {
+                transform = value || null;
+            },
             clear() {
                 svg = null;
                 zoom = null;
+                transform = null;
                 stats = null;
                 this.disconnectResizeObserver();
             },

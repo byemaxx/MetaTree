@@ -524,7 +524,7 @@ body.info-modal-open {
 }
 
 .header h1 {
-    font-size: var(--font-3xl);
+    font-size: var(--font-4xl);
     margin-bottom: 0;
     font-weight: 600;
     letter-spacing: -0.5px;

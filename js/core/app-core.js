@@ -29,6 +29,7 @@ let samples = [];
 let rawData = [];
 let svgs = {};
 let zooms = {};
+let zoomTransforms = {}; // persist per-panel zoom transforms across redraws
 let svgGroups = {}; // store <g> per sample for direct transform when needed
 let currentLayout = 'radial';
 let treeLayoutDirection = 'horizontal'; // 'horizontal' | 'vertical'
@@ -2737,6 +2738,10 @@ function drawTree(sample, globalDomain) {
         .on('zoom', (event) => {
             // 应用本地变换
             g.attr('transform', event.transform);
+            // Persist current transform so redraws can restore user zoom.
+            if (event && event.transform) {
+                zoomTransforms[sample] = event.transform;
+            }
             // 只在用户触发（存在 sourceEvent）且启用了同步，且为单样本或group模式时广播
             if (syncZoomEnabled && (visualizationMode === 'single' || visualizationMode === 'group') && event && event.sourceEvent && !__isSyncingZoom) {
                 let active;
@@ -3709,11 +3714,18 @@ function drawTree(sample, globalDomain) {
         createLegend(svg, width, height, legendDomain);
     }
 
-    // 重置缩放
-    svg.transition().duration(750).call(
-        zoom.transform,
-        d3.zoomIdentity
-    );
+    // Restore previous zoom instead of forcing identity on every redraw.
+    const preservedTransform = zoomTransforms[sample];
+    if (
+        preservedTransform
+        && Number.isFinite(preservedTransform.k)
+        && Number.isFinite(preservedTransform.x)
+        && Number.isFinite(preservedTransform.y)
+    ) {
+        svg.call(zoom.transform, preservedTransform);
+    } else {
+        zoomTransforms[sample] = d3.zoomIdentity;
+    }
 }
 
 function createLegend(svg, width, height, legendDomain) {

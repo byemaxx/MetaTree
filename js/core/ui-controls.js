@@ -427,12 +427,14 @@ function syncLayoutPanelInputsToSettings(settings) {
     if (panelSlider && typeof settings.panelWidth === 'number') {
         panelSlider.value = String(settings.panelWidth);
         if (panelValue) panelValue.textContent = `${settings.panelWidth}px`;
+        updateRangeSliderProgress(panelSlider);
     }
     const heightSlider = document.getElementById('panel-height-slider');
     const heightValue = document.getElementById('panel-height-value');
     if (heightSlider && typeof settings.panelHeight === 'number') {
         heightSlider.value = String(settings.panelHeight);
         if (heightValue) heightValue.textContent = `${settings.panelHeight}px`;
+        updateRangeSliderProgress(heightSlider);
     }
 }
 
@@ -1653,6 +1655,11 @@ function initEventListeners() {
     if (labelsResetBtn) {
         labelsResetBtn.addEventListener('click', resetLabelsNodesToDefaults);
     }
+    // Layout reset button
+    const layoutResetBtn = document.getElementById('layout-reset');
+    if (layoutResetBtn) {
+        layoutResetBtn.addEventListener('click', resetLayoutPanelsToDefaults);
+    }
 
     // Sync zoom toggle
     const syncZoomCb = document.getElementById('sync-zoom');
@@ -2872,10 +2879,67 @@ function resetLabelsNodesToDefaults() {
             } catch (_) { /* ignore hint update errors */ }
         }
 
+        // 同步刷新本面板所有 range 的轨道填充进度（--range-progress）
+        const labelsPanel = document.getElementById('labels-panel');
+        if (labelsPanel) {
+            labelsPanel.querySelectorAll('input[type="range"]').forEach(updateRangeSliderProgress);
+        }
+
         // 统一重绘
         redrawCurrentViz();
     } catch (err) {
         console.warn('Failed to reset Labels & Nodes settings', err);
+    }
+}
+
+// 一键还原：重置“Layout & Panels”区域的所有设置到默认值
+function resetLayoutPanelsToDefaults() {
+    try {
+        const ctx = activeLayoutPanelContext || getActiveLayoutPanelContext();
+        const defaults = LAYOUT_PANEL_DEFAULTS[ctx] || LAYOUT_PANEL_DEFAULTS[LAYOUT_PANEL_CONTEXTS.SAMPLES];
+        if (defaults) {
+            setLayoutPanelSettingsForContext(ctx, defaults);
+            setActiveLayoutPanelContext(ctx, { force: true });
+        }
+
+        const defaultDirection = 'horizontal';
+        document.querySelectorAll('input[name="tree-direction"]').forEach((radio) => {
+            radio.checked = (radio.value === defaultDirection);
+        });
+        if (typeof treeLayoutDirection !== 'undefined') treeLayoutDirection = defaultDirection;
+        try { if (typeof window !== 'undefined') window.treeLayoutDirection = defaultDirection; } catch (_) { }
+
+        const linkShapeSel = document.getElementById('tree-link-shape');
+        if (linkShapeSel) linkShapeSel.value = 'curved';
+        if (typeof treeLinkShape !== 'undefined') treeLinkShape = 'curved';
+        try { if (typeof window !== 'undefined') window.treeLinkShape = 'curved'; } catch (_) { }
+
+        const alignLeavesCheck = document.getElementById('tree-align-leaves');
+        if (alignLeavesCheck) alignLeavesCheck.checked = false;
+        if (typeof treeAlignLeaves !== 'undefined') treeAlignLeaves = false;
+        try { if (typeof window !== 'undefined') window.treeAlignLeaves = false; } catch (_) { }
+
+        const sepSlider = document.getElementById('tree-separation-slider');
+        if (sepSlider) {
+            sepSlider.value = '1';
+            updateRangeSliderProgress(sepSlider);
+        }
+        const sepVal = document.getElementById('tree-separation-value');
+        if (sepVal) sepVal.textContent = '1.0x';
+        if (typeof treeSeparation !== 'undefined') treeSeparation = 1.0;
+        try { if (typeof window !== 'undefined') window.treeSeparation = 1.0; } catch (_) { }
+
+        const sortSel = document.getElementById('tree-sort-select');
+        if (sortSel) sortSel.value = 'none';
+        if (typeof treeNodeSort !== 'undefined') treeNodeSort = 'none';
+        try { if (typeof window !== 'undefined') window.treeNodeSort = 'none'; } catch (_) { }
+
+        const panelLock = document.getElementById('panel-lock-size');
+        if (panelLock) panelLock.checked = false;
+
+        redrawCurrentViz();
+    } catch (err) {
+        console.warn('Failed to reset Layout & Panels settings', err);
     }
 }
 
@@ -4715,7 +4779,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'select-all-samples', 'select-none-samples', 'invert-samples',
             // 单样本设置
             'panel-width-slider', 'panel-width-value', 'panel-height-slider', 'panel-height-value', 'panel-lock-size',
-            'layout-select', 'abundance-transform', 'quantile-low', 'quantile-high', 'show-individual-legends',
+            'layout-select', 'layout-reset', 'abundance-transform', 'quantile-low', 'quantile-high', 'show-individual-legends',
             // 单样本显著性（combined_long）
             'single-significance-toggle-row', 'single-significance-thresholds-row', 'single-show-significance',
             'single-pvalue-threshold', 'single-qvalue-threshold', 'single-logfc-threshold',

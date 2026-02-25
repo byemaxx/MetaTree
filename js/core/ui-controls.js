@@ -4248,8 +4248,11 @@ function initCollapsiblePanel(panelId, toggleId, options = {}) {
 function initSidebarCollapseControl() {
     const appBody = document.querySelector('.app-body');
     const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    if (!appBody || !sidebar || !toggleBtn) return;
+    const toggleButtons = [
+        document.getElementById('sidebar-toggle-inline'),
+        document.getElementById('sidebar-toggle-collapsed')
+    ].filter(Boolean);
+    if (!appBody || !sidebar || toggleButtons.length === 0) return;
 
     const storageKey = 'metatree.sidebarCollapsed';
 
@@ -4271,10 +4274,12 @@ function initSidebarCollapseControl() {
     const applyState = (collapsed) => {
         appBody.classList.toggle('sidebar-collapsed', collapsed);
         sidebar.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
-        toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         const label = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
-        toggleBtn.setAttribute('aria-label', label);
-        toggleBtn.setAttribute('title', label);
+        toggleButtons.forEach((toggleBtn) => {
+            toggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            toggleBtn.setAttribute('aria-label', label);
+            toggleBtn.setAttribute('title', label);
+        });
 
         if (typeof redrawCurrentViz === 'function' && treeData) {
             // wait for layout to settle before redrawing panels at new width
@@ -4289,10 +4294,12 @@ function initSidebarCollapseControl() {
     let collapsed = readPersistedState();
     applyState(collapsed);
 
-    toggleBtn.addEventListener('click', () => {
-        collapsed = !collapsed;
-        applyState(collapsed);
-        persistState(collapsed);
+    toggleButtons.forEach((toggleBtn) => {
+        toggleBtn.addEventListener('click', () => {
+            collapsed = !collapsed;
+            applyState(collapsed);
+            persistState(collapsed);
+        });
     });
 }
 
@@ -4359,10 +4366,10 @@ function initSidebarDiscoveryHint() {
 
     const appBody = document.querySelector('.app-body');
     const activityBar = document.querySelector('.sidebar-activity-bar');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    if (!appBody || !toggleBtn) return;
+    const collapsedToggleBtn = document.getElementById('sidebar-toggle-collapsed');
+    if (!appBody) return;
 
-    const hintTarget = appBody.classList.contains('sidebar-collapsed') ? toggleBtn : activityBar;
+    const hintTarget = appBody.classList.contains('sidebar-collapsed') ? collapsedToggleBtn : activityBar;
     if (!hintTarget) return;
 
     hintTarget.classList.add('nav-attention');
@@ -4376,7 +4383,7 @@ function initSidebarDiscoveryHint() {
 }
 
 function initSidebarToggleScrollProxy() {
-    const toggleBtn = document.getElementById('sidebar-toggle');
+    const toggleBtn = document.getElementById('sidebar-toggle-collapsed');
     const mainContent = document.querySelector('.main-content');
     if (!toggleBtn || !mainContent) return;
 
@@ -4385,6 +4392,7 @@ function initSidebarToggleScrollProxy() {
 
     const handleWheel = (event) => {
         const rect = toggleBtn.getBoundingClientRect();
+        if (rect.width < 1 || rect.height < 1) return;
         const gutterWidth = Math.max(rect.width + (gutterPadding * 2), minGutterWidth);
         const gutterLeft = rect.left - ((gutterWidth - rect.width) / 2);
         const gutterRight = gutterLeft + gutterWidth;

@@ -347,10 +347,8 @@ body.info-modal-open {
 }
 
 .sidebar-toggle {
-    align-self: flex-start;
-    margin: var(--spacing-xl) var(--spacing-md) 0 var(--spacing-md);
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -362,6 +360,19 @@ body.info-modal-open {
     box-shadow: var(--shadow-md);
     cursor: pointer;
     transition: var(--transition-base);
+}
+
+.sidebar-toggle-inline {
+    margin-top: auto;
+    align-self: center;
+    margin-bottom: var(--spacing-sm);
+    flex: 0 0 auto;
+}
+
+.sidebar-toggle-collapsed {
+    align-self: flex-start;
+    margin: var(--spacing-xl) var(--spacing-xs) 0 var(--spacing-xs);
+    display: none;
 }
 
 .sidebar-toggle:hover {
@@ -387,11 +398,19 @@ body.info-modal-open {
     display: none;
 }
 
+.app-body.sidebar-collapsed .sidebar-toggle-collapsed {
+    display: inline-flex;
+}
+
+.app-body:not(.sidebar-collapsed) .sidebar-toggle-collapsed {
+    display: none;
+}
+
 .app-body.sidebar-collapsed .sidebar-toggle .toggle-icon {
     transform: rotate(180deg);
 }
 
-.app-body.sidebar-collapsed .sidebar-toggle {
+.app-body.sidebar-collapsed .sidebar-toggle-collapsed {
     width: 44px;
     height: 44px;
     padding: 0;
@@ -402,7 +421,7 @@ body.info-modal-open {
 }
 
 .app-body.sidebar-collapsed .main-content {
-    padding-left: var(--spacing-lg);
+    padding-left: var(--spacing-sm);
 }
 
 @keyframes sidebarHintPulse {
@@ -427,7 +446,7 @@ body.info-modal-open {
     animation: sidebarHintPulse 1.05s ease-in-out 3;
 }
 
-.app-body.sidebar-collapsed .sidebar-toggle.nav-attention {
+.app-body.sidebar-collapsed .sidebar-toggle-collapsed.nav-attention {
     animation: sidebarToggleHintPulse 1.05s ease-in-out 3;
 }
 
@@ -441,8 +460,8 @@ body.info-modal-open {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xl);
-    padding-right: var(--spacing-xl);
-    padding-left: var(--spacing-xl); /* gutter belongs to main-content for better scroll targeting */
+    padding-right: var(--spacing-sm);
+    padding-left: var(--spacing-sm); /* tighter gutter to reduce dead space between sidebar and panels */
     position: relative;
     height: 100%;
     z-index: 1;
@@ -2162,8 +2181,9 @@ button:disabled {
     .sidebar-activity-btn svg { width: 14px; height: 14px; transform: none; }
     .sidebar-activity-btn span { transform: none; margin-top: 0; white-space: nowrap; font-size: var(--font-sm); }
     .sidebar-sections { padding: var(--spacing-md) 0 0 0; overflow: visible; }
-    .sidebar-toggle { align-self: flex-end; margin: var(--spacing-md) 0 0 auto; }
-    .app-body.sidebar-collapsed .sidebar-toggle { width: 40px; height: 40px; padding: 0; }
+    .sidebar-toggle-inline { margin-top: 0; margin-bottom: 0; margin-left: auto; align-self: center; }
+    .sidebar-toggle-collapsed { align-self: flex-end; margin: var(--spacing-md) 0 0 auto; }
+    .app-body.sidebar-collapsed .sidebar-toggle-collapsed { width: 40px; height: 40px; padding: 0; }
     .app-body.sidebar-collapsed .main-content { padding-left: 0; }
     .main-content { padding-right: 0; position: static; height: auto; overflow: visible; }
     body {

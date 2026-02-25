@@ -137,7 +137,7 @@ Navigate to the **Analysis Mode** panel and select a mode:
     3.  Choose a **Metric** (e.g., Log2 fold change).
     4.  (Optional) Choose a statistical **Test** (`Wilcoxon Rank Sum` or `T-test (Welch)`).
     5.  Click **Run comparison**.
-    6.  (Optional) Enable **Build base from non-zero selected** to construct the base tree only from currently displayed non-zero branches.
+    6.  (Optional) Enable **Non-zero only (base tree)** to construct the base tree only from currently displayed non-zero branches.
 *   **Significance Filtering**:
     *   Enable **Filter by significance** to hide non-significant nodes.
     *   Adjust **P-value**, **Q-value**, and **|Log2FC|** thresholds.

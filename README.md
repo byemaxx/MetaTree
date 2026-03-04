@@ -56,7 +56,7 @@ If you use MetaTree in your research, please cite our preprint:
 
 Wu Q, Zhang A, Ning Z, et al. MetaTree: an interactive web platform for hierarchical data visualization and multi-group comparison[J]. bioRxiv, 2026: 2026.01.22.701099.
 
-https://www.biorxiv.org/content/10.64898/2026.01.22.701099v1
+https://www.biorxiv.org/content/10.64898/2026.01.22.701099
 
 ---
 *Designed for microbiome, metaproteomics, and any tree-structured datasets.*

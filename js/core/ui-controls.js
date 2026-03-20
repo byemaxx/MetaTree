@@ -3194,15 +3194,12 @@ function handleVisualizationModeChange() {
             toggleBtn.classList.remove('expanded');
         }
 
-        // 初始化group选项
+        // 初始化 group 选项并同步 groups 列表。
+        // 比较模式可能已经创建好了全局 groups；切回 group 模式时，即使不需要重新生成，
+        // 也必须刷新 group-checkboxes，否则会停留在旧的 "No groups defined" UI。
         updateGroupMetaColumnOptions();
         ensureDefaultMetaGroupingForMode('group');
-
-        // 如果已经有选中的组,重新绘制
-        if (treeData && selectedGroups.length > 0) {
-            initVisualization();
-            drawAllTrees();
-        }
+        updateGroupCheckboxes();
     } else {
         // 比较模式（comparison 或 matrix）
         if (comparisonControls) comparisonControls.style.display = 'block';

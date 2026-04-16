@@ -1,0 +1,1403 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="800" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#111827">MetaTree Benchmark: Filter Update Time</text>
+<text x="800" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#4b5563">Median values across repeated benchmark runs. Error spread is provided in summary.csv.</text>
+<line x1="70" y1="74" x2="96" y2="74" stroke="#1f77b4" stroke-width="3"/>
+<text x="104" y="78" font-family="Arial, sans-serif" font-size="12" fill="#111827">1 tree</text>
+<line x1="290" y1="74" x2="316" y2="74" stroke="#d62728" stroke-width="3"/>
+<text x="324" y="78" font-family="Arial, sans-serif" font-size="12" fill="#111827">1 panels</text>
+<line x1="510" y1="74" x2="536" y2="74" stroke="#2ca02c" stroke-width="3"/>
+<text x="544" y="78" font-family="Arial, sans-serif" font-size="12" fill="#111827">4 panels</text>
+<line x1="730" y1="74" x2="756" y2="74" stroke="#ff7f0e" stroke-width="3"/>
+<text x="764" y="78" font-family="Arial, sans-serif" font-size="12" fill="#111827">9 panels</text>
+<line x1="950" y1="74" x2="976" y2="74" stroke="#1f77b4" stroke-width="3"/>
+<text x="984" y="78" font-family="Arial, sans-serif" font-size="12" fill="#111827">2 groups / 1 comparison</text>
+<line x1="1170" y1="74" x2="1196" y2="74" stroke="#d62728" stroke-width="3"/>
+<text x="1204" y="78" font-family="Arial, sans-serif" font-size="12" fill="#111827">3 groups / 3 comparisons</text>
+<g transform="translate(20, 110)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">single / radial</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="70,258.8251127111231 106.3157894736842,257.72289886279526 178.94736842105263,255.6274813269632 300,251.12172801291973"/>
+<circle cx="70" cy="258.8251127111231" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="257.72289886279526" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="255.6274813269632" r="4" fill="#d62728"/>
+<circle cx="300" cy="251.12172801291973" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" points="70,257.3958683803243 106.3157894736842,252.87800282618934 178.94736842105263,245.35630172935873 300,229.46504272929144"/>
+<circle cx="70" cy="257.3958683803243" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="252.87800282618934" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="245.35630172935873" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="229.46504272929144" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" points="70,255.03398156247897 106.3157894736842,244.54478164322725 178.94736842105263,229.21068568736962 300,201.94603324137003"/>
+<circle cx="70" cy="255.03398156247897" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="244.54478164322725" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="229.21068568736962" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="201.94603324137003" r="4" fill="#ff7f0e"/>
+</g>
+<g transform="translate(390, 110)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">group / radial</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="70,258.8372249512146 106.3157894736842,257.34741941995827 178.94736842105263,255.0703182827535 300,250.7825852903573"/>
+<circle cx="70" cy="258.8372249512146" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="257.34741941995827" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="255.0703182827535" r="4" fill="#d62728"/>
+<circle cx="300" cy="250.7825852903573" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" points="70,257.2505214992262 106.3157894736842,252.57519682390148 178.94736842105263,244.33887356167148 300,229.16223672700357"/>
+<circle cx="70" cy="257.2505214992262" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="252.57519682390148" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="244.33887356167148" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="229.16223672700357" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" points="70,254.51315523854385 106.3157894736842,244.0118430792006 178.94736842105263,227.64820671556424 300,195.55077047305025"/>
+<circle cx="70" cy="254.51315523854385" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="244.0118430792006" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="227.64820671556424" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="195.55077047305025" r="4" fill="#ff7f0e"/>
+</g>
+<g transform="translate(760, 110)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">comparison / radial</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="70,258.7645515106655 106.3157894736842,258.4375210281946 178.94736842105263,256.1240831707153 300,254.34358387726263"/>
+<circle cx="70" cy="258.7645515106655" r="4" fill="#1f77b4"/>
+<circle cx="106.3157894736842" cy="258.4375210281946" r="4" fill="#1f77b4"/>
+<circle cx="178.94736842105263" cy="256.1240831707153" r="4" fill="#1f77b4"/>
+<circle cx="300" cy="254.34358387726263" r="4" fill="#1f77b4"/>
+</g>
+<g transform="translate(1130, 110)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">matrix / radial</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="70,243.46679227508244 106.3157894736842,243.24877195343515 178.94736842105263,238.1737433550905 300,230.1069914541417"/>
+<circle cx="70" cy="243.46679227508244" r="4" fill="#1f77b4"/>
+<circle cx="106.3157894736842" cy="243.24877195343515" r="4" fill="#1f77b4"/>
+<circle cx="178.94736842105263" cy="238.1737433550905" r="4" fill="#1f77b4"/>
+<circle cx="300" cy="230.1069914541417" r="4" fill="#1f77b4"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="70,109.27528430119105 106.3157894736842,108.30630509386987 178.94736842105263,104.6968575465985 300,96.98136060830362"/>
+<circle cx="70" cy="109.27528430119105" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="108.30630509386987" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="104.6968575465985" r="4" fill="#d62728"/>
+<circle cx="300" cy="96.98136060830362" r="4" fill="#d62728"/>
+</g>
+<g transform="translate(20, 470)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">single / dendrogram</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="70,258.87356167148914 106.3157894736842,258.23161294663885 178.94736842105263,256.6206850144674 300,253.55628827131417"/>
+<circle cx="70" cy="258.87356167148914" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="258.23161294663885" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="256.6206850144674" r="4" fill="#d62728"/>
+<circle cx="300" cy="253.55628827131417" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" points="70,257.5169907812395 106.3157894736842,254.46470627817777 178.94736842105263,248.2995760715968 300,231.87537850750286"/>
+<circle cx="70" cy="257.5169907812395" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="254.46470627817777" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="248.2995760715968" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="231.87537850750286" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" points="70,255.04609380257048 106.3157894736842,247.92409662875986 178.94736842105263,235.0366731713882 300,195.0783931094812"/>
+<circle cx="70" cy="255.04609380257048" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="247.92409662875986" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="235.0366731713882" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="195.0783931094812" r="4" fill="#ff7f0e"/>
+</g>
+<g transform="translate(390, 470)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">group / dendrogram</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="70,258.6192046295673 106.3157894736842,257.9409191844425 178.94736842105263,256.1240831707153 300,253.03546194737905"/>
+<circle cx="70" cy="258.6192046295673" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="257.9409191844425" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="256.1240831707153" r="4" fill="#d62728"/>
+<circle cx="300" cy="253.03546194737905" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" points="70,257.4806540609649 106.3157894736842,254.00444115470023 178.94736842105263,247.6334028665635 300,232.59000067290222"/>
+<circle cx="70" cy="257.4806540609649" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="254.00444115470023" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="247.6334028665635" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="232.59000067290222" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" points="70,255.10665500302807 106.3157894736842,247.29426014400107 178.94736842105263,232.02072538860102 300,207.89314312630376"/>
+<circle cx="70" cy="255.10665500302807" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="247.29426014400107" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="232.02072538860102" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="207.89314312630376" r="4" fill="#ff7f0e"/>
+</g>
+<g transform="translate(760, 470)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">comparison / dendrogram</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="70,258.95834735212975 106.3157894736842,258.0135926249916 178.94736842105263,256.49956261355226 300,254.04077787497476"/>
+<circle cx="70" cy="258.95834735212975" r="4" fill="#1f77b4"/>
+<circle cx="106.3157894736842" cy="258.0135926249916" r="4" fill="#1f77b4"/>
+<circle cx="178.94736842105263" cy="256.49956261355226" r="4" fill="#1f77b4"/>
+<circle cx="300" cy="254.04077787497476" r="4" fill="#1f77b4"/>
+</g>
+<g transform="translate(1130, 470)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">matrix / dendrogram</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" points="70,243.6727003566382 106.3157894736842,243.3456698741673 178.94736842105263,238.68245743893414 300,228.6050736827939"/>
+<circle cx="70" cy="243.6727003566382" r="4" fill="#1f77b4"/>
+<circle cx="106.3157894736842" cy="243.3456698741673" r="4" fill="#1f77b4"/>
+<circle cx="178.94736842105263" cy="238.68245743893414" r="4" fill="#1f77b4"/>
+<circle cx="300" cy="228.6050736827939" r="4" fill="#1f77b4"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" points="70,109.63865150393647 106.3157894736842,108.51221317542561 178.94736842105263,102.81946033241371 300,96.36363636363637"/>
+<circle cx="70" cy="109.63865150393647" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="108.51221317542561" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="102.81946033241371" r="4" fill="#d62728"/>
+<circle cx="300" cy="96.36363636363637" r="4" fill="#d62728"/>
+</g>
+</svg>

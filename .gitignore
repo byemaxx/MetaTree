@@ -1,2 +1,4 @@
 .vscode
 Tools/
+benchmark/node_modules/
+benchmark/generated/

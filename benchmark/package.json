@@ -1,0 +1,17 @@
+{
+  "name": "metatree-benchmark",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Reproducible browser benchmark workflow for MetaTree",
+  "scripts": {
+    "generate": "node generate-benchmark-data.js",
+    "run": "node run-benchmark.js",
+    "analyze": "node analyze-results.js",
+    "sanitize-public": "node sanitize-published-outputs.js && npm run analyze",
+    "benchmark": "npm run generate && npm run run && npm run analyze",
+    "smoke": "npm run generate && node run-benchmark.js --smoke && npm run analyze"
+  },
+  "dependencies": {
+    "playwright-core": "^1.53.0"
+  }
+}

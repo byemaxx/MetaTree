@@ -4,5 +4,5 @@
  */
 (function setAppVersion(global) {
     if (!global) return;
-    global.APP_VERSION = 'v1.2.3';
+    global.APP_VERSION = 'v1.3.0';
 })(typeof window !== 'undefined' ? window : null);

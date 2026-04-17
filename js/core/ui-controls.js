@@ -31,6 +31,7 @@ const FILE_FORMAT_INFO_CONTENT = {
         title: 'Data File Format',
         html: `
             <p><strong>Choose one input type for your data file:</strong> <code>Wide Table</code> <strong>or</strong> <code>Long Table</code>.</p>
+            <p><strong>Need BIOM, Newick, or exported QIIME files?</strong> Use the <code>Open Converter</code> button in the Data panel. The converter supports <code>BIOM v1 JSON</code>, <code>Newick + abundance table</code>, and exported QIIME plain files such as <code>feature-table.biom</code>, <code>taxonomy.tsv</code>, <code>rooted-tree.nwk</code>, and <code>sample-metadata.tsv</code>. Direct <code>.qza</code> and <code>.qzv</code> files are not supported.</p>
             <div class="info-example">
                     <div class="info-example-title">Type1: Wide Table (abundance matrix)</div>
                 <div class="info-table-wrapper">
@@ -98,6 +99,14 @@ const FILE_FORMAT_INFO_CONTENT = {
                     <li>Item_ID must match a hierarchy node (taxon or taxa-function).</li>
                     <li>condition labels distinguish contrasts; log2FoldChange/pvalue/padj drive coloring and filtering.</li>
                     <li>Use this when your file already contains differential/statistical result columns.</li>
+                </ul>
+            </div>
+            <div class="info-example">
+                <div class="info-example-title">Converter inputs</div>
+                <ul class="info-modal-list">
+                    <li><code>BIOM v1 JSON</code>: observation taxonomy metadata is used when available; otherwise row ids become leaves.</li>
+                    <li><code>Newick + abundance table</code>: the tree defines topology, and the sidecar table provides sample values.</li>
+                    <li><code>QIIME exports</code>: <code>feature-table.biom</code> is required. Add <code>taxonomy.tsv</code> to aggregate by taxonomy, <code>rooted-tree.nwk</code> to preserve tree topology, and <code>sample-metadata.tsv</code> to generate MetaTree metadata.</li>
                 </ul>
             </div>
             <p class="text-muted">Tip: Use the “Reset to Example” button to inspect a working template before uploading your own file.</p>
@@ -1237,6 +1246,501 @@ function initFilePreviewModal() {
 
     if (closeBtn) closeBtn.addEventListener('click', close);
     if (overlay) overlay.addEventListener('click', close);
+}
+
+let dataConverterMode = 'biom-v1';
+let dataConverterResult = null;
+const dataConverterFiles = {
+    biomV1File: null,
+    newickTreeFile: null,
+    newickTableFile: null,
+    qiimeBiomFile: null,
+    qiimeTaxonomyFile: null,
+    qiimeTreeFile: null,
+    qiimeMetaFile: null
+};
+
+function getDataConverterApi() {
+    if (typeof window === 'undefined') return null;
+    return window.__metaTreeDataConverter || null;
+}
+
+function getCurrentDuplicateHandling() {
+    const select = document.getElementById('duplicate-id-handling');
+    return select ? select.value : 'sum';
+}
+
+function getCurrentDataConverterFiles() {
+    if (dataConverterMode === 'biom-v1') {
+        return [dataConverterFiles.biomV1File];
+    }
+    if (dataConverterMode === 'newick') {
+        return [dataConverterFiles.newickTreeFile, dataConverterFiles.newickTableFile];
+    }
+    return [
+        dataConverterFiles.qiimeBiomFile,
+        dataConverterFiles.qiimeTaxonomyFile,
+        dataConverterFiles.qiimeTreeFile,
+        dataConverterFiles.qiimeMetaFile
+    ];
+}
+
+function setDataConverterStatus(kind, summary, items) {
+    const block = document.getElementById('data-converter-status-block');
+    const summaryEl = document.getElementById('data-converter-status-summary');
+    const listEl = document.getElementById('data-converter-status-list');
+    if (!block || !summaryEl || !listEl) return;
+
+    block.classList.remove('is-error', 'is-warning', 'is-success');
+    if (kind === 'error') block.classList.add('is-error');
+    if (kind === 'warning') block.classList.add('is-warning');
+    if (kind === 'success') block.classList.add('is-success');
+
+    summaryEl.textContent = summary || '';
+    listEl.innerHTML = '';
+
+    if (Array.isArray(items) && items.length > 0) {
+        listEl.classList.add('is-visible');
+        items.forEach((item) => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            listEl.appendChild(li);
+        });
+    } else {
+        listEl.classList.remove('is-visible');
+    }
+}
+
+function getDataConverterValidationState() {
+    const errors = [];
+    const notes = [];
+
+    const selectedFiles = getCurrentDataConverterFiles().filter(Boolean);
+    selectedFiles.forEach((file) => {
+        const lowerName = (file.name || '').toLowerCase();
+        if (lowerName.endsWith('.qza') || lowerName.endsWith('.qzv')) {
+            errors.push(`Direct QIIME artifact files are not supported: ${file.name}`);
+        }
+    });
+
+    if (dataConverterMode === 'biom-v1') {
+        if (!dataConverterFiles.biomV1File) {
+            notes.push('Select a BIOM v1 JSON file.');
+        }
+        return { errors, notes };
+    }
+
+    if (dataConverterMode === 'newick') {
+        if (!dataConverterFiles.newickTreeFile) {
+            notes.push('Select a Newick tree file.');
+        }
+        if (!dataConverterFiles.newickTableFile) {
+            notes.push('Select a sidecar abundance table.');
+        }
+        return { errors, notes };
+    }
+
+    if (!dataConverterFiles.qiimeBiomFile) {
+        notes.push('feature-table.biom is required for QIIME conversion.');
+    }
+    if (dataConverterFiles.qiimeTreeFile && dataConverterFiles.qiimeTaxonomyFile) {
+        notes.push('Both tree and taxonomy are present. Tree topology will define the final hierarchy.');
+    } else if (dataConverterFiles.qiimeTreeFile) {
+        notes.push('Tree topology will define the final hierarchy.');
+    } else if (dataConverterFiles.qiimeTaxonomyFile) {
+        notes.push('Features will be aggregated by full taxonomy path.');
+    } else {
+        notes.push('Without taxonomy or tree, feature ids will be used as leaf paths.');
+    }
+    if (dataConverterFiles.qiimeMetaFile) {
+        notes.push('Converted sample metadata will be available in the preview and load actions.');
+    }
+
+    return { errors, notes };
+}
+
+function updateDataConverterStatusFromSelection() {
+    const validation = getDataConverterValidationState();
+    if (validation.errors.length > 0) {
+        setDataConverterStatus('error', 'Some selected files are not supported.', validation.errors);
+        return;
+    }
+
+    const selectedCount = getCurrentDataConverterFiles().filter(Boolean).length;
+    if (selectedCount === 0) {
+        setDataConverterStatus('info', 'Choose input files and click Convert.', []);
+        return;
+    }
+
+    const summary = dataConverterMode === 'qiime'
+        ? 'Selected QIIME export inputs are ready for conversion.'
+        : 'Selected files are ready for conversion.';
+    setDataConverterStatus('info', summary, validation.notes);
+}
+
+function setDataConverterFilename(labelId, file) {
+    const label = document.getElementById(labelId);
+    if (!label) return;
+    label.textContent = file ? file.name : 'No file selected';
+}
+
+function setDataConverterButtonsEnabled(hasData, hasMeta) {
+    const loadDataBtn = document.getElementById('data-converter-load-data');
+    const downloadDataBtn = document.getElementById('data-converter-download-data');
+    const loadMetaBtn = document.getElementById('data-converter-load-meta');
+    const downloadMetaBtn = document.getElementById('data-converter-download-meta');
+    if (loadDataBtn) loadDataBtn.disabled = !hasData;
+    if (downloadDataBtn) downloadDataBtn.disabled = !hasData;
+    if (loadMetaBtn) loadMetaBtn.disabled = !hasMeta;
+    if (downloadMetaBtn) downloadMetaBtn.disabled = !hasMeta;
+}
+
+function clearDataConverterResults() {
+    dataConverterResult = null;
+    const results = document.getElementById('data-converter-results');
+    const dataSummary = document.getElementById('data-converter-data-summary');
+    const metaSummary = document.getElementById('data-converter-meta-summary');
+    const dataPreview = document.getElementById('data-converter-data-preview');
+    const metaPreview = document.getElementById('data-converter-meta-preview');
+
+    if (results) results.classList.remove('is-visible');
+    if (dataSummary) dataSummary.textContent = '';
+    if (metaSummary) metaSummary.textContent = '';
+    if (dataPreview) dataPreview.innerHTML = '<div class="converter-empty-state">No converted data preview yet.</div>';
+    if (metaPreview) metaPreview.innerHTML = '<div class="converter-empty-state">No converted metadata is available for the current input set.</div>';
+    setDataConverterButtonsEnabled(false, false);
+}
+
+function resetDataConverterFiles() {
+    Object.keys(dataConverterFiles).forEach((key) => {
+        dataConverterFiles[key] = null;
+    });
+    const fileInputIds = [
+        'converter-biom-v1-file',
+        'converter-newick-tree-file',
+        'converter-newick-table-file',
+        'converter-qiime-biom-file',
+        'converter-qiime-taxonomy-file',
+        'converter-qiime-tree-file',
+        'converter-qiime-meta-file'
+    ];
+    fileInputIds.forEach((id) => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+    });
+    setDataConverterFilename('converter-biom-v1-file-name', null);
+    setDataConverterFilename('converter-newick-tree-file-name', null);
+    setDataConverterFilename('converter-newick-table-file-name', null);
+    setDataConverterFilename('converter-qiime-biom-file-name', null);
+    setDataConverterFilename('converter-qiime-taxonomy-file-name', null);
+    setDataConverterFilename('converter-qiime-tree-file-name', null);
+    setDataConverterFilename('converter-qiime-meta-file-name', null);
+}
+
+function resetDataConverterState() {
+    resetDataConverterFiles();
+    clearDataConverterResults();
+    updateDataConverterStatusFromSelection();
+}
+
+function setDataConverterMode(nextMode) {
+    dataConverterMode = nextMode;
+    document.querySelectorAll('[data-converter-mode]').forEach((button) => {
+        button.classList.toggle('is-active', button.dataset.converterMode === nextMode);
+    });
+    document.querySelectorAll('[data-converter-panel]').forEach((panel) => {
+        panel.classList.toggle('is-active', panel.dataset.converterPanel === nextMode);
+    });
+    clearDataConverterResults();
+    updateDataConverterStatusFromSelection();
+}
+
+function renderDataConverterPreview(containerId, text) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    if (typeof text !== 'string' || text.trim().length === 0) {
+        container.innerHTML = '<div class="converter-empty-state">No preview available.</div>';
+        return;
+    }
+
+    const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+    if (lines.length === 0) {
+        container.innerHTML = '<div class="converter-empty-state">No preview available.</div>';
+        return;
+    }
+
+    const headers = lines[0].split('\t');
+    const previewRows = lines.slice(1, 21).map((line) => line.split('\t'));
+
+    let html = '<table class="info-sample-table" style="width:100%; font-size:11px; border-collapse: collapse;"><thead><tr>';
+    headers.forEach((header) => {
+        html += `<th>${escapeHtml(String(header))}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+
+    previewRows.forEach((row) => {
+        html += '<tr>';
+        headers.forEach((unusedHeader, index) => {
+            html += `<td>${escapeHtml(String(row[index] == null ? '' : row[index]))}</td>`;
+        });
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    container.innerHTML = html;
+}
+
+function renderDataConverterResult(result) {
+    const results = document.getElementById('data-converter-results');
+    const dataSummary = document.getElementById('data-converter-data-summary');
+    const metaSummary = document.getElementById('data-converter-meta-summary');
+    if (results) results.classList.add('is-visible');
+    if (dataSummary) {
+        const rowCount = result && result.summary ? result.summary.rowCount : 0;
+        const sampleCount = result && result.summary ? result.summary.sampleCount : 0;
+        dataSummary.textContent = `${rowCount} rows, ${sampleCount} samples`;
+    }
+    if (metaSummary) {
+        if (result && typeof result.metaTsv === 'string' && result.metaTsv.trim().length > 0) {
+            const metaLines = result.metaTsv.split(/\r?\n/).filter((line) => line.trim().length > 0);
+            metaSummary.textContent = `${Math.max(0, metaLines.length - 1)} metadata rows`;
+        } else {
+            metaSummary.textContent = 'No metadata output';
+        }
+    }
+
+    renderDataConverterPreview('data-converter-data-preview', result.dataTsv);
+    if (result.metaTsv) {
+        renderDataConverterPreview('data-converter-meta-preview', result.metaTsv);
+    } else {
+        const metaPreview = document.getElementById('data-converter-meta-preview');
+        if (metaPreview) {
+            metaPreview.innerHTML = '<div class="converter-empty-state">No converted metadata is available for the current input set.</div>';
+        }
+    }
+
+    setDataConverterButtonsEnabled(true, !!result.metaTsv);
+}
+
+async function readFileAsText(file) {
+    return file.text();
+}
+
+async function readFileAsArrayBuffer(file) {
+    return file.arrayBuffer();
+}
+
+async function runDataConverter() {
+    const converterApi = getDataConverterApi();
+    if (!converterApi) {
+        setDataConverterStatus('error', 'The converter engine is unavailable.', [
+            'The converter scripts did not initialize correctly.'
+        ]);
+        return;
+    }
+
+    const validation = getDataConverterValidationState();
+    const requiredFileMissing = (
+        (dataConverterMode === 'biom-v1' && !dataConverterFiles.biomV1File) ||
+        (dataConverterMode === 'newick' && (!dataConverterFiles.newickTreeFile || !dataConverterFiles.newickTableFile)) ||
+        (dataConverterMode === 'qiime' && !dataConverterFiles.qiimeBiomFile)
+    );
+    if (validation.errors.length > 0) {
+        updateDataConverterStatusFromSelection();
+        return;
+    }
+    if (requiredFileMissing) {
+        const requiredMessages = {
+            'biom-v1': ['A BIOM v1 JSON file is required.'],
+            'newick': ['Both a Newick tree file and a sidecar abundance table are required.'],
+            'qiime': ['A feature-table.biom file is required for QIIME conversion.']
+        };
+        setDataConverterStatus('error', 'Required input files are missing.', requiredMessages[dataConverterMode] || []);
+        return;
+    }
+
+    clearDataConverterResults();
+    setDataConverterStatus('info', 'Converting selected files...', validation.notes);
+
+    try {
+        let result;
+        if (dataConverterMode === 'biom-v1') {
+            const biomText = await readFileAsText(dataConverterFiles.biomV1File);
+            result = converterApi.convertBiomV1Text(biomText, {
+                duplicateHandling: getCurrentDuplicateHandling(),
+                dataFilename: `converted_${sanitizeFilename(dataConverterFiles.biomV1File.name || 'biom_v1')}.tsv`
+            });
+        } else if (dataConverterMode === 'newick') {
+            const treeText = await readFileAsText(dataConverterFiles.newickTreeFile);
+            const abundanceText = await readFileAsText(dataConverterFiles.newickTableFile);
+            result = converterApi.convertNewickBundle({
+                treeText,
+                abundanceText
+            }, {
+                duplicateHandling: getCurrentDuplicateHandling(),
+                dataFilename: `converted_${sanitizeFilename(dataConverterFiles.newickTreeFile.name || 'newick')}.tsv`
+            });
+        } else {
+            const featureTableArrayBuffer = await readFileAsArrayBuffer(dataConverterFiles.qiimeBiomFile);
+            const taxonomyText = dataConverterFiles.qiimeTaxonomyFile
+                ? await readFileAsText(dataConverterFiles.qiimeTaxonomyFile)
+                : null;
+            const treeText = dataConverterFiles.qiimeTreeFile
+                ? await readFileAsText(dataConverterFiles.qiimeTreeFile)
+                : null;
+            const sampleMetadataText = dataConverterFiles.qiimeMetaFile
+                ? await readFileAsText(dataConverterFiles.qiimeMetaFile)
+                : null;
+            result = converterApi.convertQiimeBundle({
+                featureTableArrayBuffer,
+                taxonomyText,
+                treeText,
+                sampleMetadataText
+            }, {
+                duplicateHandling: getCurrentDuplicateHandling(),
+                dataFilename: `converted_${sanitizeFilename(dataConverterFiles.qiimeBiomFile.name || 'qiime_feature_table')}.tsv`,
+                metaFilename: dataConverterFiles.qiimeMetaFile
+                    ? `converted_${sanitizeFilename(dataConverterFiles.qiimeMetaFile.name || 'qiime_metadata')}.tsv`
+                    : 'converted_qiime_metadata.tsv'
+            });
+        }
+
+        dataConverterResult = result;
+        renderDataConverterResult(result);
+        if (Array.isArray(result.warnings) && result.warnings.length > 0) {
+            setDataConverterStatus('warning', 'Conversion completed with warnings.', result.warnings);
+        } else {
+            setDataConverterStatus('success', 'Conversion completed successfully.', validation.notes);
+        }
+        if (typeof showToast === 'function') {
+            showToast('Conversion completed successfully.');
+        }
+    } catch (error) {
+        console.error('Data converter failed', error);
+        setDataConverterStatus('error', 'Conversion failed.', [
+            error && error.message ? error.message : 'An unknown error occurred during conversion.'
+        ]);
+    }
+}
+
+function loadConvertedDataIntoMetaTree() {
+    if (!dataConverterResult || !dataConverterResult.dataTsv) return;
+    const wideFormatRadio = document.querySelector('input[name="data-format"][value="wide"]');
+    if (wideFormatRadio) wideFormatRadio.checked = true;
+    loadDataFromText(dataConverterResult.dataTsv, {
+        label: dataConverterResult.dataFilename || 'Converted data',
+        format: 'wide'
+    });
+    if (typeof showToast === 'function') {
+        showToast('Converted data loaded into MetaTree.');
+    }
+}
+
+function loadConvertedMetaIntoMetaTree() {
+    if (!dataConverterResult || !dataConverterResult.metaTsv) return;
+    loadMetaFromText(dataConverterResult.metaTsv, {
+        label: dataConverterResult.metaFilename || 'Converted metadata'
+    });
+    if (typeof showToast === 'function') {
+        showToast('Converted metadata loaded into MetaTree.');
+    }
+}
+
+function downloadConvertedDataTsv() {
+    if (!dataConverterResult || !dataConverterResult.dataTsv) return;
+    downloadTextFile(
+        dataConverterResult.dataFilename || 'converted-data.tsv',
+        dataConverterResult.dataTsv,
+        'text/tab-separated-values'
+    );
+}
+
+function downloadConvertedMetaTsv() {
+    if (!dataConverterResult || !dataConverterResult.metaTsv) return;
+    downloadTextFile(
+        dataConverterResult.metaFilename || 'converted-metadata.tsv',
+        dataConverterResult.metaTsv,
+        'text/tab-separated-values'
+    );
+}
+
+function initDataConverterModal() {
+    const modal = document.getElementById('data-converter-modal');
+    const openBtn = document.getElementById('open-data-converter');
+    const closeBtn = document.getElementById('data-converter-modal-close');
+    const overlay = modal ? modal.querySelector('.info-modal-overlay') : null;
+    if (!modal || !openBtn) return;
+
+    const openModal = () => {
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('info-modal-open');
+        updateDataConverterStatusFromSelection();
+    };
+
+    const closeModal = () => {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('info-modal-open');
+    };
+
+    openBtn.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (overlay) overlay.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && modal.getAttribute('aria-hidden') === 'false') {
+            closeModal();
+        }
+    });
+
+    document.querySelectorAll('[data-converter-mode]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const nextMode = button.dataset.converterMode;
+            if (!nextMode || nextMode === dataConverterMode) return;
+            setDataConverterMode(nextMode);
+        });
+    });
+
+    const fileBindings = [
+        ['converter-biom-v1-file', 'converter-biom-v1-file-name', 'biomV1File'],
+        ['converter-newick-tree-file', 'converter-newick-tree-file-name', 'newickTreeFile'],
+        ['converter-newick-table-file', 'converter-newick-table-file-name', 'newickTableFile'],
+        ['converter-qiime-biom-file', 'converter-qiime-biom-file-name', 'qiimeBiomFile'],
+        ['converter-qiime-taxonomy-file', 'converter-qiime-taxonomy-file-name', 'qiimeTaxonomyFile'],
+        ['converter-qiime-tree-file', 'converter-qiime-tree-file-name', 'qiimeTreeFile'],
+        ['converter-qiime-meta-file', 'converter-qiime-meta-file-name', 'qiimeMetaFile']
+    ];
+
+    fileBindings.forEach(([inputId, labelId, stateKey]) => {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('change', (event) => {
+            const file = event.target.files && event.target.files[0] ? event.target.files[0] : null;
+            dataConverterFiles[stateKey] = file;
+            setDataConverterFilename(labelId, file);
+            clearDataConverterResults();
+            updateDataConverterStatusFromSelection();
+        });
+    });
+
+    const resetBtn = document.getElementById('reset-data-converter');
+    if (resetBtn) resetBtn.addEventListener('click', resetDataConverterState);
+
+    const runBtn = document.getElementById('run-data-converter');
+    if (runBtn) runBtn.addEventListener('click', runDataConverter);
+
+    const loadDataBtn = document.getElementById('data-converter-load-data');
+    if (loadDataBtn) loadDataBtn.addEventListener('click', loadConvertedDataIntoMetaTree);
+    const loadMetaBtn = document.getElementById('data-converter-load-meta');
+    if (loadMetaBtn) loadMetaBtn.addEventListener('click', loadConvertedMetaIntoMetaTree);
+    const downloadDataBtn = document.getElementById('data-converter-download-data');
+    if (downloadDataBtn) downloadDataBtn.addEventListener('click', downloadConvertedDataTsv);
+    const downloadMetaBtn = document.getElementById('data-converter-download-meta');
+    if (downloadMetaBtn) downloadMetaBtn.addEventListener('click', downloadConvertedMetaTsv);
+
+    resetDataConverterState();
+    setDataConverterMode('biom-v1');
 }
 
 // ========== 初始化事件监听器 ==========
@@ -4753,6 +5257,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initRangeSliderProgressStyles();
     initDataParameterControls();
     initFileFormatInfoModal();
+    initDataConverterModal();
     initAboutInfoModal();
 
     // 初始化 taxon 筛选功能
@@ -4896,10 +5401,11 @@ document.addEventListener('DOMContentLoaded', function () {
             'viz-container', 'stats-panel', 'total-nodes', 'leaf-nodes', 'max-depth',
             // 数据与元数据
             'data-metadata-panel',
-            'file-upload', 'meta-upload', 'load-example', 'filename-display', 'meta-file-display',
+            'file-upload', 'meta-upload', 'load-example', 'open-data-converter', 'filename-display', 'meta-file-display',
             'data-params-toggle', 'data-params-content', 'data-delimiter-select', 'data-delimiter-custom',
             'taxa-delimiter-select', 'taxa-delimiter-custom',
             'meta-filters-toggle', 'meta-filters-content', 'meta-filters', 'meta-filters-clear', 'meta-filters-hint',
+            'data-converter-modal', 'run-data-converter', 'reset-data-converter', 'data-converter-results',
             // 模式与样本
             'viz-mode', 'samples-toggle-group', 'toggle-samples', 'sample-selection-panel', 'sample-checkboxes',
             'select-all-samples', 'select-none-samples', 'invert-samples',

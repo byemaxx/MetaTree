@@ -1587,7 +1587,8 @@
                         <div class="converter-panel-title">Generic Newick + Abundance Table</div>
                         <div class="converter-panel-text">
                             Load a rooted or unrooted Newick tree plus a sidecar abundance table. The table first
-                            column must contain leaf ids that match tree tips exactly.
+                            column must contain leaf ids that match tree tips exactly. Extra table ids or tree tips
+                            without abundance values are rejected.
                         </div>
                     </div>
                     <div class="converter-file-grid">
@@ -1614,7 +1615,8 @@
                         <div class="converter-panel-text">
                             Load exported QIIME plain files. <code>feature-table.biom</code> is required. Add
                             <code>taxonomy.tsv</code>, <code>rooted-tree.nwk</code>, and <code>sample-metadata.tsv</code>
-                            as needed. If both a tree and taxonomy are provided, the tree defines the hierarchy.
+                            as needed. If both a tree and taxonomy are provided, the tree defines the hierarchy, and
+                            tree tips must match the feature table exactly.
                         </div>
                     </div>
                     <div class="converter-file-grid">

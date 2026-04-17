@@ -726,15 +726,22 @@
         return tipPathMap;
     }
 
-    function buildTreeRowsFromTipPaths(tipPathMap, sampleIds, valuesByTip, warnings) {
+    function getMissingTreeTipIds(tipPathMap, valuesByTip) {
+        const missingTipIds = [];
+        tipPathMap.forEach((unusedPathParts, tipName) => {
+            if (!valuesByTip.has(tipName)) {
+                missingTipIds.push(tipName);
+            }
+        });
+        return missingTipIds;
+    }
+
+    function buildTreeRowsFromTipPaths(tipPathMap, valuesByTip) {
         const rowEntries = [];
         tipPathMap.forEach((pathParts, tipName) => {
-            if (!valuesByTip.has(tipName)) {
-                warnings.push(`Tree tip "${tipName}" was missing from the abundance table; zeros were added for all samples.`);
-            }
             rowEntries.push({
                 path: pathParts.join('|'),
-                values: valuesByTip.get(tipName) || new Array(sampleIds.length).fill(0)
+                values: valuesByTip.get(tipName)
             });
         });
         return rowEntries;
@@ -761,7 +768,12 @@
             throw new Error(`The abundance table contains IDs that are not present in the tree: ${extraIds.slice(0, 10).join(', ')}`);
         }
 
-        const rowEntries = buildTreeRowsFromTipPaths(tipPathMap, parsedTable.sampleIds, parsedTable.valuesById, warnings);
+        const missingTipIds = getMissingTreeTipIds(tipPathMap, parsedTable.valuesById);
+        if (missingTipIds.length > 0) {
+            throw new Error(`The tree contains tip IDs that are missing from the abundance table: ${missingTipIds.slice(0, 10).join(', ')}`);
+        }
+
+        const rowEntries = buildTreeRowsFromTipPaths(tipPathMap, parsedTable.valuesById);
         const wideTable = rowsToWideTsv(parsedTable.sampleIds, rowEntries, 'first');
 
         return {
@@ -818,7 +830,12 @@
                 throw new Error(`The BIOM table contains feature IDs that are not present in the tree: ${extraFeatures.slice(0, 10).join(', ')}`);
             }
 
-            rowEntries = buildTreeRowsFromTipPaths(tipPathMap, parsedBiom.sampleIds, valuesByFeature, warnings);
+            const missingTipIds = getMissingTreeTipIds(tipPathMap, valuesByFeature);
+            if (missingTipIds.length > 0) {
+                throw new Error(`The tree contains tip IDs that are missing from the BIOM table: ${missingTipIds.slice(0, 10).join(', ')}`);
+            }
+
+            rowEntries = buildTreeRowsFromTipPaths(tipPathMap, valuesByFeature);
 
             if (taxonomyInfo) {
                 const taxonomyCoverage = parsedBiom.observationIds.filter((featureId) => taxonomyInfo.taxonomyByFeatureId.has(featureId)).length;

@@ -83,7 +83,7 @@ Use the converter when your input is not already a MetaTree wide or long table.
 Supported converter inputs:
 
 *   **BIOM v1 JSON**: observation taxonomy metadata is used to build hierarchy paths when available; otherwise observation ids are used as leaf paths.
-*   **Newick + abundance table**: the Newick tree defines the hierarchy topology, and the sidecar abundance table provides numeric sample values for tree tips.
+*   **Newick + abundance table**: the Newick tree defines the hierarchy topology, and the sidecar abundance table provides numeric sample values for tree tips. Tree tip ids must match the table exactly.
 *   **QIIME plain exports**: `feature-table.biom` is required, with optional `taxonomy.tsv`, `rooted-tree.nwk` or `.tre`, and `sample-metadata.tsv`.
 
 QIIME rules:
@@ -92,6 +92,7 @@ QIIME rules:
 *   If `taxonomy.tsv` is added and no tree is provided, features are aggregated by full taxonomy path.
 *   If a rooted tree is provided, tree topology defines the final hierarchy.
 *   If both a tree and taxonomy are provided, the tree takes priority and taxonomy is used for validation and preview context.
+*   When a tree is provided, its tip ids must match the abundance table or BIOM feature ids exactly. Missing tree tips are rejected instead of being added as zero rows.
 *   Direct `.qza` and `.qzv` files are not supported.
 
 ---

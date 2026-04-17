@@ -1634,6 +1634,7 @@ function loadConvertedDataIntoMetaTree() {
     if (typeof showToast === 'function') {
         showToast('Converted data loaded into MetaTree.');
     }
+    closeDataConverterModal();
 }
 
 function loadConvertedMetaIntoMetaTree() {
@@ -1644,6 +1645,7 @@ function loadConvertedMetaIntoMetaTree() {
     if (typeof showToast === 'function') {
         showToast('Converted metadata loaded into MetaTree.');
     }
+    closeDataConverterModal();
 }
 
 function downloadConvertedDataTsv() {
@@ -1664,6 +1666,14 @@ function downloadConvertedMetaTsv() {
     );
 }
 
+function closeDataConverterModal() {
+    const modal = document.getElementById('data-converter-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('info-modal-open');
+}
+
 function initDataConverterModal() {
     const modal = document.getElementById('data-converter-modal');
     const openBtn = document.getElementById('open-data-converter');
@@ -1678,11 +1688,7 @@ function initDataConverterModal() {
         updateDataConverterStatusFromSelection();
     };
 
-    const closeModal = () => {
-        modal.style.display = 'none';
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.classList.remove('info-modal-open');
-    };
+    const closeModal = () => closeDataConverterModal();
 
     openBtn.addEventListener('click', openModal);
     if (closeBtn) closeBtn.addEventListener('click', closeModal);

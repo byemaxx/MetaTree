@@ -105,8 +105,8 @@ const FILE_FORMAT_INFO_CONTENT = {
                 <div class="info-example-title">Converter inputs</div>
                 <ul class="info-modal-list">
                     <li><code>BIOM v1 JSON</code>: observation taxonomy metadata is used when available; otherwise row ids become leaves.</li>
-                    <li><code>Newick + abundance table</code>: the tree defines topology, and the sidecar table provides sample values.</li>
-                    <li><code>QIIME exports</code>: <code>feature-table.biom</code> is required. Add <code>taxonomy.tsv</code> to aggregate by taxonomy, <code>rooted-tree.nwk</code> to preserve tree topology, and <code>sample-metadata.tsv</code> to generate MetaTree metadata.</li>
+                    <li><code>Newick + abundance table</code>: the tree defines topology, and the sidecar table provides sample values. Tree tips must match the table exactly.</li>
+                    <li><code>QIIME exports</code>: <code>feature-table.biom</code> is required. Add <code>taxonomy.tsv</code> to aggregate by taxonomy, <code>rooted-tree.nwk</code> to preserve tree topology, and <code>sample-metadata.tsv</code> to generate MetaTree metadata. Tree tips must match the BIOM feature ids exactly.</li>
                 </ul>
             </div>
             <p class="text-muted">Tip: Use the “Reset to Example” button to inspect a working template before uploading your own file.</p>

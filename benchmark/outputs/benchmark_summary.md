@@ -2,7 +2,7 @@
 
 ## Benchmark design
 
-The workflow benchmarked browser-side performance for 72 unique conditions covering comparison, group, matrix, single modes. The tested hierarchy sizes were 500, 2000, 5000, 10000 nodes, with dendrogram and radial layouts. Single-sample and group views were benchmarked with 1, 4, and 9 panels; pairwise comparison used one tree; matrix view used 2 groups (one pairwise cell, recorded as panel_count 4) and 3 groups (three pairwise cells, recorded as panel_count 9). Each condition was repeated 5 times.
+The automated workflow benchmarked browser-side performance for 72 unique conditions covering comparison, group, matrix, single modes. The tested hierarchy sizes were 500, 2000, 5000, 10000 nodes, with dendrogram and radial layouts. Single-sample and group views were benchmarked with 1, 4, and 9 panels; pairwise comparison used one tree; matrix view used 2 groups (one pairwise cell, recorded as panel_count 4) and 3 groups (three pairwise cells, recorded as panel_count 9). Each condition was repeated 5 times.
 
 ## Environment
 
@@ -12,7 +12,7 @@ OS: Windows (x64)
 
 CPU: 13th Gen Intel(R) Core(TM) i9-13900H (20 logical cores)
 
-RAM: 32 GB
+RAM: approximately 32 GB
 
 ## Validation checks
 
@@ -48,3 +48,9 @@ Matrix rows include panel_count and matrix_comparison_count: yes
 | comparison | dendrogram | 10000 nodes, 1 tree | 498.5 ms (13.5 ms) | 49.2 ms (5.3 ms) | NA (NA) | 53.4 MB (0.1 MB) |
 | comparison | radial | 10000 nodes, 1 tree | 579.3 ms (3.7 ms) | 46.7 ms (1.6 ms) | NA (NA) | 53.1 MB (0.1 MB) |
 
+## Limitations
+
+- The benchmark reflects one browser, viewport, and hardware environment, so the numerical values should be interpreted as reproducible reference measurements rather than universal performance guarantees.
+- JavaScript heap usage was measured after the initial render and reflects browser heap use rather than total system memory consumption.
+- Interaction timings are based on deterministic scripted actions. They are informative for relative scalability trends, but they do not replace task-based usability studies with human participants.
+- The matrix benchmark includes the application's staged mini-tree rendering, which is appropriate for end-user wait time but will be slower than the underlying comparison computation alone.

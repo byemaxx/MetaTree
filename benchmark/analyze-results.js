@@ -7,9 +7,7 @@ const RAW_JSON_PATH = path.join(OUTPUTS_DIR, 'raw_results.json');
 const ENVIRONMENT_PATH = path.join(OUTPUTS_DIR, 'environment.json');
 const SUMMARY_CSV_PATH = path.join(OUTPUTS_DIR, 'summary.csv');
 const SUMMARY_MD_PATH = path.join(OUTPUTS_DIR, 'benchmark_summary.md');
-const INITIAL_PLOT_PATH = path.join(OUTPUTS_DIR, 'initial_render_vs_nodes.svg');
-const INTERACTION_PLOT_PATH = path.join(OUTPUTS_DIR, 'interaction_update_vs_nodes.svg');
-const MEMORY_PLOT_PATH = path.join(OUTPUTS_DIR, 'memory_vs_nodes.svg');
+const OVERVIEW_PLOT_PATH = path.join(OUTPUTS_DIR, 'benchmark_overview.svg');
 
 const METRIC_FIELDS = [
   'data_import_ms',
@@ -185,67 +183,101 @@ function panelLabel(row) {
   return `${row.panel_count} panels`;
 }
 
-function createFacetPlot(summaryRows, metricField, title, yLabel) {
+function uniqueSortedNumeric(values) {
+  return Array.from(new Set(values.filter((value) => Number.isFinite(value)))).sort((a, b) => a - b);
+}
+
+function createOverviewPlot(summaryRows) {
   const layouts = ['radial', 'dendrogram'];
   const modes = ['single', 'group', 'comparison', 'matrix'];
-  const palette = ['#1f77b4', '#d62728', '#2ca02c', '#ff7f0e'];
+  const palette = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'];
   const width = 1600;
-  const height = 920;
+  const headerHeight = 122;
+  const sectionTitleHeight = 26;
+  const sectionGap = 38;
+  const footerPadding = 34;
+
   const margin = { top: 80, right: 40, bottom: 60, left: 70 };
   const facetWidth = 340;
   const facetHeight = 320;
   const gapX = 30;
-  const gapY = 40;
 
-  const values = summaryRows
-    .map((row) => row[`${metricField}_median`])
-    .filter((value) => Number.isFinite(value));
-  const xValues = summaryRows.map((row) => row.node_count).filter((value) => Number.isFinite(value));
-  const yMax = values.length ? Math.max(...values) * 1.1 : 1;
-  const xMin = xValues.length ? Math.min(...xValues) : 0;
-  const xMax = xValues.length ? Math.max(...xValues) : 1;
-
-  function xScale(value) {
-    const usableWidth = facetWidth - margin.left - margin.right;
-    if (xMax === xMin) {
-      return margin.left + usableWidth / 2;
-    }
-    return margin.left + ((value - xMin) / (xMax - xMin)) * usableWidth;
-  }
-
-  function yScale(value) {
-    const usableHeight = facetHeight - margin.top - margin.bottom;
-    if (yMax === 0) {
-      return facetHeight - margin.bottom;
-    }
-    return facetHeight - margin.bottom - (value / yMax) * usableHeight;
-  }
-
+  const xValues = uniqueSortedNumeric(summaryRows.map((row) => row.node_count));
   const legendLabels = Array.from(new Set(summaryRows.map(panelLabel)));
   const legendMap = new Map(legendLabels.map((label, index) => [label, palette[index % palette.length]]));
 
-  const svg = [];
-  svg.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`);
-  svg.push('<rect width="100%" height="100%" fill="#ffffff"/>');
-  svg.push(`<text x="${width / 2}" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#111827">${title}</text>`);
-  svg.push(`<text x="${width / 2}" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#4b5563">Median values across repeated benchmark runs. Error spread is provided in summary.csv.</text>`);
+  const metrics = [
+    {
+      field: 'initial_render_ms',
+      title: 'Initial render time',
+      yLabel: 'Median render time (ms)'
+    },
+    {
+      field: 'filter_update_ms',
+      title: 'Filter update time',
+      yLabel: 'Median filter update (ms)'
+    },
+    {
+      field: 'memory_mb',
+      title: 'Memory after initial render',
+      yLabel: 'Median JS heap (MB)'
+    }
+  ];
 
-  legendLabels.forEach((label, index) => {
-    const x = 70 + index * 220;
-    const y = 74;
-    svg.push(`<line x1="${x}" y1="${y}" x2="${x + 26}" y2="${y}" stroke="${legendMap.get(label)}" stroke-width="3"/>`);
-    svg.push(`<text x="${x + 34}" y="${y + 4}" font-family="Arial, sans-serif" font-size="12" fill="#111827">${label}</text>`);
-  });
+  const gridHeight = facetHeight;
+  const height = headerHeight
+    + (metrics.length * (sectionTitleHeight + gridHeight))
+    + ((metrics.length - 1) * sectionGap)
+    + footerPadding;
 
-  layouts.forEach((layout, rowIndex) => {
+  function layoutStrokeAttrs(layout) {
+    if (layout === 'dendrogram') {
+      return 'stroke-dasharray="7 5"';
+    }
+    return '';
+  }
+
+  function drawMarker(svg, layout, x, y, color) {
+    if (layout === 'dendrogram') {
+      svg.push(`<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="${color}"/>`);
+      return;
+    }
+    svg.push(`<circle cx="${x}" cy="${y}" r="4" fill="${color}"/>`);
+  }
+
+  function appendFacetRow(svg, metricField, yLabel, baseY) {
+    const values = summaryRows
+      .map((row) => row[`${metricField}_median`])
+      .filter((value) => Number.isFinite(value));
+    const yMax = values.length ? Math.max(...values) * 1.1 : 1;
+
+    const xMin = xValues.length ? Math.min(...xValues) : 0;
+    const xMax = xValues.length ? Math.max(...xValues) : 1;
+
+    function xScale(value) {
+      const usableWidth = facetWidth - margin.left - margin.right;
+      if (xMax === xMin) {
+        return margin.left + usableWidth / 2;
+      }
+      return margin.left + ((value - xMin) / (xMax - xMin)) * usableWidth;
+    }
+
+    function yScale(value) {
+      const usableHeight = facetHeight - margin.top - margin.bottom;
+      if (yMax === 0) {
+        return facetHeight - margin.bottom;
+      }
+      return facetHeight - margin.bottom - (value / yMax) * usableHeight;
+    }
+
     modes.forEach((mode, columnIndex) => {
       const facetX = 20 + columnIndex * (facetWidth + gapX);
-      const facetY = 110 + rowIndex * (facetHeight + gapY);
-      const facetRows = summaryRows.filter((row) => row.layout === layout && row.mode === mode);
+      const facetY = baseY;
+      const facetRows = summaryRows.filter((row) => row.mode === mode);
 
       svg.push(`<g transform="translate(${facetX}, ${facetY})">`);
       svg.push(`<rect x="0" y="0" width="${facetWidth}" height="${facetHeight}" fill="#ffffff" stroke="#d1d5db"/>`);
-      svg.push(`<text x="${facetWidth / 2}" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">${mode} / ${layout}</text>`);
+      svg.push(`<text x="${facetWidth / 2}" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">${mode}</text>`);
 
       [0, 0.25, 0.5, 0.75, 1].forEach((tickFraction) => {
         const yValue = yMax * tickFraction;
@@ -267,26 +299,67 @@ function createFacetPlot(summaryRows, metricField, title, yLabel) {
 
       const bySeries = groupBy(facetRows, panelLabel);
       bySeries.forEach((seriesRows, label) => {
-        const ordered = seriesRows
-          .slice()
-          .sort((a, b) => a.node_count - b.node_count);
-        const points = ordered
-          .filter((row) => Number.isFinite(row[`${metricField}_median`]))
-          .map((row) => `${xScale(row.node_count)},${yScale(row[`${metricField}_median`])}`);
-        if (points.length === 0) {
-          return;
-        }
-        svg.push(`<polyline fill="none" stroke="${legendMap.get(label)}" stroke-width="2.5" points="${points.join(' ')}"/>`);
-        ordered.forEach((row) => {
-          if (!Number.isFinite(row[`${metricField}_median`])) {
+        layouts.forEach((layout) => {
+          const ordered = seriesRows
+            .filter((row) => row.layout === layout)
+            .slice()
+            .sort((a, b) => a.node_count - b.node_count);
+
+          const points = ordered
+            .filter((row) => Number.isFinite(row[`${metricField}_median`]))
+            .map((row) => `${xScale(row.node_count)},${yScale(row[`${metricField}_median`])}`);
+
+          if (points.length === 0) {
             return;
           }
-          svg.push(`<circle cx="${xScale(row.node_count)}" cy="${yScale(row[`${metricField}_median`])}" r="4" fill="${legendMap.get(label)}"/>`);
+
+          const color = legendMap.get(label);
+          const layoutAttrs = layoutStrokeAttrs(layout);
+          svg.push(`<polyline fill="none" stroke="${color}" stroke-width="2.5" ${layoutAttrs} points="${points.join(' ')}"/>`);
+
+          ordered.forEach((row) => {
+            if (!Number.isFinite(row[`${metricField}_median`])) {
+              return;
+            }
+            drawMarker(svg, layout, xScale(row.node_count), yScale(row[`${metricField}_median`]), color);
+          });
         });
       });
 
       svg.push('</g>');
     });
+  }
+
+  const svg = [];
+  svg.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`);
+  svg.push('<rect width="100%" height="100%" fill="#ffffff"/>');
+  svg.push(`<text x="${width / 2}" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#111827">MetaTree Benchmark Overview</text>`);
+  svg.push(`<text x="${width / 2}" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#4b5563">Median values across repeated benchmark runs. Color encodes panel/group condition; line/marker style encodes layout.</text>`);
+
+  legendLabels.forEach((label, index) => {
+    const x = 70 + index * 220;
+    const y = 82;
+    svg.push(`<line x1="${x}" y1="${y}" x2="${x + 26}" y2="${y}" stroke="${legendMap.get(label)}" stroke-width="3"/>`);
+    svg.push(`<text x="${x + 34}" y="${y + 4}" font-family="Arial, sans-serif" font-size="12" fill="#111827">${label}</text>`);
+  });
+
+  // Layout style legend.
+  svg.push(`<line x1="70" y1="104" x2="96" y2="104" stroke="#111827" stroke-width="2.5"/>`);
+  svg.push(`<circle cx="109" cy="104" r="4" fill="#111827"/>`);
+  svg.push(`<text x="122" y="108" font-family="Arial, sans-serif" font-size="12" fill="#111827">radial</text>`);
+
+  svg.push(`<line x1="210" y1="104" x2="236" y2="104" stroke="#111827" stroke-width="2.5" stroke-dasharray="7 5"/>`);
+  svg.push(`<rect x="249" y="100" width="8" height="8" fill="#111827"/>`);
+  svg.push(`<text x="262" y="108" font-family="Arial, sans-serif" font-size="12" fill="#111827">dendrogram</text>`);
+
+  let currentY = headerHeight;
+  metrics.forEach((metric, index) => {
+    svg.push(`<text x="20" y="${currentY + 18}" font-family="Arial, sans-serif" font-size="16" fill="#111827">${metric.title}</text>`);
+    appendFacetRow(svg, metric.field, metric.yLabel, currentY + sectionTitleHeight);
+    currentY += sectionTitleHeight + gridHeight;
+    if (index < metrics.length - 1) {
+      currentY += sectionGap;
+    }
   });
 
   svg.push('</svg>');
@@ -446,12 +519,10 @@ function main() {
   });
 
   writeCsv(SUMMARY_CSV_PATH, summaryRows, summaryColumns);
-  fs.writeFileSync(INITIAL_PLOT_PATH, createFacetPlot(summaryRows, 'initial_render_ms', 'MetaTree Benchmark: Initial Render Time', 'Median render time (ms)'), 'utf8');
-  fs.writeFileSync(INTERACTION_PLOT_PATH, createFacetPlot(summaryRows, 'filter_update_ms', 'MetaTree Benchmark: Filter Update Time', 'Median filter update (ms)'), 'utf8');
-  fs.writeFileSync(MEMORY_PLOT_PATH, createFacetPlot(summaryRows, 'memory_mb', 'MetaTree Benchmark: Memory After Initial Render', 'Median JS heap (MB)'), 'utf8');
+  fs.writeFileSync(OVERVIEW_PLOT_PATH, createOverviewPlot(summaryRows), 'utf8');
   fs.writeFileSync(SUMMARY_MD_PATH, buildSummaryMarkdown(rawJson, environment, summaryRows), 'utf8');
 
-  console.log(`Wrote ${summaryRows.length} summary rows and benchmark figures to ${OUTPUTS_DIR}`);
+  console.log(`Wrote ${summaryRows.length} summary rows and benchmark outputs to ${OUTPUTS_DIR}`);
 }
 
 main();

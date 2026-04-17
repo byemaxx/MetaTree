@@ -1,0 +1,608 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1270" viewBox="0 0 1600 1270">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="800" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#111827">MetaTree Benchmark Overview</text>
+<text x="800" y="58" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#4b5563">Median values across repeated benchmark runs. Color encodes panel/group condition; line/marker style encodes layout.</text>
+<line x1="70" y1="82" x2="96" y2="82" stroke="#1f77b4" stroke-width="3"/>
+<text x="104" y="86" font-family="Arial, sans-serif" font-size="12" fill="#111827">1 tree</text>
+<line x1="290" y1="82" x2="316" y2="82" stroke="#ff7f0e" stroke-width="3"/>
+<text x="324" y="86" font-family="Arial, sans-serif" font-size="12" fill="#111827">1 panels</text>
+<line x1="510" y1="82" x2="536" y2="82" stroke="#2ca02c" stroke-width="3"/>
+<text x="544" y="86" font-family="Arial, sans-serif" font-size="12" fill="#111827">4 panels</text>
+<line x1="730" y1="82" x2="756" y2="82" stroke="#d62728" stroke-width="3"/>
+<text x="764" y="86" font-family="Arial, sans-serif" font-size="12" fill="#111827">9 panels</text>
+<line x1="950" y1="82" x2="976" y2="82" stroke="#9467bd" stroke-width="3"/>
+<text x="984" y="86" font-family="Arial, sans-serif" font-size="12" fill="#111827">2 groups / 1 comparison</text>
+<line x1="1170" y1="82" x2="1196" y2="82" stroke="#8c564b" stroke-width="3"/>
+<text x="1204" y="86" font-family="Arial, sans-serif" font-size="12" fill="#111827">3 groups / 3 comparisons</text>
+<line x1="70" y1="104" x2="96" y2="104" stroke="#111827" stroke-width="2.5"/>
+<circle cx="109" cy="104" r="4" fill="#111827"/>
+<text x="122" y="108" font-family="Arial, sans-serif" font-size="12" fill="#111827">radial</text>
+<line x1="210" y1="104" x2="236" y2="104" stroke="#111827" stroke-width="2.5" stroke-dasharray="7 5"/>
+<rect x="249" y="100" width="8" height="8" fill="#111827"/>
+<text x="262" y="108" font-family="Arial, sans-serif" font-size="12" fill="#111827">dendrogram</text>
+<text x="20" y="140" font-family="Arial, sans-serif" font-size="16" fill="#111827">Initial render time</text>
+<g transform="translate(20, 148)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">single</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">750</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1501</text>
+<line x1="70" y1="124.99999999999997" x2="300" y2="124.99999999999997" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="128.99999999999997" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2251</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">3001</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median render time (ms)</text>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5"  points="70,258.5067267263265 106.3157894736842,255.6041393188648 178.94736842105263,249.76298201541917 300,237.90075496591658"/>
+<circle cx="70" cy="258.5067267263265" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="255.6041393188648" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="249.76298201541917" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="237.90075496591658" r="4" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" stroke-dasharray="7 5" points="70,258.7586041459823 106.3157894736842,256.45572488055814 178.94736842105263,251.29823485903526 300,243.3101224070952"/>
+<rect x="66" y="254.7586041459823" width="8" height="8" fill="#ff7f0e"/>
+<rect x="102.3157894736842" y="252.45572488055814" width="8" height="8" fill="#ff7f0e"/>
+<rect x="174.94736842105263" y="247.29823485903526" width="8" height="8" fill="#ff7f0e"/>
+<rect x="296" y="239.3101224070952" width="8" height="8" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5"  points="70,255.69409554017045 106.3157894736842,245.36712133428398 178.94736842105263,222.17041040027186 300,184.6946486043459"/>
+<circle cx="70" cy="255.69409554017045" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="245.36712133428398" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="222.17041040027186" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="184.6946486043459" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-dasharray="7 5" points="70,256.24582703084496 106.3157894736842,247.9038867751028 178.94736842105263,230.15252577079156 300,198.8417636750115"/>
+<rect x="66" y="252.24582703084496" width="8" height="8" fill="#2ca02c"/>
+<rect x="102.3157894736842" y="243.9038867751028" width="8" height="8" fill="#2ca02c"/>
+<rect x="174.94736842105263" y="226.15252577079156" width="8" height="8" fill="#2ca02c"/>
+<rect x="296" y="194.8417636750115" width="8" height="8" fill="#2ca02c"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5"  points="70,250.38068140171782 106.3157894736842,227.08202008355934 178.94736842105263,181.006443530815 300,96.54354880624763"/>
+<circle cx="70" cy="250.38068140171782" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="227.08202008355934" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="181.006443530815" r="4" fill="#d62728"/>
+<circle cx="300" cy="96.54354880624763" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" stroke-dasharray="7 5" points="70,252.3177387004991 106.3157894736842,232.05959766247094 178.94736842105263,196.51489608390582 300,118.52884929334391"/>
+<rect x="66" y="248.3177387004991" width="8" height="8" fill="#d62728"/>
+<rect x="102.3157894736842" y="228.05959766247094" width="8" height="8" fill="#d62728"/>
+<rect x="174.94736842105263" y="192.51489608390582" width="8" height="8" fill="#d62728"/>
+<rect x="296" y="114.52884929334391" width="8" height="8" fill="#d62728"/>
+</g>
+<g transform="translate(390, 148)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">group</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">750</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1501</text>
+<line x1="70" y1="124.99999999999997" x2="300" y2="124.99999999999997" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="128.99999999999997" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2251</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">3001</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median render time (ms)</text>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5"  points="70,258.42276758644124 106.3157894736842,256.01194085545035 178.94736842105263,249.63704330559128 300,239.81982102043673"/>
+<circle cx="70" cy="258.42276758644124" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="256.01194085545035" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="249.63704330559128" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="239.81982102043673" r="4" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" stroke-dasharray="7 5" points="70,258.66864792467663 106.3157894736842,256.533686939023 178.94736842105263,251.4181764874428 300,242.01475282029412"/>
+<rect x="66" y="254.66864792467663" width="8" height="8" fill="#ff7f0e"/>
+<rect x="102.3157894736842" y="252.53368693902303" width="8" height="8" fill="#ff7f0e"/>
+<rect x="174.94736842105263" y="247.4181764874428" width="8" height="8" fill="#ff7f0e"/>
+<rect x="296" y="238.01475282029412" width="8" height="8" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5"  points="70,255.64611888880745 106.3157894736842,245.81690244081213 178.94736842105263,222.54822652975554 300,186.60771757744564"/>
+<circle cx="70" cy="255.64611888880745" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="245.81690244081213" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="222.54822652975554" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="186.60771757744564" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-dasharray="7 5" points="70,256.14387664669863 106.3157894736842,247.8559101237398 178.94736842105263,229.1630073364296 300,198.52991544115196"/>
+<rect x="66" y="252.14387664669863" width="8" height="8" fill="#2ca02c"/>
+<rect x="102.3157894736842" y="243.8559101237398" width="8" height="8" fill="#2ca02c"/>
+<rect x="174.94736842105263" y="225.1630073364296" width="8" height="8" fill="#2ca02c"/>
+<rect x="296" y="194.52991544115196" width="8" height="8" fill="#2ca02c"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5"  points="70,250.65055006563472 106.3157894736842,227.14798797918348 178.94736842105263,178.75154091675387 300,96.36363636363637"/>
+<circle cx="70" cy="250.65055006563472" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="227.14798797918348" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="178.75154091675387" r="4" fill="#d62728"/>
+<circle cx="300" cy="96.36363636363637" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" stroke-dasharray="7 5" points="70,252.23377956061384 106.3157894736842,233.12707815529774 178.94736842105263,194.66179792500984 300,128.15416497304645"/>
+<rect x="66" y="248.23377956061384" width="8" height="8" fill="#d62728"/>
+<rect x="102.3157894736842" y="229.12707815529774" width="8" height="8" fill="#d62728"/>
+<rect x="174.94736842105263" y="190.66179792500984" width="8" height="8" fill="#d62728"/>
+<rect x="296" y="124.15416497304645" width="8" height="8" fill="#d62728"/>
+</g>
+<g transform="translate(760, 148)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">comparison</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">750</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1501</text>
+<line x1="70" y1="124.99999999999997" x2="300" y2="124.99999999999997" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="128.99999999999997" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2251</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">3001</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median render time (ms)</text>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5"  points="70,250.84245667108675 106.3157894736842,246.9503508292631 178.94736842105263,236.86925696161202 300,225.25890733176522"/>
+<circle cx="70" cy="250.84245667108675" r="4" fill="#1f77b4"/>
+<circle cx="106.3157894736842" cy="246.9503508292631" r="4" fill="#1f77b4"/>
+<circle cx="178.94736842105263" cy="236.86925696161202" r="4" fill="#1f77b4"/>
+<circle cx="300" cy="225.25890733176522" r="4" fill="#1f77b4"/>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" stroke-dasharray="7 5" points="70,251.6580597442578 106.3157894736842,248.05381381061216 178.94736842105263,239.6279144149847 300,230.10454911942855"/>
+<rect x="66" y="247.6580597442578" width="8" height="8" fill="#1f77b4"/>
+<rect x="102.3157894736842" y="244.05381381061216" width="8" height="8" fill="#1f77b4"/>
+<rect x="174.94736842105263" y="235.6279144149847" width="8" height="8" fill="#1f77b4"/>
+<rect x="296" y="226.10454911942855" width="8" height="8" fill="#1f77b4"/>
+</g>
+<g transform="translate(1130, 148)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">matrix</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">750</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1501</text>
+<line x1="70" y1="124.99999999999997" x2="300" y2="124.99999999999997" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="128.99999999999997" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2251</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">3001</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median render time (ms)</text>
+<polyline fill="none" stroke="#9467bd" stroke-width="2.5"  points="70,245.23518554303573 106.3157894736842,242.5364989038668 178.94736842105263,237.41499137086618 300,229.23497231347412"/>
+<circle cx="70" cy="245.23518554303573" r="4" fill="#9467bd"/>
+<circle cx="106.3157894736842" cy="242.5364989038668" r="4" fill="#9467bd"/>
+<circle cx="178.94736842105263" cy="237.41499137086618" r="4" fill="#9467bd"/>
+<circle cx="300" cy="229.23497231347412" r="4" fill="#9467bd"/>
+<polyline fill="none" stroke="#9467bd" stroke-width="2.5" stroke-dasharray="7 5" points="70,245.76292870802877 106.3157894736842,242.62045804375205 178.94736842105263,237.92474329159808 300,229.0670540337036"/>
+<rect x="66" y="241.76292870802877" width="8" height="8" fill="#9467bd"/>
+<rect x="102.3157894736842" y="238.62045804375205" width="8" height="8" fill="#9467bd"/>
+<rect x="174.94736842105263" y="233.92474329159808" width="8" height="8" fill="#9467bd"/>
+<rect x="296" y="225.0670540337036" width="8" height="8" fill="#9467bd"/>
+<polyline fill="none" stroke="#8c564b" stroke-width="2.5"  points="70,178.6855730211297 106.3157894736842,175.77698853224763 178.94736842105263,168.60447915347862 300,157.8577092481659"/>
+<circle cx="70" cy="178.6855730211297" r="4" fill="#8c564b"/>
+<circle cx="106.3157894736842" cy="175.77698853224763" r="4" fill="#8c564b"/>
+<circle cx="178.94736842105263" cy="168.60447915347862" r="4" fill="#8c564b"/>
+<circle cx="300" cy="157.8577092481659" r="4" fill="#8c564b"/>
+<polyline fill="none" stroke="#8c564b" stroke-width="2.5" stroke-dasharray="7 5" points="70,178.82350589379837 106.3157894736842,175.62706149673824 178.94736842105263,168.77839451466954 300,157.7557588640195"/>
+<rect x="66" y="174.82350589379837" width="8" height="8" fill="#8c564b"/>
+<rect x="102.3157894736842" y="171.62706149673824" width="8" height="8" fill="#8c564b"/>
+<rect x="174.94736842105263" y="164.77839451466954" width="8" height="8" fill="#8c564b"/>
+<rect x="296" y="153.7557588640195" width="8" height="8" fill="#8c564b"/>
+</g>
+<text x="20" y="524" font-family="Arial, sans-serif" font-size="16" fill="#111827">Filter update time</text>
+<g transform="translate(20, 532)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">single</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5"  points="70,258.8251127111231 106.3157894736842,257.72289886279526 178.94736842105263,255.6274813269632 300,251.12172801291973"/>
+<circle cx="70" cy="258.8251127111231" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="257.72289886279526" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="255.6274813269632" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="251.12172801291973" r="4" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" stroke-dasharray="7 5" points="70,258.87356167148914 106.3157894736842,258.23161294663885 178.94736842105263,256.6206850144674 300,253.55628827131417"/>
+<rect x="66" y="254.87356167148914" width="8" height="8" fill="#ff7f0e"/>
+<rect x="102.3157894736842" y="254.23161294663885" width="8" height="8" fill="#ff7f0e"/>
+<rect x="174.94736842105263" y="252.62068501446743" width="8" height="8" fill="#ff7f0e"/>
+<rect x="296" y="249.55628827131417" width="8" height="8" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5"  points="70,257.3958683803243 106.3157894736842,252.87800282618934 178.94736842105263,245.35630172935873 300,229.46504272929144"/>
+<circle cx="70" cy="257.3958683803243" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="252.87800282618934" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="245.35630172935873" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="229.46504272929144" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-dasharray="7 5" points="70,257.5169907812395 106.3157894736842,254.46470627817777 178.94736842105263,248.2995760715968 300,231.87537850750286"/>
+<rect x="66" y="253.51699078123949" width="8" height="8" fill="#2ca02c"/>
+<rect x="102.3157894736842" y="250.46470627817777" width="8" height="8" fill="#2ca02c"/>
+<rect x="174.94736842105263" y="244.2995760715968" width="8" height="8" fill="#2ca02c"/>
+<rect x="296" y="227.87537850750286" width="8" height="8" fill="#2ca02c"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5"  points="70,255.03398156247897 106.3157894736842,244.54478164322725 178.94736842105263,229.21068568736962 300,201.94603324137003"/>
+<circle cx="70" cy="255.03398156247897" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="244.54478164322725" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="229.21068568736962" r="4" fill="#d62728"/>
+<circle cx="300" cy="201.94603324137003" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" stroke-dasharray="7 5" points="70,255.04609380257048 106.3157894736842,247.92409662875986 178.94736842105263,235.0366731713882 300,195.0783931094812"/>
+<rect x="66" y="251.04609380257048" width="8" height="8" fill="#d62728"/>
+<rect x="102.3157894736842" y="243.92409662875986" width="8" height="8" fill="#d62728"/>
+<rect x="174.94736842105263" y="231.0366731713882" width="8" height="8" fill="#d62728"/>
+<rect x="296" y="191.0783931094812" width="8" height="8" fill="#d62728"/>
+</g>
+<g transform="translate(390, 532)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">group</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5"  points="70,258.8372249512146 106.3157894736842,257.34741941995827 178.94736842105263,255.0703182827535 300,250.7825852903573"/>
+<circle cx="70" cy="258.8372249512146" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="257.34741941995827" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="255.0703182827535" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="250.7825852903573" r="4" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" stroke-dasharray="7 5" points="70,258.6192046295673 106.3157894736842,257.9409191844425 178.94736842105263,256.1240831707153 300,253.03546194737905"/>
+<rect x="66" y="254.61920462956732" width="8" height="8" fill="#ff7f0e"/>
+<rect x="102.3157894736842" y="253.94091918444252" width="8" height="8" fill="#ff7f0e"/>
+<rect x="174.94736842105263" y="252.12408317071532" width="8" height="8" fill="#ff7f0e"/>
+<rect x="296" y="249.03546194737905" width="8" height="8" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5"  points="70,257.2505214992262 106.3157894736842,252.57519682390148 178.94736842105263,244.33887356167148 300,229.16223672700357"/>
+<circle cx="70" cy="257.2505214992262" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="252.57519682390148" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="244.33887356167148" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="229.16223672700357" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-dasharray="7 5" points="70,257.4806540609649 106.3157894736842,254.00444115470023 178.94736842105263,247.6334028665635 300,232.59000067290222"/>
+<rect x="66" y="253.48065406096492" width="8" height="8" fill="#2ca02c"/>
+<rect x="102.3157894736842" y="250.00444115470023" width="8" height="8" fill="#2ca02c"/>
+<rect x="174.94736842105263" y="243.6334028665635" width="8" height="8" fill="#2ca02c"/>
+<rect x="296" y="228.59000067290222" width="8" height="8" fill="#2ca02c"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5"  points="70,254.51315523854385 106.3157894736842,244.0118430792006 178.94736842105263,227.64820671556424 300,195.55077047305025"/>
+<circle cx="70" cy="254.51315523854385" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="244.0118430792006" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="227.64820671556424" r="4" fill="#d62728"/>
+<circle cx="300" cy="195.55077047305025" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" stroke-dasharray="7 5" points="70,255.10665500302807 106.3157894736842,247.29426014400107 178.94736842105263,232.02072538860102 300,207.89314312630376"/>
+<rect x="66" y="251.10665500302807" width="8" height="8" fill="#d62728"/>
+<rect x="102.3157894736842" y="243.29426014400107" width="8" height="8" fill="#d62728"/>
+<rect x="174.94736842105263" y="228.02072538860102" width="8" height="8" fill="#d62728"/>
+<rect x="296" y="203.89314312630376" width="8" height="8" fill="#d62728"/>
+</g>
+<g transform="translate(760, 532)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">comparison</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5"  points="70,258.7645515106655 106.3157894736842,258.4375210281946 178.94736842105263,256.1240831707153 300,254.34358387726263"/>
+<circle cx="70" cy="258.7645515106655" r="4" fill="#1f77b4"/>
+<circle cx="106.3157894736842" cy="258.4375210281946" r="4" fill="#1f77b4"/>
+<circle cx="178.94736842105263" cy="256.1240831707153" r="4" fill="#1f77b4"/>
+<circle cx="300" cy="254.34358387726263" r="4" fill="#1f77b4"/>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" stroke-dasharray="7 5" points="70,258.95834735212975 106.3157894736842,258.0135926249916 178.94736842105263,256.49956261355226 300,254.04077787497476"/>
+<rect x="66" y="254.95834735212975" width="8" height="8" fill="#1f77b4"/>
+<rect x="102.3157894736842" y="254.0135926249916" width="8" height="8" fill="#1f77b4"/>
+<rect x="174.94736842105263" y="252.49956261355226" width="8" height="8" fill="#1f77b4"/>
+<rect x="296" y="250.04077787497476" width="8" height="8" fill="#1f77b4"/>
+</g>
+<g transform="translate(1130, 532)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">matrix</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">372</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">743</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1115</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">1486</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median filter update (ms)</text>
+<polyline fill="none" stroke="#9467bd" stroke-width="2.5"  points="70,243.46679227508244 106.3157894736842,243.24877195343515 178.94736842105263,238.1737433550905 300,230.1069914541417"/>
+<circle cx="70" cy="243.46679227508244" r="4" fill="#9467bd"/>
+<circle cx="106.3157894736842" cy="243.24877195343515" r="4" fill="#9467bd"/>
+<circle cx="178.94736842105263" cy="238.1737433550905" r="4" fill="#9467bd"/>
+<circle cx="300" cy="230.1069914541417" r="4" fill="#9467bd"/>
+<polyline fill="none" stroke="#9467bd" stroke-width="2.5" stroke-dasharray="7 5" points="70,243.6727003566382 106.3157894736842,243.3456698741673 178.94736842105263,238.68245743893414 300,228.6050736827939"/>
+<rect x="66" y="239.6727003566382" width="8" height="8" fill="#9467bd"/>
+<rect x="102.3157894736842" y="239.3456698741673" width="8" height="8" fill="#9467bd"/>
+<rect x="174.94736842105263" y="234.68245743893414" width="8" height="8" fill="#9467bd"/>
+<rect x="296" y="224.6050736827939" width="8" height="8" fill="#9467bd"/>
+<polyline fill="none" stroke="#8c564b" stroke-width="2.5"  points="70,109.27528430119105 106.3157894736842,108.30630509386987 178.94736842105263,104.6968575465985 300,96.98136060830362"/>
+<circle cx="70" cy="109.27528430119105" r="4" fill="#8c564b"/>
+<circle cx="106.3157894736842" cy="108.30630509386987" r="4" fill="#8c564b"/>
+<circle cx="178.94736842105263" cy="104.6968575465985" r="4" fill="#8c564b"/>
+<circle cx="300" cy="96.98136060830362" r="4" fill="#8c564b"/>
+<polyline fill="none" stroke="#8c564b" stroke-width="2.5" stroke-dasharray="7 5" points="70,109.63865150393647 106.3157894736842,108.51221317542561 178.94736842105263,102.81946033241371 300,96.36363636363637"/>
+<rect x="66" y="105.63865150393647" width="8" height="8" fill="#8c564b"/>
+<rect x="102.3157894736842" y="104.51221317542561" width="8" height="8" fill="#8c564b"/>
+<rect x="174.94736842105263" y="98.81946033241371" width="8" height="8" fill="#8c564b"/>
+<rect x="296" y="92.36363636363637" width="8" height="8" fill="#8c564b"/>
+</g>
+<text x="20" y="908" font-family="Arial, sans-serif" font-size="16" fill="#111827">Memory after initial render</text>
+<g transform="translate(20, 916)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">single</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">29</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">57</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">86</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">115</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median JS heap (MB)</text>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5"  points="70,252.25953121325355 106.3157894736842,242.59060858658444 178.94736842105263,234.8893360160966 300,205.9092215631451"/>
+<circle cx="70" cy="252.25953121325355" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="242.59060858658444" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="234.8893360160966" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="205.9092215631451" r="4" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" stroke-dasharray="7 5" points="70,252.20152081319083 106.3157894736842,244.4438056912906 178.94736842105263,234.43936345344795 300,195.33721811387807"/>
+<rect x="66" y="248.20152081319083" width="8" height="8" fill="#ff7f0e"/>
+<rect x="102.3157894736842" y="240.4438056912906" width="8" height="8" fill="#ff7f0e"/>
+<rect x="174.94736842105263" y="230.43936345344795" width="8" height="8" fill="#ff7f0e"/>
+<rect x="296" y="191.33721811387807" width="8" height="8" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5"  points="70,250.12412135148554 106.3157894736842,238.5424233713972 178.94736842105263,214.96511536752985 300,166.24735425540257"/>
+<circle cx="70" cy="250.12412135148554" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="238.5424233713972" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="214.96511536752985" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="166.24735425540257" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-dasharray="7 5" points="70,248.90119940421752 106.3157894736842,235.9648801902323 178.94736842105263,218.63388120933394 300,173.32775876035436"/>
+<rect x="66" y="244.90119940421752" width="8" height="8" fill="#2ca02c"/>
+<rect x="102.3157894736842" y="231.9648801902323" width="8" height="8" fill="#2ca02c"/>
+<rect x="174.94736842105263" y="214.63388120933394" width="8" height="8" fill="#2ca02c"/>
+<rect x="296" y="169.32775876035436" width="8" height="8" fill="#2ca02c"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5"  points="70,247.28161174841256 106.3157894736842,228.30750738195405 178.94736842105263,194.90449188638325 300,126.52120515299589"/>
+<circle cx="70" cy="247.28161174841256" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="228.30750738195405" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="194.90449188638325" r="4" fill="#d62728"/>
+<circle cx="300" cy="126.52120515299589" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" stroke-dasharray="7 5" points="70,247.47288928375448 106.3157894736842,227.0689069481826 178.94736842105263,192.1999529645405 300,121.28302281219788"/>
+<rect x="66" y="243.47288928375448" width="8" height="8" fill="#d62728"/>
+<rect x="102.3157894736842" y="223.0689069481826" width="8" height="8" fill="#d62728"/>
+<rect x="174.94736842105263" y="188.1999529645405" width="8" height="8" fill="#d62728"/>
+<rect x="296" y="117.28302281219788" width="8" height="8" fill="#d62728"/>
+</g>
+<g transform="translate(390, 916)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">group</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">29</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">57</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">86</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">115</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median JS heap (MB)</text>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5"  points="70,250.5427369411273 106.3157894736842,240.08048289738431 178.94736842105263,219.0180041286681 300,184.23057827484388"/>
+<circle cx="70" cy="250.5427369411273" r="4" fill="#ff7f0e"/>
+<circle cx="106.3157894736842" cy="240.08048289738431" r="4" fill="#ff7f0e"/>
+<circle cx="178.94736842105263" cy="219.0180041286681" r="4" fill="#ff7f0e"/>
+<circle cx="300" cy="184.23057827484388" r="4" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#ff7f0e" stroke-width="2.5" stroke-dasharray="7 5" points="70,250.46904805456114 106.3157894736842,239.87039117823826 178.94736842105263,218.55548877681676 300,183.33847239279834"/>
+<rect x="66" y="246.46904805456114" width="8" height="8" fill="#ff7f0e"/>
+<rect x="102.3157894736842" y="235.87039117823826" width="8" height="8" fill="#ff7f0e"/>
+<rect x="174.94736842105263" y="214.55548877681676" width="8" height="8" fill="#ff7f0e"/>
+<rect x="296" y="179.33847239279834" width="8" height="8" fill="#ff7f0e"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5"  points="70,248.90119940421752 106.3157894736842,233.78713841490503 178.94736842105263,203.5935091065876 300,153.51171966866133"/>
+<circle cx="70" cy="248.90119940421752" r="4" fill="#2ca02c"/>
+<circle cx="106.3157894736842" cy="233.78713841490503" r="4" fill="#2ca02c"/>
+<circle cx="178.94736842105263" cy="203.5935091065876" r="4" fill="#2ca02c"/>
+<circle cx="300" cy="153.51171966866133" r="4" fill="#2ca02c"/>
+<polyline fill="none" stroke="#2ca02c" stroke-width="2.5" stroke-dasharray="7 5" points="70,248.72089680942798 106.3157894736842,233.22114505213096 178.94736842105263,202.27338054299824 300,150.71310982779798"/>
+<rect x="66" y="244.72089680942798" width="8" height="8" fill="#2ca02c"/>
+<rect x="102.3157894736842" y="229.22114505213096" width="8" height="8" fill="#2ca02c"/>
+<rect x="174.94736842105263" y="198.27338054299824" width="8" height="8" fill="#2ca02c"/>
+<rect x="296" y="146.71310982779798" width="8" height="8" fill="#2ca02c"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5"  points="70,245.95834748752253 106.3157894736842,223.0285609762471 178.94736842105263,177.48255768376492 300,101.76487496407017"/>
+<circle cx="70" cy="245.95834748752253" r="4" fill="#d62728"/>
+<circle cx="106.3157894736842" cy="223.0285609762471" r="4" fill="#d62728"/>
+<circle cx="178.94736842105263" cy="177.48255768376492" r="4" fill="#d62728"/>
+<circle cx="300" cy="101.76487496407017" r="4" fill="#d62728"/>
+<polyline fill="none" stroke="#d62728" stroke-width="2.5" stroke-dasharray="7 5" points="70,245.6541848493559 106.3157894736842,221.70686456400742 178.94736842105263,174.6635658104471 300,96.3636363636364"/>
+<rect x="66" y="241.6541848493559" width="8" height="8" fill="#d62728"/>
+<rect x="102.3157894736842" y="217.70686456400742" width="8" height="8" fill="#d62728"/>
+<rect x="174.94736842105263" y="170.6635658104471" width="8" height="8" fill="#d62728"/>
+<rect x="296" y="92.3636363636364" width="8" height="8" fill="#d62728"/>
+</g>
+<g transform="translate(760, 916)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">comparison</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">29</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">57</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">86</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">115</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median JS heap (MB)</text>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5"  points="70,250.03475397841595 106.3157894736842,238.44364890642558 178.94736842105263,215.18304632992763 300,176.7691865478586"/>
+<circle cx="70" cy="250.03475397841595" r="4" fill="#1f77b4"/>
+<circle cx="106.3157894736842" cy="238.44364890642558" r="4" fill="#1f77b4"/>
+<circle cx="178.94736842105263" cy="215.18304632992763" r="4" fill="#1f77b4"/>
+<circle cx="300" cy="176.7691865478586" r="4" fill="#1f77b4"/>
+<polyline fill="none" stroke="#1f77b4" stroke-width="2.5" stroke-dasharray="7 5" points="70,249.9689043351015 106.3157894736842,238.4373775118242 178.94736842105263,214.8083305024955 300,176.26433928244796"/>
+<rect x="66" y="245.9689043351015" width="8" height="8" fill="#1f77b4"/>
+<rect x="102.3157894736842" y="234.4373775118242" width="8" height="8" fill="#1f77b4"/>
+<rect x="174.94736842105263" y="210.8083305024955" width="8" height="8" fill="#1f77b4"/>
+<rect x="296" y="172.26433928244796" width="8" height="8" fill="#1f77b4"/>
+</g>
+<g transform="translate(1130, 916)">
+<rect x="0" y="0" width="340" height="320" fill="#ffffff" stroke="#d1d5db"/>
+<text x="170" y="24" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#111827">matrix</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="264" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">0</text>
+<line x1="70" y1="215" x2="300" y2="215" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="219" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">29</text>
+<line x1="70" y1="170" x2="300" y2="170" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="174" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">57</text>
+<line x1="70" y1="125" x2="300" y2="125" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="129" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">86</text>
+<line x1="70" y1="80" x2="300" y2="80" stroke="#e5e7eb" stroke-width="1"/>
+<text x="62" y="84" text-anchor="end" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">115</text>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="70" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">500</text>
+<line x1="106.3157894736842" y1="80" x2="106.3157894736842" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="106.3157894736842" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">2000</text>
+<line x1="178.94736842105263" y1="80" x2="178.94736842105263" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="178.94736842105263" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">5000</text>
+<line x1="300" y1="80" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1"/>
+<text x="300" y="278" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#6b7280">10000</text>
+<line x1="70" y1="260" x2="300" y2="260" stroke="#374151" stroke-width="1.2"/>
+<line x1="70" y1="80" x2="70" y2="260" stroke="#374151" stroke-width="1.2"/>
+<text x="170" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#111827">Hierarchy nodes</text>
+<text x="14" y="160" text-anchor="middle" transform="rotate(-90 14 160)" font-family="Arial, sans-serif" font-size="12" fill="#111827">Median JS heap (MB)</text>
+<polyline fill="none" stroke="#9467bd" stroke-width="2.5"  points="70,250.45650526535837 106.3157894736842,240.06794010818157 178.94736842105263,218.88630484203924 300,184.18981420993492"/>
+<circle cx="70" cy="250.45650526535837" r="4" fill="#9467bd"/>
+<circle cx="106.3157894736842" cy="240.06794010818157" r="4" fill="#9467bd"/>
+<circle cx="178.94736842105263" cy="218.88630484203924" r="4" fill="#9467bd"/>
+<circle cx="300" cy="184.18981420993492" r="4" fill="#9467bd"/>
+<polyline fill="none" stroke="#9467bd" stroke-width="2.5" stroke-dasharray="7 5" points="70,250.45180171940734 106.3157894736842,239.99581907026575 178.94736842105263,218.96156157725574 300,184.58334422117122"/>
+<rect x="66" y="246.45180171940734" width="8" height="8" fill="#9467bd"/>
+<rect x="102.3157894736842" y="235.99581907026575" width="8" height="8" fill="#9467bd"/>
+<rect x="174.94736842105263" y="214.96156157725574" width="8" height="8" fill="#9467bd"/>
+<rect x="296" y="180.58334422117122" width="8" height="8" fill="#9467bd"/>
+<polyline fill="none" stroke="#8c564b" stroke-width="2.5"  points="70,249.59575635631973 106.3157894736842,236.57790901251667 178.94736842105263,210.46538974104368 300,167.65685019206148"/>
+<circle cx="70" cy="249.59575635631973" r="4" fill="#8c564b"/>
+<circle cx="106.3157894736842" cy="236.57790901251667" r="4" fill="#8c564b"/>
+<circle cx="178.94736842105263" cy="210.46538974104368" r="4" fill="#8c564b"/>
+<circle cx="300" cy="167.65685019206148" r="4" fill="#8c564b"/>
+<polyline fill="none" stroke="#8c564b" stroke-width="2.5" stroke-dasharray="7 5" points="70,249.61927408607488 106.3157894736842,236.7237189369986 178.94736842105263,210.23805168674386 300,167.93122370587162"/>
+<rect x="66" y="245.61927408607488" width="8" height="8" fill="#8c564b"/>
+<rect x="102.3157894736842" y="232.7237189369986" width="8" height="8" fill="#8c564b"/>
+<rect x="174.94736842105263" y="206.23805168674386" width="8" height="8" fill="#8c564b"/>
+<rect x="296" y="163.93122370587162" width="8" height="8" fill="#8c564b"/>
+</g>
+</svg>

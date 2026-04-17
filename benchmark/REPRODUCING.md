@@ -37,7 +37,7 @@ Run a smoke benchmark with one condition per mode:
 npm run smoke
 ```
 
-Analyze raw benchmark output and regenerate summary tables, plots, and markdown:
+Analyze raw benchmark output and regenerate the summary table, overview SVG, and markdown:
 
 ```bash
 npm run analyze
@@ -72,7 +72,7 @@ Committed benchmark outputs:
 - `outputs/environment.json`
 - `outputs/summary.csv`
 - `outputs/benchmark_summary.md`
-- `outputs/*.svg`
+- `outputs/benchmark_overview.svg`
 
 Ignored rerun artifacts:
 

@@ -69,15 +69,7 @@ These rows summarize the largest-node conditions for each mode/layout combinatio
 
 ## Figures
 
-### Initial render time
+### Overview (render, interaction, memory)
 
-![Initial render time vs node count](outputs/initial_render_vs_nodes.svg)
-
-### Filter update time
-
-![Filter update time vs node count](outputs/interaction_update_vs_nodes.svg)
-
-### Memory after initial render
-
-![Memory after initial render vs node count](outputs/memory_vs_nodes.svg)
+![Benchmark overview](outputs/benchmark_overview.svg)
 

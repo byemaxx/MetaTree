@@ -189,6 +189,13 @@
                         <div class="control-group ai-center">
                             <button id="load-example" class="btn-secondary" title="Replace current data with built-in example">Reset to Example</button>
                         </div>
+
+                        <div class="control-group ai-center">
+                            <button id="open-data-converter" class="btn-secondary" type="button"
+                                title="Convert BIOM, Newick, or QIIME exports into MetaTree data">
+                                Open Converter
+                            </button>
+                        </div>
                     </div>
 
                     <div class="control-group collapsible" id="data-params-group">
@@ -1487,6 +1494,8 @@
     <script src="js/core/app-core.js"></script>
     <script src="js/renderers/comparison-renderer.js"></script>
     <script src="js/core/theme-manager.js"></script>
+    <script src="js/vendor/jsfive-hdf5.js"></script>
+    <script src="js/core/data-converter.js"></script>
     <script src="js/core/ui-controls.js"></script>
     <script src="js/core/panel-export-contextmenu.js"></script>
     <script>
@@ -1517,6 +1526,175 @@
             </div>
             <div class="info-modal-body" id="file-preview-modal-body">
                 <!-- content populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <div id="data-converter-modal" class="info-modal" aria-hidden="true" style="display: none;">
+        <div class="info-modal-overlay" tabindex="-1"></div>
+        <div class="info-modal-content data-converter-modal-content" role="dialog" aria-modal="true"
+            aria-labelledby="data-converter-modal-title">
+            <div class="info-modal-header">
+                <h3 id="data-converter-modal-title">Data Converter</h3>
+                <button type="button" class="info-modal-close" id="data-converter-modal-close"
+                    aria-label="Close converter modal">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 1l12 12M13 1L1 13"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="info-modal-body data-converter-body">
+                <p class="text-muted">
+                    Convert external inputs into MetaTree-compatible TSV. Supported sources are BIOM v1 JSON,
+                    Newick plus a sidecar abundance table, and exported QIIME plain files. Direct <code>.qza</code>
+                    and <code>.qzv</code> files are not supported.
+                </p>
+
+                <div class="converter-mode-switch" role="tablist" aria-label="Converter mode">
+                    <button type="button" class="converter-mode-btn is-active" data-converter-mode="biom-v1">
+                        BIOM v1
+                    </button>
+                    <button type="button" class="converter-mode-btn" data-converter-mode="newick">
+                        Newick
+                    </button>
+                    <button type="button" class="converter-mode-btn" data-converter-mode="qiime">
+                        QIIME Exports
+                    </button>
+                </div>
+
+                <div class="converter-panel is-active" data-converter-panel="biom-v1">
+                    <div class="converter-panel-header">
+                        <div class="converter-panel-title">Generic BIOM v1 JSON</div>
+                        <div class="converter-panel-text">
+                            Load a BIOM v1 JSON table. If observation taxonomy metadata is present, it will be used as
+                            the MetaTree hierarchy path; otherwise the row id will be used.
+                        </div>
+                    </div>
+                    <div class="converter-file-grid">
+                        <div class="converter-file-field">
+                            <div class="converter-file-label">BIOM v1 JSON file</div>
+                            <input type="file" id="converter-biom-v1-file" accept=".json,.biom,.txt">
+                            <label for="converter-biom-v1-file" class="file-upload-label">Choose BIOM File</label>
+                            <div class="converter-file-note">Expected input: BIOM 1.x JSON.</div>
+                            <span class="converter-filename" id="converter-biom-v1-file-name">No file selected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="converter-panel" data-converter-panel="newick">
+                    <div class="converter-panel-header">
+                        <div class="converter-panel-title">Generic Newick + Abundance Table</div>
+                        <div class="converter-panel-text">
+                            Load a rooted or unrooted Newick tree plus a sidecar abundance table. The table first
+                            column must contain leaf ids that match tree tips exactly.
+                        </div>
+                    </div>
+                    <div class="converter-file-grid">
+                        <div class="converter-file-field">
+                            <div class="converter-file-label">Newick tree file</div>
+                            <input type="file" id="converter-newick-tree-file" accept=".nwk,.newick,.tre,.txt">
+                            <label for="converter-newick-tree-file" class="file-upload-label">Choose Tree File</label>
+                            <div class="converter-file-note">Accepted extensions: <code>.nwk</code>, <code>.newick</code>, <code>.tre</code>.</div>
+                            <span class="converter-filename" id="converter-newick-tree-file-name">No file selected</span>
+                        </div>
+                        <div class="converter-file-field">
+                            <div class="converter-file-label">Sidecar abundance table</div>
+                            <input type="file" id="converter-newick-table-file" accept=".tsv,.csv,.txt">
+                            <label for="converter-newick-table-file" class="file-upload-label">Choose Table File</label>
+                            <div class="converter-file-note">Wide table: first column leaf id, remaining columns numeric samples.</div>
+                            <span class="converter-filename" id="converter-newick-table-file-name">No file selected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="converter-panel" data-converter-panel="qiime">
+                    <div class="converter-panel-header">
+                        <div class="converter-panel-title">QIIME Export Bundle</div>
+                        <div class="converter-panel-text">
+                            Load exported QIIME plain files. <code>feature-table.biom</code> is required. Add
+                            <code>taxonomy.tsv</code>, <code>rooted-tree.nwk</code>, and <code>sample-metadata.tsv</code>
+                            as needed. If both a tree and taxonomy are provided, the tree defines the hierarchy.
+                        </div>
+                    </div>
+                    <div class="converter-file-grid">
+                        <div class="converter-file-field">
+                            <div class="converter-file-label">feature-table.biom</div>
+                            <input type="file" id="converter-qiime-biom-file" accept=".biom">
+                            <label for="converter-qiime-biom-file" class="file-upload-label">Choose BIOM File</label>
+                            <div class="converter-file-note">Required. Parsed as BIOM v2 / HDF5.</div>
+                            <span class="converter-filename" id="converter-qiime-biom-file-name">No file selected</span>
+                        </div>
+                        <div class="converter-file-field">
+                            <div class="converter-file-label">taxonomy.tsv</div>
+                            <input type="file" id="converter-qiime-taxonomy-file" accept=".tsv,.txt">
+                            <label for="converter-qiime-taxonomy-file" class="file-upload-label">Choose Taxonomy File</label>
+                            <div class="converter-file-note">Optional. Used to aggregate by full taxonomy when no tree is provided.</div>
+                            <span class="converter-filename" id="converter-qiime-taxonomy-file-name">No file selected</span>
+                        </div>
+                        <div class="converter-file-field">
+                            <div class="converter-file-label">rooted-tree.nwk / .tre</div>
+                            <input type="file" id="converter-qiime-tree-file" accept=".nwk,.newick,.tre,.txt">
+                            <label for="converter-qiime-tree-file" class="file-upload-label">Choose Tree File</label>
+                            <div class="converter-file-note">Optional. If present, tree topology defines the final hierarchy.</div>
+                            <span class="converter-filename" id="converter-qiime-tree-file-name">No file selected</span>
+                        </div>
+                        <div class="converter-file-field">
+                            <div class="converter-file-label">sample-metadata.tsv</div>
+                            <input type="file" id="converter-qiime-meta-file" accept=".tsv,.txt">
+                            <label for="converter-qiime-meta-file" class="file-upload-label">Choose Metadata File</label>
+                            <div class="converter-file-note">Optional. Normalized into MetaTree metadata with a <code>Sample</code> column.</div>
+                            <span class="converter-filename" id="converter-qiime-meta-file-name">No file selected</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="converter-status-block" id="data-converter-status-block">
+                    <div class="converter-status-title">Validation</div>
+                    <div class="converter-status-summary" id="data-converter-status-summary">
+                        Choose input files and click Convert.
+                    </div>
+                    <ul class="converter-status-list" id="data-converter-status-list"></ul>
+                </div>
+
+                <div class="converter-action-row">
+                    <button type="button" id="reset-data-converter" class="btn-secondary">Reset</button>
+                    <button type="button" id="run-data-converter">Convert</button>
+                </div>
+
+                <div id="data-converter-results" class="converter-results">
+                    <div class="converter-result-card">
+                        <div class="converter-result-header">
+                            <div>
+                                <div class="converter-result-title">Data Preview</div>
+                                <div class="converter-result-summary" id="data-converter-data-summary"></div>
+                            </div>
+                            <div class="flex gap-8 flex-wrap">
+                                <button type="button" id="data-converter-load-data">Load Data</button>
+                                <button type="button" id="data-converter-download-data" class="btn-secondary">Download TSV</button>
+                            </div>
+                        </div>
+                        <div class="converter-preview" id="data-converter-data-preview">
+                            <div class="converter-empty-state">No converted data preview yet.</div>
+                        </div>
+                    </div>
+
+                    <div class="converter-result-card">
+                        <div class="converter-result-header">
+                            <div>
+                                <div class="converter-result-title">Metadata Preview</div>
+                                <div class="converter-result-summary" id="data-converter-meta-summary"></div>
+                            </div>
+                            <div class="flex gap-8 flex-wrap">
+                                <button type="button" id="data-converter-load-meta">Load Metadata</button>
+                                <button type="button" id="data-converter-download-meta" class="btn-secondary">Download TSV</button>
+                            </div>
+                        </div>
+                        <div class="converter-preview" id="data-converter-meta-preview">
+                            <div class="converter-empty-state">No converted metadata is available for the current input set.</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

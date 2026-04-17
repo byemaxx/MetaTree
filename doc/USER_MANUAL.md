@@ -32,6 +32,8 @@ MetaTree is a web application that runs in any modern web browser (Chrome, Firef
 
 MetaTree accepts data in **TSV (Tab-Separated Values)** or **CSV (Comma-Separated Values)** formats.
 
+If your source data is not already in MetaTree table format, use the **Open Converter** button in the **Data & Metadata** panel. The converter can normalize supported external formats such as biom files into MetaTree-ready TSV before loading.
+
 ### Supported Formats
 
 #### A. Hierarchical Abundance Table (Wide Format)
@@ -75,6 +77,23 @@ Used to group samples.
 
 > **Tip**: Use the same delimiter choice as the data file so both uploads can be parsed consistently.
 
+#### D. Converter Inputs
+Use the converter when your input is not already a MetaTree wide or long table.
+
+Supported converter inputs:
+
+*   **BIOM v1 JSON**: observation taxonomy metadata is used to build hierarchy paths when available; otherwise observation ids are used as leaf paths.
+*   **Newick + abundance table**: the Newick tree defines the hierarchy topology, and the sidecar abundance table provides numeric sample values for tree tips.
+*   **QIIME plain exports**: `feature-table.biom` is required, with optional `taxonomy.tsv`, `rooted-tree.nwk` or `.tre`, and `sample-metadata.tsv`.
+
+QIIME rules:
+
+*   If only `feature-table.biom` is provided, feature ids become leaf paths.
+*   If `taxonomy.tsv` is added and no tree is provided, features are aggregated by full taxonomy path.
+*   If a rooted tree is provided, tree topology defines the final hierarchy.
+*   If both a tree and taxonomy are provided, the tree takes priority and taxonomy is used for validation and preview context.
+*   Direct `.qza` and `.qzv` files are not supported.
+
 ---
 
 ## 4. Interface Overview
@@ -102,9 +121,13 @@ The interface is divided into two main areas:
     *   **Long Table (Diff. Test)**: For statistical results (e.g., from DESeq2).
 3.  Click **Load Data File** and select your file.
     *   **For Long Tables**: A **Column Mapping Modal** will appear. Select the columns from your file that correspond to *Taxon ID*, *Condition*, *Value* (e.g., Log2FC), *P-value*, and *Q-value*.
-4.  (Optional) Click **Load Meta File** to upload sample metadata.
-5.  If your file uses a custom delimiter (not tab or comma), expand **Load parameters** to specify it.
-6.  (Optional) Configure advanced loading/filtering controls:
+4.  If your source file is BIOM, Newick, or a QIIME export, click **Open Converter** instead.
+    *   Convert the source into MetaTree TSV.
+    *   Review the generated preview.
+    *   Click **Load Data** and, when available, **Load Metadata**.
+5.  (Optional) Click **Load Meta File** to upload sample metadata directly.
+6.  If your file uses a custom delimiter (not tab or comma), expand **Load parameters** to specify it.
+7.  (Optional) Configure advanced loading/filtering controls:
     *   **Duplicate ID handling**: choose how rows with the same ID are merged (`Sum`, `Mean`, `Max`, `Min`, `First`).
     *   **Filter samples by meta**: keep only samples matching selected metadata values.
     *   **Filter items by name**: build include/exclude lists using keyword or regex matching.

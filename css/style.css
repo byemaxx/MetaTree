@@ -2226,6 +2226,223 @@ button:disabled {
     white-space: nowrap;
 }
 
+.data-converter-modal-content {
+    width: min(1120px, 94vw);
+    max-width: 1120px;
+    max-height: 88vh;
+}
+
+.data-converter-body {
+    gap: var(--spacing-lg);
+}
+
+.converter-mode-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.converter-mode-btn {
+    background: var(--bg-white);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+}
+
+.converter-mode-btn:hover,
+.converter-mode-btn:focus-visible {
+    color: var(--text-primary);
+    background: #f8fafc;
+    box-shadow: none;
+}
+
+.converter-mode-btn.is-active {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: var(--shadow-primary);
+}
+
+.converter-panel {
+    display: none;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    background: #f8fafc;
+    padding: 16px;
+}
+
+.converter-panel.is-active {
+    display: block;
+}
+
+.converter-panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.converter-panel-title {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.converter-panel-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.converter-file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.converter-file-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid #dbe4f0;
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    min-width: 0;
+}
+
+.converter-file-label {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.converter-file-note {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.converter-filename {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.converter-status-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid #dbe4f0;
+    border-radius: var(--radius-lg);
+    background: #f8fafc;
+}
+
+.converter-status-block.is-error {
+    border-color: #e88b8b;
+    background: #fff5f5;
+}
+
+.converter-status-block.is-warning {
+    border-color: #e5c26b;
+    background: #fffaf0;
+}
+
+.converter-status-block.is-success {
+    border-color: #8bc48b;
+    background: #f0fff4;
+}
+
+.converter-status-title {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.converter-status-summary {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.converter-status-list {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    display: none;
+}
+
+.converter-status-list.is-visible {
+    display: block;
+}
+
+.converter-status-list li + li {
+    margin-top: 4px;
+}
+
+.converter-action-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.converter-results {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 16px;
+}
+
+.converter-results.is-visible {
+    display: grid;
+}
+
+.converter-result-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    background: #ffffff;
+    padding: 16px;
+}
+
+.converter-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.converter-result-title {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.converter-result-summary {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.converter-preview {
+    min-height: 120px;
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    background: #ffffff;
+}
+
+.converter-empty-state {
+    padding: 16px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
 
 /* ========== 响应式设计 ========== */
 @media (max-width: 768px) {
@@ -2245,6 +2462,11 @@ button:disabled {
     .main-content { padding-right: 0; position: static; height: auto; overflow: visible; }
     body {
         padding: var(--spacing-md);
+    }
+
+    .converter-file-grid,
+    .converter-results {
+        grid-template-columns: 1fr;
     }
 
     .header {

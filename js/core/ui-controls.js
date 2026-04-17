@@ -2419,6 +2419,7 @@ function loadDataFromText(text, options = {}) {
         rawData = parseTSV(text, null, duplicateHandling);
     }
     treeData = buildHierarchy(rawData);
+    applyAdaptiveNodeEdgeSettingsForCurrentData({ redraw: false, forceRecompute: true });
 
     // 加载新文件时刷新 Color domain：清除手动 M，输入框回到自动/默认
     resetManualDomainForAllModes();
@@ -3165,6 +3166,209 @@ function handleLabelThresholdChange(e) {
     if (showLabels) redrawCurrentViz();
 }
 
+const DEFAULT_NODE_EDGE_STYLE_SETTINGS = Object.freeze({
+    nodeSizeMultiplier: 1.0,
+    minNodeSize: 3,
+    maxNodeSize: 35,
+    edgeWidthMultiplier: 1.0,
+    minEdgeWidth: 0.5
+});
+
+let adaptiveNodeEdgeDefaults = null;
+try {
+    if (typeof window !== 'undefined') {
+        window.adaptiveNodeEdgeDefaults = adaptiveNodeEdgeDefaults;
+    }
+} catch (_) { }
+
+function clampStyleSetting(value, min, max) {
+    const num = typeof value === 'string' ? parseFloat(value) : value;
+    if (!isFinite(num)) return min;
+    return Math.min(max, Math.max(min, num));
+}
+
+function roundStyleSetting(value, step) {
+    if (!isFinite(value) || !isFinite(step) || step <= 0) return value;
+    return Math.round(value / step) * step;
+}
+
+function quantileSortedLocal(values, p) {
+    if (!Array.isArray(values) || values.length === 0) return 0;
+    if (values.length === 1) return values[0];
+    const pos = (values.length - 1) * Math.min(1, Math.max(0, p));
+    const lower = Math.floor(pos);
+    const upper = Math.ceil(pos);
+    if (lower === upper) return values[lower];
+    const weight = pos - lower;
+    return values[lower] * (1 - weight) + values[upper] * weight;
+}
+
+function collectTreeComplexityMetrics(root) {
+    const metrics = { nodeCount: 0, leafCount: 0, maxDepth: 0 };
+    const visit = (node, depth) => {
+        if (!node || typeof node !== 'object') return;
+        metrics.nodeCount += 1;
+        if (depth > metrics.maxDepth) metrics.maxDepth = depth;
+        const children = Array.isArray(node.children) ? node.children : [];
+        if (children.length === 0) {
+            metrics.leafCount += 1;
+            return;
+        }
+        children.forEach((child) => visit(child, depth + 1));
+    };
+    visit(root, 0);
+    return metrics;
+}
+
+function collectValueDistributionMetrics(rows) {
+    const values = [];
+    let totalCount = 0;
+    let nonZeroCount = 0;
+
+    if (Array.isArray(rows)) {
+        rows.forEach((row) => {
+            const abundances = row && row.abundances;
+            if (!abundances || typeof abundances !== 'object') return;
+            Object.values(abundances).forEach((value) => {
+                const numeric = typeof value === 'number' ? value : parseFloat(value);
+                if (!isFinite(numeric)) return;
+                totalCount += 1;
+                const magnitude = Math.abs(numeric);
+                if (magnitude > 0) {
+                    nonZeroCount += 1;
+                    values.push(magnitude);
+                }
+            });
+        });
+    }
+
+    values.sort((a, b) => a - b);
+
+    const q25 = quantileSortedLocal(values, 0.25);
+    const q50 = quantileSortedLocal(values, 0.5);
+    const q90 = quantileSortedLocal(values, 0.9);
+    const nonZeroFraction = totalCount > 0 ? (nonZeroCount / totalCount) : 0;
+    const sparsity = 1 - nonZeroFraction;
+    const spreadBase = Math.max(q25, q50 * 0.5, 1e-9);
+    const spreadRatio = q90 > 0 ? (q90 / spreadBase) : 1;
+
+    return {
+        nonZeroCount,
+        totalCount,
+        nonZeroFraction,
+        sparsity,
+        q25,
+        q50,
+        q90,
+        spreadRatio
+    };
+}
+
+function normalizeAdaptiveNodeEdgeSettings(settings) {
+    const normalized = {
+        nodeSizeMultiplier: clampStyleSetting(roundStyleSetting(settings.nodeSizeMultiplier, 0.1), 0.1, 5),
+        minNodeSize: clampStyleSetting(Math.round(settings.minNodeSize), 0, 20),
+        maxNodeSize: clampStyleSetting(roundStyleSetting(settings.maxNodeSize, 5), 20, 120),
+        edgeWidthMultiplier: clampStyleSetting(roundStyleSetting(settings.edgeWidthMultiplier, 0.1), 0.1, 5),
+        minEdgeWidth: clampStyleSetting(roundStyleSetting(settings.minEdgeWidth, 0.1), 0.1, 5)
+    };
+    if (normalized.maxNodeSize < normalized.minNodeSize + 10) {
+        normalized.maxNodeSize = clampStyleSetting(
+            roundStyleSetting(normalized.minNodeSize + 10, 5),
+            20,
+            120
+        );
+    }
+    return normalized;
+}
+
+function computeAdaptiveNodeEdgeDefaults() {
+    if (!treeData || !Array.isArray(rawData) || rawData.length === 0) {
+        return { ...DEFAULT_NODE_EDGE_STYLE_SETTINGS };
+    }
+
+    const treeMetrics = collectTreeComplexityMetrics(treeData);
+    const valueMetrics = collectValueDistributionMetrics(rawData);
+
+    const leafFactor = clampStyleSetting((Math.log10((treeMetrics.leafCount || 0) + 1) - 1.2) / 2.0, 0, 1);
+    const nodeFactor = clampStyleSetting((Math.log10((treeMetrics.nodeCount || 0) + 1) - 1.4) / 2.0, 0, 1);
+    const depthFactor = clampStyleSetting(((treeMetrics.maxDepth || 0) - 4) / 8, 0, 1);
+    const complexity = clampStyleSetting((leafFactor * 0.45) + (nodeFactor * 0.35) + (depthFactor * 0.20), 0, 1);
+
+    const spreadFactor = clampStyleSetting((Math.log10(Math.max(1, valueMetrics.spreadRatio)) - 0.35) / 1.65, 0, 1);
+    const sparsity = clampStyleSetting(valueMetrics.sparsity, 0, 1);
+
+    const recommendations = normalizeAdaptiveNodeEdgeSettings({
+        nodeSizeMultiplier: 1.45 - complexity * 0.85 + spreadFactor * 0.15 - sparsity * 0.20,
+        minNodeSize: 4.5 - complexity * 2.7 - spreadFactor * 0.7 - sparsity * 0.8,
+        maxNodeSize: 55 - complexity * 28 + spreadFactor * 10 - sparsity * 6,
+        edgeWidthMultiplier: 1.5 - complexity * 0.8 - sparsity * 0.25 + spreadFactor * 0.1,
+        minEdgeWidth: 0.9 - complexity * 0.55 - sparsity * 0.35
+    });
+
+    recommendations.metrics = {
+        ...treeMetrics,
+        ...valueMetrics,
+        complexity,
+        spreadFactor
+    };
+    return recommendations;
+}
+
+function getAdaptiveNodeEdgeDefaults(forceRecompute = false) {
+    if (!forceRecompute && adaptiveNodeEdgeDefaults) {
+        return adaptiveNodeEdgeDefaults;
+    }
+    adaptiveNodeEdgeDefaults = computeAdaptiveNodeEdgeDefaults();
+    try {
+        if (typeof window !== 'undefined') {
+            window.adaptiveNodeEdgeDefaults = adaptiveNodeEdgeDefaults;
+        }
+    } catch (_) { }
+    return adaptiveNodeEdgeDefaults;
+}
+
+function applyNodeEdgeStyleSettings(settings, options = {}) {
+    const opts = options || {};
+    const normalized = normalizeAdaptiveNodeEdgeSettings({
+        ...DEFAULT_NODE_EDGE_STYLE_SETTINGS,
+        ...(settings || {})
+    });
+
+    nodeSizeMultiplier = normalized.nodeSizeMultiplier;
+    minNodeSize = normalized.minNodeSize;
+    maxNodeSize = normalized.maxNodeSize;
+    edgeWidthMultiplier = normalized.edgeWidthMultiplier;
+    minEdgeWidth = normalized.minEdgeWidth;
+
+    const setRangeValue = (id, value, labelId, labelText) => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.value = String(value);
+            updateRangeSliderProgress(input);
+        }
+        const label = document.getElementById(labelId);
+        if (label) label.textContent = labelText;
+    };
+
+    setRangeValue('node-size-multiplier', normalized.nodeSizeMultiplier, 'node-size-value', normalized.nodeSizeMultiplier.toFixed(1) + 'x');
+    setRangeValue('min-node-size', normalized.minNodeSize, 'min-node-size-value', normalized.minNodeSize + 'px');
+    setRangeValue('max-node-size', normalized.maxNodeSize, 'max-node-size-value', normalized.maxNodeSize + 'px');
+    setRangeValue('edge-width-multiplier', normalized.edgeWidthMultiplier, 'edge-width-value', normalized.edgeWidthMultiplier.toFixed(1) + 'x');
+    setRangeValue('min-edge-width', normalized.minEdgeWidth, 'min-edge-width-value', normalized.minEdgeWidth.toFixed(1));
+
+    if (opts.redraw !== false && typeof redrawCurrentViz === 'function') {
+        redrawCurrentViz();
+    }
+
+    return normalized;
+}
+
+function applyAdaptiveNodeEdgeSettingsForCurrentData(options = {}) {
+    const settings = getAdaptiveNodeEdgeDefaults(!!(options && options.forceRecompute));
+    return applyNodeEdgeStyleSettings(settings, options);
+}
+
 // 动态生成“标签层级（多选，从叶）”选项
 window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dynamicNamesFromLeaf, leafCount) {
     const container = document.getElementById('label-levels');
@@ -3365,6 +3569,8 @@ function handleMaxNodeSizeChange(e) {
 // 一键还原：重置“Labels & Nodes”区域的所有设置到默认值
 function resetLabelsNodesToDefaults() {
     try {
+        const adaptiveDefaults = getAdaptiveNodeEdgeDefaults(true);
+
         // 1) 标签数量阈值
         const thr = document.getElementById('label-threshold');
         if (thr) {
@@ -3402,21 +3608,21 @@ function resetLabelsNodesToDefaults() {
         // 3) 节点大小倍数/最小/最大
         const mult = document.getElementById('node-size-multiplier');
         if (mult) {
-            mult.value = '1';
-            document.getElementById('node-size-value').textContent = '1.0x';
-            nodeSizeMultiplier = 1.0;
+            mult.value = String(adaptiveDefaults.nodeSizeMultiplier);
+            document.getElementById('node-size-value').textContent = adaptiveDefaults.nodeSizeMultiplier.toFixed(1) + 'x';
+            nodeSizeMultiplier = adaptiveDefaults.nodeSizeMultiplier;
         }
         const minSize = document.getElementById('min-node-size');
         if (minSize) {
-            minSize.value = '3';
-            document.getElementById('min-node-size-value').textContent = '3px';
-            minNodeSize = 3;
+            minSize.value = String(adaptiveDefaults.minNodeSize);
+            document.getElementById('min-node-size-value').textContent = adaptiveDefaults.minNodeSize + 'px';
+            minNodeSize = adaptiveDefaults.minNodeSize;
         }
         const maxSize = document.getElementById('max-node-size');
         if (maxSize) {
-            maxSize.value = '35';
-            document.getElementById('max-node-size-value').textContent = '35px';
-            maxNodeSize = 35;
+            maxSize.value = String(adaptiveDefaults.maxNodeSize);
+            document.getElementById('max-node-size-value').textContent = adaptiveDefaults.maxNodeSize + 'px';
+            maxNodeSize = adaptiveDefaults.maxNodeSize;
         }
 
         // 3.1) 节点不透明度
@@ -3431,16 +3637,16 @@ function resetLabelsNodesToDefaults() {
         // 4) 边宽度倍数
         const edgeWidth = document.getElementById('edge-width-multiplier');
         if (edgeWidth) {
-            edgeWidth.value = '1';
-            document.getElementById('edge-width-value').textContent = '1.0x';
-            edgeWidthMultiplier = 1.0;
+            edgeWidth.value = String(adaptiveDefaults.edgeWidthMultiplier);
+            document.getElementById('edge-width-value').textContent = adaptiveDefaults.edgeWidthMultiplier.toFixed(1) + 'x';
+            edgeWidthMultiplier = adaptiveDefaults.edgeWidthMultiplier;
         }
 
         const minEdgeW = document.getElementById('min-edge-width');
         if (minEdgeW) {
-            minEdgeW.value = '0.5';
-            document.getElementById('min-edge-width-value').textContent = '0.5';
-            minEdgeWidth = 0.5;
+            minEdgeW.value = String(adaptiveDefaults.minEdgeWidth);
+            document.getElementById('min-edge-width-value').textContent = adaptiveDefaults.minEdgeWidth.toFixed(1);
+            minEdgeWidth = adaptiveDefaults.minEdgeWidth;
         }
 
         // 4.1) 边不透明度

@@ -453,6 +453,17 @@
     wrapper.appendChild(styleEl);
 
     wrapper.appendChild(clone);
+
+    if (opts.includeSharedLegend) {
+      const legendEl = document.getElementById('shared-legend');
+      if (legendEl && typeof isElementVisible === 'function' && isElementVisible(legendEl)) {
+        const legendClone = legendEl.cloneNode(true);
+        legendClone.style.marginTop = '20px';
+        legendClone.style.paddingBottom = '10px';
+        wrapper.appendChild(legendClone);
+      }
+    }
+
     tempHost.appendChild(wrapper);
 
     // Force layout
@@ -1438,6 +1449,8 @@
   function buildPanelSnapshot(panelId) {
     const panel = (typeof document !== 'undefined') ? document.getElementById(panelId) : null;
     if (!panel) return null;
+    const includeShared = (typeof window !== 'undefined')
+      && (window.visualizationMode === 'single' || window.visualizationMode === 'group');
     return buildSnapshot(panel, {
       removeSelectors: [
         '.panel-actions',
@@ -1448,7 +1461,8 @@
         '.modal-actions',
         '[data-export-exclude="1"]'
       ],
-      matchBackgroundFrom: panel
+      matchBackgroundFrom: panel,
+      includeSharedLegend: includeShared
     });
   }
 

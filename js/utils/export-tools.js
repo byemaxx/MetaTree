@@ -171,30 +171,37 @@
       const container = document.getElementById(containerId);
       if (!container) return reject(new Error('Container not found'));
 
-      // Determine size: prefer viewBox if present, else bounding box, else container size
+      // Determine size: prefer viewBox if present, else actual explicit width/height
       let width = null;
       let height = null;
       try {
         const viewBox = svgElement.getAttribute('viewBox');
         if (viewBox) {
-          const parts = viewBox.split(/\s+/).map(Number);
+          const parts = viewBox.split(/[\s,]+/).filter(Boolean).map(Number);
           if (parts.length === 4) {
             width = Math.round(parts[2]);
             height = Math.round(parts[3]);
           }
         }
       } catch (e) {}
+
       if (!width || !height) {
-        try {
-          const bbox = svgElement.getBBox();
-          if (bbox) {
-            width = Math.round(bbox.width || svgElement.clientWidth || container.clientWidth || 800);
-            height = Math.round(bbox.height || svgElement.clientHeight || container.clientHeight || 600);
-          }
-        } catch (e) {
-          width = Math.max(1, container.clientWidth || 800);
-          height = Math.max(1, container.clientHeight || 600);
-        }
+        // Use the SVG's actual explicit dimensions or client dimensions to prevent aspect ratio distortion
+        // (stretching) that happens when canvas dimensions (e.g. from bbox) don't match the SVG's intrinsic aspect ratio.
+        let wAttr = svgElement.getAttribute('width');
+        let hAttr = svgElement.getAttribute('height');
+        
+        if (wAttr && !wAttr.includes('%')) wAttr = parseFloat(wAttr);
+        else wAttr = null;
+        
+        if (hAttr && !hAttr.includes('%')) hAttr = parseFloat(hAttr);
+        else hAttr = null;
+
+        width = Math.round(wAttr || svgElement.clientWidth || container.clientWidth || 800);
+        height = Math.round(hAttr || svgElement.clientHeight || container.clientHeight || 600);
+        
+        width = Math.max(1, width);
+        height = Math.max(1, height);
       }
 
   const SCALE = 2; // export at 2x pixel density

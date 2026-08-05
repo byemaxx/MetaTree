@@ -702,7 +702,13 @@
       btnPng.title = 'Export PNG';
       btnPng.setAttribute('aria-label', 'Export PNG');
       btnPng.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 6l2-2h6l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="2"/></svg>';
-      btnPng.addEventListener('click', () => exportPNGForContainer(svgContainerId, `comparison_${group1}_vs_${group2}`));
+      btnPng.addEventListener('click', () => {
+        if (typeof window !== 'undefined' && typeof window.exportPanelAsPNG === 'function') {
+          window.exportPanelAsPNG(panel.id, `comparison_${group1}_vs_${group2}`).catch(err => console.warn(err));
+        } else {
+          exportPNGForContainer(svgContainerId, `comparison_${group1}_vs_${group2}`).catch(err => console.warn(err));
+        }
+      });
 
       actionsWrap.appendChild(btnReset);
       actionsWrap.appendChild(btnRestore);

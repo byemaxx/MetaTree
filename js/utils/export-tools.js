@@ -2,6 +2,16 @@
 // Expose to window for compatibility
 
 (function(){
+  // Adobe Illustrator SVG parser crashes on system fonts. Strip them.
+  function sanitizeFontFamily(fontFamily) {
+    if (!fontFamily) return fontFamily;
+    return fontFamily.replace(/-apple-system\s*,\s*/g, '')
+                     .replace(/BlinkMacSystemFont\s*,\s*/g, '')
+                     .replace(/['"]?Segoe UI['"]?\s*,\s*/g, '')
+                     .replace(/Roboto\s*,\s*/g, '')
+                     .replace(/['"]?Helvetica Neue['"]?\s*,\s*/g, '');
+  }
+
   // Helper: download a blob with a filename, revoking object URL after click
   function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
@@ -37,8 +47,8 @@
     try {
       const styleText = collectStyleText();
       if (styleText) {
-        const styleEl = document.createElement('style');
-        styleEl.textContent = styleText;
+        const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+        styleEl.textContent = sanitizeFontFamily(styleText);
         // Insert as first child so rules apply
         clone.insertBefore(styleEl, clone.firstChild);
       }
@@ -47,7 +57,10 @@
     }
 
     const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(clone);
+    let svgString = serializer.serializeToString(clone);
+    if (!svgString.startsWith('<?xml')) {
+        svgString = '<?xml version="1.0" encoding="utf-8"?>\n' + svgString;
+    }
     const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
     const filename = `${filenamePrefix || 'export'}_${formatTimestamp()}.svg`;
     downloadBlob(blob, filename);
@@ -657,7 +670,7 @@
     try {
       const cs = window.getComputedStyle(el);
       if (cs) {
-        if (cs.fontFamily) text.setAttribute('font-family', cs.fontFamily);
+        if (cs.fontFamily) text.setAttribute('font-family', sanitizeFontFamily(cs.fontFamily));
         if (cs.fontSize) text.setAttribute('font-size', cs.fontSize);
         if (cs.fontWeight) text.setAttribute('font-weight', cs.fontWeight);
         if (cs.letterSpacing && cs.letterSpacing !== 'normal') text.setAttribute('letter-spacing', cs.letterSpacing);
@@ -954,7 +967,11 @@
               return;
             }
           }
-          dst.style.setProperty(prop, v);
+          if (prop === 'font-family') {
+            dst.style.setProperty(prop, sanitizeFontFamily(v));
+          } else {
+            dst.style.setProperty(prop, v);
+          }
         });
       }
       const dstNodesAll = [clone, ...Array.from(clone.querySelectorAll('*'))];
@@ -1093,7 +1110,7 @@
         title.setAttribute('text-anchor', 'middle');
         title.setAttribute('dominant-baseline', 'middle');
         if (titleStyle) {
-          if (titleStyle.fontFamily) title.setAttribute('font-family', titleStyle.fontFamily);
+          if (titleStyle.fontFamily) title.setAttribute('font-family', sanitizeFontFamily(titleStyle.fontFamily));
           if (titleStyle.fontSize) title.setAttribute('font-size', titleStyle.fontSize);
           if (titleStyle.fontWeight) title.setAttribute('font-weight', titleStyle.fontWeight);
           if (titleStyle.letterSpacing && titleStyle.letterSpacing !== 'normal') {
@@ -1283,7 +1300,7 @@
         text.setAttribute('transform', `rotate(-90 ${x} ${y})`);
         try {
           if (cs) {
-            if (cs.fontFamily) text.setAttribute('font-family', cs.fontFamily);
+            if (cs.fontFamily) text.setAttribute('font-family', sanitizeFontFamily(cs.fontFamily));
             if (cs.fontSize) text.setAttribute('font-size', cs.fontSize);
             if (cs.fontWeight) text.setAttribute('font-weight', cs.fontWeight);
             if (cs.letterSpacing && cs.letterSpacing !== 'normal') text.setAttribute('letter-spacing', cs.letterSpacing);

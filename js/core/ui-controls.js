@@ -1824,6 +1824,14 @@ function initEventListeners() {
         });
     }
 
+    const displayedRanks = document.getElementById('displayed-ranks');
+    if (displayedRanks) {
+        displayedRanks.addEventListener('change', () => {
+            applyDisplayedRanksSelection(displayedRanks);
+            redrawCurrentViz();
+        });
+    }
+
     // 丰度转换选择
     document.getElementById('abundance-transform').addEventListener('change', handleAbundanceTransformChange);
 
@@ -3481,6 +3489,54 @@ window.updateLabelLevelsOptions = function (maxLeafHeight, hasFunctionLeaf, dyna
     }
 }
 
+function applyDisplayedRanksSelection(container) {
+    if (!container || typeof window.setVisibleTreeLevels !== 'function') return;
+    const checked = Array.from(container.querySelectorAll('input[type="checkbox"]:checked'));
+    window.setVisibleTreeLevels(
+        checked.filter(input => input.dataset.kind === 'rank').map(input => input.value),
+        checked.filter(input => input.dataset.kind === 'level').map(input => Number(input.value))
+    );
+}
+
+window.updateDisplayedRanksOptions = function (sourceTree) {
+    const container = document.getElementById('displayed-ranks');
+    if (!container || !sourceTree) return;
+
+    const ranks = new Set();
+    const levels = new Set();
+    const visit = node => {
+        if (!node) return;
+        if (typeof node.rank === 'string' && node.rank) ranks.add(node.rank.toLowerCase());
+        else if (Number.isInteger(node.depth)) levels.add(node.depth);
+        if (Array.isArray(node.children)) node.children.forEach(visit);
+    };
+    visit(sourceTree);
+
+    const rankOrder = ['domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'genome', 'function'];
+    const options = [
+        ...rankOrder.filter(rank => ranks.has(rank)).map(value => ({ kind: 'rank', value, label: value.charAt(0).toUpperCase() + value.slice(1) })),
+        ...Array.from(levels).sort((a, b) => a - b).map(value => ({ kind: 'level', value: String(value), label: `Level ${value + 1}` }))
+    ];
+    const signature = options.map(option => `${option.kind}:${option.value}`).join('|');
+    if (container.dataset.options === signature) return;
+
+    const previous = new Map(Array.from(container.querySelectorAll('input')).map(input => [`${input.dataset.kind}:${input.value}`, input.checked]));
+    container.innerHTML = '';
+    options.forEach(option => {
+        const label = document.createElement('label');
+        label.className = 'flex ai-center gap-4 fw-normal';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.dataset.kind = option.kind;
+        input.value = option.value;
+        input.checked = previous.get(`${option.kind}:${option.value}`) !== false;
+        label.append(input, option.label);
+        container.appendChild(label);
+    });
+    container.dataset.options = signature;
+    applyDisplayedRanksSelection(container);
+};
+
 function handleLabelFontSizeChange(e) {
     labelFontSize = parseInt(e.target.value);
     document.getElementById('label-font-size-value').textContent = labelFontSize + 'px';
@@ -3752,6 +3808,12 @@ function resetLayoutPanelsToDefaults() {
         if (sortSel) sortSel.value = 'none';
         if (typeof treeNodeSort !== 'undefined') treeNodeSort = 'none';
         try { if (typeof window !== 'undefined') window.treeNodeSort = 'none'; } catch (_) { }
+
+        const displayedRanks = document.getElementById('displayed-ranks');
+        if (displayedRanks) {
+            displayedRanks.querySelectorAll('input[type="checkbox"]').forEach(input => { input.checked = true; });
+            applyDisplayedRanksSelection(displayedRanks);
+        }
 
         const panelLock = document.getElementById('panel-lock-size');
         if (panelLock) panelLock.checked = false;
@@ -4406,7 +4468,9 @@ function handleRunComparison() {
     // divergingPalette is now managed by clickable previews (setDivergingPalette)
     showOnlySignificant = document.getElementById('show-significance').checked;
     comparisonBaseNonZeroOnly = !!document.getElementById('comparison-base-nonzero-only')?.checked;
+    presenceAbsenceDifferenceOnly = !!document.getElementById('presence-absence-difference-only')?.checked;
     try { if (typeof window !== 'undefined') window.comparisonBaseNonZeroOnly = comparisonBaseNonZeroOnly; } catch (_) { }
+    try { if (typeof window !== 'undefined') window.presenceAbsenceDifferenceOnly = presenceAbsenceDifferenceOnly; } catch (_) { }
     const comparisonTest = (document.getElementById('comparison-test') && document.getElementById('comparison-test').value) ? document.getElementById('comparison-test').value : 'wilcoxon';
 
     // 使用单一域输入：M（默认5）；比较模式下为 [-M, 0, M]
@@ -4906,9 +4970,10 @@ function handleSignificanceChange() {
 }
 
 function handleComparisonBaseFilterChange() {
-    const isChecked = !!document.getElementById('comparison-base-nonzero-only')?.checked;
-    comparisonBaseNonZeroOnly = isChecked;
-    try { if (typeof window !== 'undefined') window.comparisonBaseNonZeroOnly = isChecked; } catch (_) { }
+    comparisonBaseNonZeroOnly = !!document.getElementById('comparison-base-nonzero-only')?.checked;
+    presenceAbsenceDifferenceOnly = !!document.getElementById('presence-absence-difference-only')?.checked;
+    try { if (typeof window !== 'undefined') window.comparisonBaseNonZeroOnly = comparisonBaseNonZeroOnly; } catch (_) { }
+    try { if (typeof window !== 'undefined') window.presenceAbsenceDifferenceOnly = presenceAbsenceDifferenceOnly; } catch (_) { }
 
     if (typeof redrawCurrentViz === 'function') redrawCurrentViz();
 }
@@ -5498,6 +5563,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('comparison-metric').addEventListener('change', handleComparisonMetricChange);
     document.getElementById('show-significance').addEventListener('change', handleSignificanceChange);
     document.getElementById('comparison-base-nonzero-only').addEventListener('change', handleComparisonBaseFilterChange);
+    document.getElementById('presence-absence-difference-only').addEventListener('change', handleComparisonBaseFilterChange);
     const colorDomainAbs = document.getElementById('color-domain-abs');
     if (colorDomainAbs) colorDomainAbs.addEventListener('change', handleColorDomainChange);
     const colorDomainReset = document.getElementById('color-domain-reset');
@@ -5642,7 +5708,7 @@ document.addEventListener('DOMContentLoaded', function () {
             'comparison-controls', 'meta-group-column', 'meta-status', 'unified-group-display',
             'group-selection-row', 'select-group1', 'select-group2',
             'show-significance', 'significance-thresholds-row', 'pvalue-threshold', 'qvalue-threshold', 'logfc-threshold',
-            'comparison-base-nonzero-only', 'comparison-metric',
+            'comparison-base-nonzero-only', 'presence-absence-difference-only', 'comparison-metric',
             'color-domain-abs', 'color-domain-reset', 'run-comparison', 'export-comparison',
             // 分组模态框
             'group-modal', 'group-name-input', 'sample-checklist', 'existing-groups-list', 'save-group-btn', 'cancel-group-btn', 'close-group-modal',

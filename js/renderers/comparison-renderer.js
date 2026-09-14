@@ -14,6 +14,13 @@
   };
 
   const VALID_LAYOUTS = new Set(['radial', 'tree', 'packing']);
+
+  function getComparisonDisplayChildren(node) {
+    if (typeof window !== 'undefined' && typeof window.getDisplayTreeChildren === 'function') {
+      return window.getDisplayTreeChildren(node);
+    }
+    return node && !node.__collapsed ? node.children : null;
+  }
   
   // Matrix alignment threshold: when sidebar is visible and the matrix fills less than
   // this percentage of available width, left-align it to avoid a large empty band on the left.
@@ -60,11 +67,27 @@
     return false;
   }
 
+  function shouldUsePresenceDifferenceBase() {
+    if (typeof presenceAbsenceDifferenceOnly !== 'undefined') return !!presenceAbsenceDifferenceOnly;
+    return !!(typeof window !== 'undefined' && window.presenceAbsenceDifferenceOnly);
+  }
+
   function hasNonZeroComparisonAbundance(stats) {
     if (!stats || typeof stats !== 'object') return false;
     const mean1 = Number(stats.mean_1) || 0;
     const mean2 = Number(stats.mean_2) || 0;
     return mean1 !== 0 || mean2 !== 0;
+  }
+
+  function hasPresenceDifference(stats) {
+    if (!stats || typeof stats !== 'object') return false;
+    const values = [stats.mean_1, stats.mean_2];
+    const helper = (typeof window !== 'undefined' && window.MetaTreeViewUtils)
+      ? window.MetaTreeViewUtils.hasPresenceDifference
+      : null;
+    if (helper) return helper(values);
+    const present = values.map(value => Number.isFinite(Number(value)) && Number(value) !== 0);
+    return present[0] !== present[1];
   }
 
   function getComparisonStatsPoolsForBase(comparisonStats) {
@@ -92,16 +115,18 @@
 
   function buildComparisonSourceTree(comparisonStats) {
     if (!treeData) return null;
-    if (!shouldUseNonZeroComparisonBase()) {
+    const differenceOnly = shouldUsePresenceDifferenceBase();
+    if (!differenceOnly && !shouldUseNonZeroComparisonBase()) {
       return treeData;
     }
     const statsPools = getComparisonStatsPoolsForBase(comparisonStats);
     if (statsPools.length === 0) return treeData;
 
-    const nonZeroPaths = new Set();
+    const keptPaths = new Set();
     statsPools.forEach(statsObj => {
       Object.entries(statsObj).forEach(([path, stats]) => {
-        if (hasNonZeroComparisonAbundance(stats)) nonZeroPaths.add(path);
+        const keep = differenceOnly ? hasPresenceDifference(stats) : hasNonZeroComparisonAbundance(stats);
+        if (keep) keptPaths.add(path);
       });
     });
 
@@ -118,7 +143,7 @@
       const nodePath = (typeof getNodeAncestorPath === 'function')
         ? getNodeAncestorPath(node)
         : (node && node.data ? node.data.name : null);
-      const keepSelf = !!(nodePath && nonZeroPaths.has(nodePath));
+      const keepSelf = !!(nodePath && keptPaths.has(nodePath));
       let keepDescendant = false;
       if (Array.isArray(node.children)) {
         for (const child of node.children) {
@@ -150,8 +175,8 @@
     const prunedTree = cloneKeptNode(sourceHierarchy);
     if (prunedTree) return prunedTree;
 
-    // If path mapping unexpectedly fails while non-zero nodes exist, fallback to the original tree.
-    if (nonZeroPaths.size > 0) return treeData;
+    // If path mapping unexpectedly fails while matching nodes exist, fallback to the original tree.
+    if (keptPaths.size > 0) return treeData;
 
     // If selected groups are all zero at every node, keep a root-only tree to avoid renderer errors.
     const rootOnly = { ...(sourceHierarchy.data || {}) };
@@ -162,7 +187,7 @@
   function buildComparisonHierarchy(comparisonStats) {
     const sourceTree = buildComparisonSourceTree(comparisonStats);
     if (!sourceTree) return null;
-    let root = d3.hierarchy(sourceTree, d => d.__collapsed ? null : d.children);
+    let root = d3.hierarchy(sourceTree, getComparisonDisplayChildren);
     try {
       if (typeof stripToFirstBranch === 'function') {
         root = stripToFirstBranch(root);
@@ -174,9 +199,7 @@
   }
 
   function getPackingStructureWeight(node) {
-    const hasChildren = !!(node && Array.isArray(node.children) && node.children.length > 0);
-    const collapsed = !!(node && node.__collapsed);
-    return (collapsed || !hasChildren) ? 1 : 0;
+    return window.MetaTreeViewUtils.getPackingStructureWeight(node, getComparisonDisplayChildren);
   }
 
   const HTML_ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
@@ -290,7 +313,7 @@
       const offsetX = (width - diameter) / 2;
       const offsetY = (height - diameter) / 2;
 
-      const packChildAccessor = (node) => (node && node.__collapsed) ? null : node && node.children;
+      const packChildAccessor = getComparisonDisplayChildren;
       let packRoot = null;
       if (root && root.data) {
         try {

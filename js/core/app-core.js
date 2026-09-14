@@ -37,6 +37,9 @@ let treeLinkShape = 'curved'; // 'curved' | 'straight' | 'orthogonal'
 let treeAlignLeaves = false;
 let treeSeparation = 1.0;
 let treeNodeSort = 'none'; // 'none' | 'value-asc' | 'value-desc' | 'name'
+const TAXONOMIC_RANKS = ['domain', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'genome', 'function'];
+let visibleTaxonomicRanks = null;
+let visibleHierarchyLevels = null;
 let tooltip;
 let abundanceTransform = 'none'; // 丰度转换方式: 'none', 'log', 'log2', 'sqrt', 'area' (默认改为 none)
 let colorScheme = 'Viridis'; // 颜色方案 - 改用高对比度的 Viridis
@@ -108,6 +111,22 @@ let currentMaxLeafHeight = -1; // 用于更新UI
 let dataHasNegatives = false;
 // 是否使用 combined_long.tsv 格式（长表差异结果：Item_ID, condition, log2FoldChange, padj, pvalue）
 let isCombinedLong = false;
+
+function getDisplayTreeChildren(node) {
+    const helper = (typeof window !== 'undefined' && window.MetaTreeViewUtils)
+        ? window.MetaTreeViewUtils.getChildren
+        : null;
+    return helper ? helper(node, visibleTaxonomicRanks, visibleHierarchyLevels) : (node && !node.__collapsed ? node.children : null);
+}
+
+function setVisibleTreeLevels(ranks, levels) {
+    visibleTaxonomicRanks = Array.isArray(ranks)
+        ? new Set(ranks.map(rank => String(rank).toLowerCase()).filter(rank => TAXONOMIC_RANKS.includes(rank)))
+        : null;
+    visibleHierarchyLevels = Array.isArray(levels)
+        ? new Set(levels.map(Number).filter(Number.isInteger))
+        : null;
+}
 
 // 对比度控制（可按需暴露到 UI）
 let sizeExponent = 0.5;   // 节点半径的幂指数（<1 提升低值可视度，降低以减小log2时的节点）
@@ -402,7 +421,9 @@ let comparisonMetric = 'log2_median_ratio';  // 比较指标
 let divergingPalette = 'blueRed';  // 分歧色板
 let showOnlySignificant = false;  // 只显示显著差异
 let comparisonBaseNonZeroOnly = false;  // 所有模式：base 结构仅保留当前显示样本/分组中的非零节点
+let presenceAbsenceDifferenceOnly = false; // 所有模式：仅保留当前样本/分组间有无状态不同的节点及其祖先
 try { if (typeof window !== 'undefined') window.comparisonBaseNonZeroOnly = comparisonBaseNonZeroOnly; } catch (_) { }
+try { if (typeof window !== 'undefined') window.presenceAbsenceDifferenceOnly = presenceAbsenceDifferenceOnly; } catch (_) { }
 let comparisonColorDomain = [-5, 0, 5];  // 比较颜色域（默认 -5 到 5）
 
 function getComparisonRendererStoreSafe() {
@@ -1728,8 +1749,7 @@ function getAllLabelNames() {
 
     try {
         // 创建层次结构
-        const childAccessor = d => (d.__collapsed ? null : d.children);
-        let hierarchy = d3.hierarchy(dataToUse, childAccessor);
+        let hierarchy = d3.hierarchy(dataToUse, getDisplayTreeChildren);
 
         // 跳过只有单一子节点的根节点
         if (hierarchy.children && hierarchy.children.length === 1) {
@@ -1768,6 +1788,7 @@ function buildHierarchy(data) {
     }
 
     // 第二步：构建树结构
+    const rankSeparator = getTaxonRankDelimiter();
     filteredData.forEach(item => {
         let taxonStr = String(item.taxon || '').trim();
 
@@ -1784,7 +1805,6 @@ function buildHierarchy(data) {
         }
 
         // 拆分分类路径（管道分隔），允许不完整路径
-        const rankSeparator = getTaxonRankDelimiter();
         const parts = taxonStr
             .split(rankSeparator)
             .map(p => p.trim())
@@ -1919,6 +1939,14 @@ function buildHierarchy(data) {
     }
 
     calculateAbundances(root);
+
+    const assignAncestorPaths = (node, parentPath = []) => {
+        const identifier = node.fullName || node.name || 'root';
+        const path = [...parentPath, identifier];
+        node.__ancestorPath = path.join(rankSeparator);
+        if (Array.isArray(node.children)) node.children.forEach(child => assignAncestorPaths(child, path));
+    };
+    assignAncestorPaths(root);
     return root;
 }
 
@@ -2110,6 +2138,7 @@ function buildTreeWithGroupData() {
             isLeaf: node.isLeaf,
             isFunction: node.isFunction,
             __collapsed: node.__collapsed,
+            __ancestorPath: node.__ancestorPath,
             __originalNode: node,
             abundances: {},  // 不复制原有abundances,从头构建
             children: node.children ? node.children.map(cloneTree) : []
@@ -2226,6 +2255,11 @@ function shouldFilterBaseByNonZero() {
     return false;
 }
 
+function shouldFilterBaseByPresenceDifference() {
+    if (typeof presenceAbsenceDifferenceOnly !== 'undefined') return !!presenceAbsenceDifferenceOnly;
+    return !!(typeof window !== 'undefined' && window.presenceAbsenceDifferenceOnly);
+}
+
 function hasNonZeroAbundanceForTargets(node, targets) {
     if (!node || !node.abundances || !Array.isArray(targets) || targets.length === 0) return false;
     for (const target of targets) {
@@ -2235,9 +2269,21 @@ function hasNonZeroAbundanceForTargets(node, targets) {
     return false;
 }
 
-function buildNonZeroBaseTree(sourceTree, targets) {
+function hasPresenceDifferenceForTargets(node, targets) {
+    if (!node || !node.abundances || !Array.isArray(targets)) return false;
+    const values = targets.map(target => node.abundances[target]);
+    const helper = (typeof window !== 'undefined' && window.MetaTreeViewUtils)
+        ? window.MetaTreeViewUtils.hasPresenceDifference
+        : null;
+    if (helper) return helper(values);
+    const presentCount = values.filter(value => Number.isFinite(Number(value)) && Number(value) !== 0).length;
+    return values.length >= 2 && presentCount > 0 && presentCount < values.length;
+}
+
+function buildFilteredBaseTree(sourceTree, targets) {
     if (!sourceTree) return sourceTree;
-    if (!shouldFilterBaseByNonZero()) return sourceTree;
+    const differenceOnly = shouldFilterBaseByPresenceDifference();
+    if (!differenceOnly && !shouldFilterBaseByNonZero()) return sourceTree;
 
     const activeTargets = Array.isArray(targets) ? targets.filter(Boolean) : [];
     if (activeTargets.length === 0) return sourceTree;
@@ -2246,7 +2292,9 @@ function buildNonZeroBaseTree(sourceTree, targets) {
         if (!node || typeof node !== 'object') return null;
         const children = Array.isArray(node.children) ? node.children : [];
         const keptChildren = children.map(cloneFilteredNode).filter(Boolean);
-        const keepSelf = hasNonZeroAbundanceForTargets(node, activeTargets);
+        const keepSelf = differenceOnly
+            ? hasPresenceDifferenceForTargets(node, activeTargets)
+            : hasNonZeroAbundanceForTargets(node, activeTargets);
         if (!keepSelf && keptChildren.length === 0) return null;
 
         const cloned = { ...node };
@@ -2261,7 +2309,7 @@ function buildNonZeroBaseTree(sourceTree, targets) {
     const filtered = cloneFilteredNode(sourceTree);
     if (filtered) return filtered;
 
-    // All selected samples/groups are zero: keep root node only to avoid empty-tree rendering issues.
+    // Nothing matched: keep the root node to avoid renderer errors.
     const rootOnly = { ...sourceTree };
     delete rootOnly.children;
     return rootOnly;
@@ -2428,6 +2476,10 @@ function setupPanelObserver() {
 function drawAllTrees() {
     console.log('drawAllTrees called, customLabelColors:', customLabelColors.size);
 
+    if (typeof window !== 'undefined' && typeof window.updateDisplayedRanksOptions === 'function') {
+        window.updateDisplayedRanksOptions(treeData);
+    }
+
     // 重置标签统计
     labelStatsPerSample = {};
     updateLabelStatsUI();
@@ -2449,7 +2501,7 @@ function drawAllTrees() {
     } else {
         activeSamples = typeof getActiveSamples === 'function' ? getActiveSamples() : selectedSamples.slice();
     }
-    activeTreeData = buildNonZeroBaseTree(activeTreeData, activeSamples);
+    activeTreeData = buildFilteredBaseTree(activeTreeData, activeSamples);
     if (!activeTreeData) return;
 
     // ========== 重新分配标签颜色（仅对当前显示的标签） ==========
@@ -2457,8 +2509,7 @@ function drawAllTrees() {
         // 收集所有当前会被实际渲染的唯一标签名称
         const visibleLabels = new Set();
         try {
-            const childAccessor = d => (d.__collapsed ? null : d.children);
-            let hierarchy = d3.hierarchy(activeTreeData, childAccessor);
+            let hierarchy = d3.hierarchy(activeTreeData, getDisplayTreeChildren);
 
             // 跳过只有单一子节点的根节点
             if (hierarchy.children && hierarchy.children.length === 1) {
@@ -2566,8 +2617,7 @@ function drawAllTrees() {
     // 先计算所有样本的全局最大丰度（应用转换后）
     const globalAbundances = [];
     // 使用子节点访问器以支持折叠/展开
-    const childAccessor = d => (d.__collapsed ? null : d.children);
-    let hierarchy = d3.hierarchy(activeTreeData, childAccessor);
+    let hierarchy = d3.hierarchy(activeTreeData, getDisplayTreeChildren);
     // 跳过前导的“单子节点链”，直至第一个分叉
     hierarchy = stripToFirstBranch(hierarchy);
 
@@ -2795,7 +2845,7 @@ function drawTree(sample, globalDomain) {
     svgGroups[sample] = g;
 
     // 使用相同的子节点访问器以支持折叠/展开
-    const childAccessor = d => (d.__collapsed ? null : d.children);
+    const childAccessor = getDisplayTreeChildren;
     let hierarchy = d3.hierarchy(sourceTree, childAccessor);
     // 跳过前导的“单子节点链”，直至第一个分叉
     hierarchy = stripToFirstBranch(hierarchy);
@@ -3450,7 +3500,7 @@ function drawTree(sample, globalDomain) {
         }
 
     } else {
-        const hierarchy = d3.hierarchy(sourceTree, d => d.__collapsed ? null : d.children);
+        const hierarchy = d3.hierarchy(sourceTree, getDisplayTreeChildren);
 
         // Resolve layout parameters from window (priority) or local scope
         const pSort = (typeof window !== 'undefined' && window.treeNodeSort) ? window.treeNodeSort : ((typeof treeNodeSort !== 'undefined') ? treeNodeSort : 'none');
@@ -4037,6 +4087,9 @@ function hideLabelColorMenu() {
  * @returns {string} - 从根到当前节点的完整路径字符串
  */
 function getNodeAncestorPath(d) {
+    if (d && d.data && typeof d.data.__ancestorPath === 'string') {
+        return d.data.__ancestorPath;
+    }
     // 简单缓存以避免重复构建（当前绘制周期内）
     if (d && d._ancestorPath && typeof d._ancestorPath === 'string') {
         return d._ancestorPath;
@@ -4475,4 +4528,6 @@ if (typeof window !== 'undefined') {
     window.clearAllNodeColorOverrides = clearAllNodeColorOverrides;
     window.clearNodeOverridesByLabel = clearNodeOverridesByLabel;
     window.ensurePanelsRenderedForExport = ensurePanelsRenderedForExport;
+    window.getDisplayTreeChildren = getDisplayTreeChildren;
+    window.setVisibleTreeLevels = setVisibleTreeLevels;
 }

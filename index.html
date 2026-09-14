@@ -459,6 +459,23 @@
                             </span>
                         </div>
                     </div>
+                    <div class="control-row" id="presence-absence-difference-row">
+                        <div class="control-group">
+                            <label>
+                                <input type="checkbox" id="presence-absence-difference-only">
+                                Presence/absence difference
+                            </label>
+                            <span class="help-icon"
+                                title="Only show nodes present in some, but not all, currently displayed samples/groups. Required ancestors are retained.">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                                    <path d="M12 17v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                    <circle cx="12" cy="8" r="1.2" fill="currentColor" />
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
                     <!-- Samples 折叠按钮（仅在 single 模式下显示） -->
                     <div class="control-row" id="samples-toggle-row">
                         <div class="control-group" id="samples-toggle-group">
@@ -1015,6 +1032,14 @@
                             </div>
                         </div>
 
+                        <div class="control-row">
+                            <div class="control-group vertical full-width">
+                                <label class="fw-500 mb-4">Displayed ranks:</label>
+                                <div id="displayed-ranks" class="flex flex-wrap gap-8"></div>
+                                <span class="text-muted fs-11 mt-4">Taxonomy ranks or generic levels are detected from the loaded data. Hidden levels are bypassed.</span>
+                            </div>
+                        </div>
+
                         <div class="control-row" id="tree-direction-row" style="display: none;">
                             <div class="control-group">
                                 <label class="fw-500 mb-4">Direction:</label>
@@ -1489,6 +1514,7 @@
     <script src="js/components/legend-panel.js"></script>
     <script src="js/utils/export-tools.js"></script>
     <script src="js/state/comparison-renderer-store.js"></script>
+    <script src="js/core/tree-view-utils.js"></script>
     <script src="js/core/app-core.js"></script>
     <script src="js/renderers/comparison-renderer.js"></script>
     <script src="js/core/theme-manager.js"></script>

@@ -199,9 +199,7 @@
   }
 
   function getPackingStructureWeight(node) {
-    const hasChildren = !!(node && Array.isArray(node.children) && node.children.length > 0);
-    const collapsed = !!(node && node.__collapsed);
-    return (collapsed || !hasChildren) ? 1 : 0;
+    return window.MetaTreeViewUtils.getPackingStructureWeight(node, getComparisonDisplayChildren);
   }
 
   const HTML_ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };

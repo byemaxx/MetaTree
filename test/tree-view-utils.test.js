@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { getChildren, hasPresenceDifference } = require('../js/core/tree-view-utils.js');
+const { getChildren, hasPresenceDifference, getPackingStructureWeight } = require('../js/core/tree-view-utils.js');
 
 const species = { name: 'coli', rank: 'species', children: [] };
 const genus = { name: 'Escherichia', rank: 'genus', children: [species] };
@@ -10,6 +10,11 @@ const domain = { name: 'Bacteria', rank: 'domain', children: [kingdom] };
 const visible = new Set(['domain', 'genus', 'species']);
 assert.deepEqual(getChildren(domain, visible).map(node => node.rank), ['genus']);
 assert.deepEqual(getChildren(genus, visible).map(node => node.rank), ['species']);
+
+const genusOnly = new Set(['domain', 'genus']);
+const genusOnlyChildren = node => getChildren(node, genusOnly);
+assert.equal(getPackingStructureWeight(domain, genusOnlyChildren), 0);
+assert.equal(getPackingStructureWeight(genus, genusOnlyChildren), 1);
 
 kingdom.__collapsed = true;
 assert.equal(getChildren(domain, visible), null);

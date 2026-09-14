@@ -21,7 +21,12 @@
         return presentCount > 0 && presentCount < values.length;
     }
 
-    const api = { getChildren, hasPresenceDifference };
+    function getPackingStructureWeight(node, childAccessor) {
+        const children = childAccessor(node);
+        return Array.isArray(children) && children.length > 0 ? 0 : 1;
+    }
+
+    const api = { getChildren, hasPresenceDifference, getPackingStructureWeight };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     if (globalScope) globalScope.MetaTreeViewUtils = api;
 })(typeof window !== 'undefined' ? window : globalThis);
